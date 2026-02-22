@@ -92,7 +92,7 @@ function CategorieBar({
       variants={FADE_UP}
       className="flex items-center gap-4 group"
     >
-      <div className="w-28 flex-shrink-0 flex items-center gap-2">
+      <div className="w-20 sm:w-28 flex-shrink-0 flex items-center gap-2">
         <span
           className="w-2 h-2 rounded-full flex-shrink-0"
           style={{ background: couleur }}
@@ -110,8 +110,8 @@ function CategorieBar({
         />
       </div>
 
-      <div className="w-32 flex-shrink-0 flex items-center justify-end gap-3">
-        <span className="text-xs text-white/35">{pourcentage.toFixed(1)} %</span>
+      <div className="w-24 sm:w-32 flex-shrink-0 flex items-center justify-end gap-2 sm:gap-3">
+        <span className="hidden sm:inline text-xs text-white/35">{pourcentage.toFixed(1)} %</span>
         <span className="text-sm font-medium text-white tabular-nums">
           {formatEur(total)}
         </span>
@@ -189,7 +189,7 @@ export default function BilanContent({ data }: { data: TBilanData }) {
       >
         <Card>
           <CardContent>
-            <div className="flex items-start justify-between mb-5">
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
               <div>
                 <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">
                   Revenus vs Dépenses

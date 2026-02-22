@@ -54,7 +54,85 @@ function FilterSelect({
   );
 }
 
-// ── Transaction Row ───────────────────────────────────────────────────────────
+// ── Transaction Card (mobile) ─────────────────────────────────────────────────
+
+function TransactionCard({
+  transaction,
+  index,
+}: {
+  transaction: TTransactionWithCategorie;
+  index: number;
+}) {
+  const isRevenu = transaction.type === "revenu";
+  const couleur = transaction.categories?.couleur ?? "#94a3b8";
+  const initiale = (
+    transaction.categories?.nom ??
+    transaction.description ??
+    "?"
+  )[0].toUpperCase();
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.2, delay: Math.min(index * 0.025, 0.3) }}
+      className="flex items-center gap-3 p-4 border-b border-white/[0.04] last:border-0"
+    >
+      <span
+        className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+        style={{ background: `${couleur}18`, color: couleur }}
+      >
+        {initiale}
+      </span>
+
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-white truncate">
+          {transaction.description ?? (
+            <span className="text-white/25 italic">—</span>
+          )}
+        </p>
+        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+          <span className="text-xs text-white/35">
+            {formatDate(transaction.date)}
+          </span>
+          {transaction.categories && (
+            <span
+              className="text-xs px-1.5 py-0.5 rounded-md font-medium"
+              style={{
+                backgroundColor: `${couleur}20`,
+                color: couleur,
+              }}
+            >
+              {transaction.categories.nom}
+            </span>
+          )}
+          <span
+            className={`text-xs px-1.5 py-0.5 rounded-md font-medium ${
+              isRevenu
+                ? "bg-emerald-500/10 text-emerald-400"
+                : "bg-red-500/10 text-red-400"
+            }`}
+          >
+            {isRevenu ? "Revenu" : "Dépense"}
+          </span>
+        </div>
+      </div>
+
+      <span
+        className={`text-sm font-semibold tabular-nums whitespace-nowrap ${
+          isRevenu ? "text-emerald-400" : "text-red-400"
+        }`}
+      >
+        {isRevenu ? "+" : "−"}
+        {formatEur(transaction.montant)}
+      </span>
+    </motion.div>
+  );
+}
+
+// ── Transaction Row (desktop table) ───────────────────────────────────────────
 
 function TransactionRow({
   transaction,
@@ -185,19 +263,21 @@ export default function TransactionsContent({
   );
 
   return (
-    <main className="min-h-screen bg-background p-6 md:p-8">
+    <main className="min-h-screen bg-background p-4 sm:p-6 md:p-8">
       {/* ── Header ── */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex items-start justify-between mb-8"
+        className="flex items-start justify-between mb-6 sm:mb-8"
       >
         <div>
           <h1 className="text-2xl font-bold text-white">Transactions</h1>
           <p className="text-white/40 text-sm mt-1">
             {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
-            {filterMois !== "all" || filterCategorie !== "all" || filterType !== "all"
+            {filterMois !== "all" ||
+            filterCategorie !== "all" ||
+            filterType !== "all"
               ? " filtrées"
               : ""}
           </p>
@@ -210,7 +290,8 @@ export default function TransactionsContent({
           className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
         >
           <Plus size={16} />
-          Ajouter
+          <span className="hidden sm:inline">Ajouter</span>
+          <span className="sm:hidden">+</span>
         </motion.button>
       </motion.div>
 
@@ -219,7 +300,7 @@ export default function TransactionsContent({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1, duration: 0.3 }}
-        className="flex flex-wrap gap-3 mb-6"
+        className="flex flex-wrap gap-2 sm:gap-3 mb-5"
       >
         <FilterSelect value={filterMois} onChange={setFilterMois}>
           <option value="all" className="bg-[#0f0f1a]">
@@ -234,7 +315,7 @@ export default function TransactionsContent({
 
         <FilterSelect value={filterCategorie} onChange={setFilterCategorie}>
           <option value="all" className="bg-[#0f0f1a]">
-            Toutes les catégories
+            Catégories
           </option>
           {categories.map((cat) => (
             <option key={cat.id} value={cat.id} className="bg-[#0f0f1a]">
@@ -245,7 +326,7 @@ export default function TransactionsContent({
 
         <FilterSelect value={filterType} onChange={setFilterType}>
           <option value="all" className="bg-[#0f0f1a]">
-            Tous les types
+            Tous types
           </option>
           <option value="revenu" className="bg-[#0f0f1a]">
             Revenus
@@ -260,7 +341,7 @@ export default function TransactionsContent({
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="ml-auto flex items-center"
+            className="flex items-center ml-auto"
           >
             <span className="text-white/40 text-sm mr-2">Solde :</span>
             <span
@@ -275,12 +356,38 @@ export default function TransactionsContent({
         )}
       </motion.div>
 
-      {/* ── Table ── */}
+      {/* ── Mobile Cards (hidden on md+) ── */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15, duration: 0.3 }}
-        className="bg-white/[0.04] border border-white/[0.07] rounded-2xl overflow-hidden"
+        className="md:hidden bg-white/[0.04] border border-white/[0.07] rounded-2xl overflow-hidden"
+      >
+        <AnimatePresence mode="popLayout">
+          {filtered.length === 0 ? (
+            <motion.p
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center text-white/30 text-sm py-16"
+            >
+              Aucune transaction trouvée
+            </motion.p>
+          ) : (
+            filtered.map((t, i) => (
+              <TransactionCard key={t.id} transaction={t} index={i} />
+            ))
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      {/* ── Desktop Table (hidden on mobile) ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15, duration: 0.3 }}
+        className="hidden md:block bg-white/[0.04] border border-white/[0.07] rounded-2xl overflow-hidden"
       >
         <div className="overflow-x-auto">
           <table className="w-full">
