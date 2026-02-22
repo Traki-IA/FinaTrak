@@ -6,12 +6,13 @@ import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2 } from "lucide-react";
 import { insertTransaction } from "./actions";
-import type { TCategorie } from "@/types";
+import type { TCategorie, TObjectif } from "@/types";
 
 interface ITransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categories: TCategorie[];
+  objectifs: TObjectif[];
 }
 
 const INITIAL_FORM = {
@@ -20,12 +21,14 @@ const INITIAL_FORM = {
   categorie_id: "",
   description: "",
   date: new Date().toISOString().split("T")[0],
+  objectif_id: "",
 };
 
 export default function TransactionModal({
   open,
   onOpenChange,
   categories,
+  objectifs,
 }: ITransactionModalProps) {
   const router = useRouter();
   const [form, setForm] = useState(INITIAL_FORM);
@@ -63,6 +66,7 @@ export default function TransactionModal({
       categorie_id: form.categorie_id || null,
       description: form.description || null,
       date: form.date,
+      objectif_id: form.objectif_id || null,
     });
     setIsSubmitting(false);
 
@@ -71,7 +75,15 @@ export default function TransactionModal({
       return;
     }
 
-    toast.success("Transaction ajoutée !");
+    if (result.objectifUpdated) {
+      const objectif = objectifs.find((o) => o.id === form.objectif_id);
+      toast.success(
+        `Transaction ajoutée · Progression de « ${objectif?.nom} » mise à jour`
+      );
+    } else {
+      toast.success("Transaction ajoutée !");
+    }
+
     onOpenChange(false);
     setForm(INITIAL_FORM);
     setErrors({});
@@ -191,6 +203,82 @@ export default function TransactionModal({
                 <p className="text-red-400 text-xs">{errors.date}</p>
               )}
             </div>
+
+            {/* Objectif lié */}
+            {objectifs.length > 0 && (
+              <div className="space-y-1.5">
+                <label className="text-sm text-white/60 font-medium">
+                  Lier à un objectif{" "}
+                  <span className="text-white/30 font-normal">(optionnel)</span>
+                </label>
+                <select
+                  value={form.objectif_id}
+                  onChange={(e) => set("objectif_id", e.target.value)}
+                  className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer appearance-none"
+                  style={{ colorScheme: "dark" }}
+                >
+                  <option value="" className="bg-[#0f0f1a]">
+                    Aucun objectif
+                  </option>
+                  {objectifs.map((obj) => {
+                    const pct = Math.min(
+                      Math.round(
+                        (obj.montant_actuel / obj.montant_cible) * 100
+                      ),
+                      100
+                    );
+                    return (
+                      <option
+                        key={obj.id}
+                        value={obj.id}
+                        className="bg-[#0f0f1a]"
+                      >
+                        {obj.nom} ({pct}%)
+                      </option>
+                    );
+                  })}
+                </select>
+
+                {/* Aperçu de la progression si un objectif est sélectionné */}
+                {form.objectif_id && (() => {
+                  const obj = objectifs.find((o) => o.id === form.objectif_id);
+                  const montantSaisi = parseFloat(form.montant) || 0;
+                  if (!obj) return null;
+                  const apres = Math.min(
+                    obj.montant_actuel + montantSaisi,
+                    obj.montant_cible
+                  );
+                  const pctApres = Math.round(
+                    (apres / obj.montant_cible) * 100
+                  );
+                  return (
+                    <div className="bg-white/[0.03] border border-white/[0.07] rounded-xl px-3 py-2.5 text-xs space-y-1.5">
+                      <p className="text-white/50">
+                        Progression après ajout :
+                      </p>
+                      <div className="h-1.5 bg-white/[0.07] rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-orange-500 transition-all duration-300"
+                          style={{ width: `${pctApres}%` }}
+                        />
+                      </div>
+                      <p className="text-white/70 font-medium">
+                        {new Intl.NumberFormat("fr-FR", {
+                          style: "currency",
+                          currency: "EUR",
+                        }).format(apres)}{" "}
+                        /{" "}
+                        {new Intl.NumberFormat("fr-FR", {
+                          style: "currency",
+                          currency: "EUR",
+                        }).format(obj.montant_cible)}{" "}
+                        <span className="text-orange-400">({pctApres}%)</span>
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex gap-3 pt-2">

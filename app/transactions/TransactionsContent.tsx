@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus } from "lucide-react";
 import TransactionModal from "./TransactionModal";
-import type { TTransactionWithCategorie, TCategorie } from "@/types";
+import type { TTransactionWithCategorie, TCategorie, TObjectif } from "@/types";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -138,11 +138,13 @@ function TransactionRow({
 interface ITransactionsContentProps {
   transactions: TTransactionWithCategorie[];
   categories: TCategorie[];
+  objectifs: TObjectif[];
 }
 
 export default function TransactionsContent({
   transactions,
   categories,
+  objectifs,
 }: ITransactionsContentProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [filterMois, setFilterMois] = useState("all");
@@ -331,6 +333,7 @@ export default function TransactionsContent({
         open={modalOpen}
         onOpenChange={setModalOpen}
         categories={categories}
+        objectifs={objectifs}
       />
     </main>
   );
