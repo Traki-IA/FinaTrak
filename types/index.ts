@@ -34,6 +34,24 @@ export type TTransactionWithCategorie = TTransaction & {
   categories: TCategorie | null;
 };
 
+// ── Budget ───────────────────────────────────────────────────────────────────
+
+export type TBudgetItem = {
+  id: string;
+  nom: string;
+  montant: number;
+  frequence: "mensuel" | "annuel";
+  categorie_id: string | null;
+  objectif_id: string | null;
+  actif: boolean;
+  created_at: string;
+};
+
+export type TBudgetItemWithRelations = TBudgetItem & {
+  categories: TCategorie | null;
+  objectifs: TObjectif | null;
+};
+
 // ── Types dashboard ──────────────────────────────────────────────────────────
 
 export type TDashboardStats = {
