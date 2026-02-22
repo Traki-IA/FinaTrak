@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Toaster } from "sonner";
+import Navbar from "@/components/Navbar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,9 +18,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}
+        className={`${GeistSans.variable} ${GeistMono.variable} antialiased bg-background`}
       >
-        {children}
+        <Navbar />
+        {/* Décalage du contenu à droite du sidebar sur desktop, padding bas sur mobile */}
+        <div className="md:ml-56 pb-20 md:pb-0">
+          {children}
+        </div>
         <Toaster
           position="bottom-right"
           toastOptions={{
