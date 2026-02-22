@@ -40,6 +40,47 @@ Ce fichier définit les conventions et règles de développement pour le projet 
   - Exemple : `feat: add transaction list component`
 - Une fonctionnalité = une branche = une PR
 
+## Standards de développement
+
+### Clean Code
+- Fonctions courtes avec une seule responsabilité
+- Nommage explicite et descriptif (pas d'abréviations)
+- Pas de code dupliqué (principe DRY)
+- Commentaires uniquement pour expliquer le "pourquoi", pas le "quoi"
+- Séparation claire entre logique métier et présentation
+
+### Sécurité
+- Toutes les requêtes Supabase se font côté serveur (Server Components ou API Routes)
+- Jamais de clés sensibles exposées côté client
+- Validation des données entrantes avec Zod
+- Row Level Security (RLS) activé sur toutes les tables Supabase
+- Pas de SQL dynamique construit depuis des inputs utilisateur
+
+### Standards senior
+- TypeScript strict, zéro usage de `any`
+- Gestion explicite des erreurs sur chaque appel async
+- Composants réutilisables et découplés
+- Chaque fonction doit être testable indépendamment
+
+### Bibliothèques UI
+- **shadcn/ui** — tous les composants de base (boutons, cartes, modales, formulaires)
+- **Framer Motion** — animations et transitions
+- **Recharts** — tous les graphiques
+- **Lucide React** — icônes
+
+### Principes UX
+- Animations fluides sur les interactions (hover, click, chargement)
+- Skeleton loaders pendant les chargements (jamais de page blanche)
+- Transitions de page avec Framer Motion
+- Feedback visuel immédiat sur chaque action utilisateur
+- Design responsive mobile-first
+- Mode sombre par défaut
+
+### Performance
+- Utiliser les Server Components Next.js au maximum
+- Lazy loading sur les composants lourds
+- Optimisation des images avec `next/image`
+
 ## Variables d'environnement
 
 Voir `.env.example` pour la liste complète.
