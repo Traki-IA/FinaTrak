@@ -95,7 +95,7 @@ export async function fetchDepensesParCategorie(): Promise<
   const grouped = new Map<string, TDepenseCategorie>();
 
   for (const row of data ?? []) {
-    const cat = row.categories as Pick<TCategorie, "nom" | "couleur"> | null;
+    const cat = row.categories as unknown as Pick<TCategorie, "nom" | "couleur"> | null;
     const nom = cat?.nom ?? "Autres";
     const couleur = cat?.couleur ?? "#94a3b8";
 

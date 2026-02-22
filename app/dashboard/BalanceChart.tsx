@@ -61,8 +61,8 @@ export default function BalanceChart({ data }: IBalanceChartProps) {
         <YAxis hide />
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
-          formatter={(value: number, name: string) => [
-            formatEur(value),
+          formatter={(value: number | undefined, name: string | undefined) => [
+            formatEur(value ?? 0),
             name === "solde" ? "Solde" : "Dépenses",
           ]}
         />

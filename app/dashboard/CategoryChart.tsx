@@ -52,7 +52,7 @@ export default function CategoryChart({ data }: ICategoryChartProps) {
           </Pie>
           <Tooltip
             contentStyle={TOOLTIP_STYLE}
-            formatter={(value: number) => [formatEur(value)]}
+            formatter={(value: number | undefined) => [formatEur(value ?? 0)]}
           />
         </PieChart>
       </ResponsiveContainer>

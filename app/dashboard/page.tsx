@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+
+export const dynamic = "force-dynamic";
 import DashboardContent from "./DashboardContent";
 import DashboardSkeleton from "./DashboardSkeleton";
 import {
