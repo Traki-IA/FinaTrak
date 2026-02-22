@@ -1,35 +1,42 @@
 "use client";
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import type { TDepenseCategorie } from "@/types";
 
-type TCategorie = {
-  nom: string;
-  valeur: number;
-  couleur: string;
-};
+interface ICategoryChartProps {
+  data: TDepenseCategorie[];
+}
 
 const TOOLTIP_STYLE = {
   background: "#13131a",
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid rgba(255,255,255,0.07)",
   borderRadius: "12px",
   color: "#fff",
   fontSize: "12px",
 };
 
-const formatEur = (n: number) =>
-  n.toLocaleString("fr-FR", { minimumFractionDigits: 2 }) + " €";
+// Données de démonstration affichées tant que Supabase n'a pas de données
+const DEMO_DATA: TDepenseCategorie[] = [
+  { nom: "Alimentation", valeur: 420, couleur: "#f97316" },
+  { nom: "Logement",     valeur: 900, couleur: "#6366f1" },
+  { nom: "Transport",    valeur: 180, couleur: "#3b82f6" },
+  { nom: "Loisirs",      valeur: 220, couleur: "#ec4899" },
+  { nom: "Autres",       valeur: 130, couleur: "#94a3b8" },
+];
 
-type ICategoryChartProps = {
-  data: TCategorie[];
-};
+function formatEur(n: number): string {
+  return n.toLocaleString("fr-FR", { minimumFractionDigits: 2 }) + " €";
+}
 
 export default function CategoryChart({ data }: ICategoryChartProps) {
+  const chartData = data.length > 0 ? data : DEMO_DATA;
+
   return (
     <>
       <ResponsiveContainer width="100%" height={150}>
         <PieChart>
           <Pie
-            data={data}
+            data={chartData}
             dataKey="valeur"
             nameKey="nom"
             cx="50%"
@@ -39,19 +46,19 @@ export default function CategoryChart({ data }: ICategoryChartProps) {
             strokeWidth={0}
             paddingAngle={2}
           >
-            {data.map((entry, i) => (
+            {chartData.map((entry, i) => (
               <Cell key={i} fill={entry.couleur} />
             ))}
           </Pie>
           <Tooltip
             contentStyle={TOOLTIP_STYLE}
-            formatter={(v: number) => [formatEur(v)]}
+            formatter={(value: number) => [formatEur(value)]}
           />
         </PieChart>
       </ResponsiveContainer>
 
       <ul className="mt-3 space-y-2">
-        {data.map((cat) => (
+        {chartData.map((cat) => (
           <li key={cat.nom} className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
               <span

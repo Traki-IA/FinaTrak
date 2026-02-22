@@ -8,32 +8,40 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import type { TBalancePoint } from "@/types";
 
-type TDataPoint = {
-  mois: string;
-  solde: number;
-  depenses: number;
-};
+interface IBalanceChartProps {
+  data: TBalancePoint[];
+}
 
 const TOOLTIP_STYLE = {
   background: "#13131a",
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid rgba(255,255,255,0.07)",
   borderRadius: "12px",
   color: "#fff",
   fontSize: "12px",
 };
 
-const formatEur = (n: number) =>
-  n.toLocaleString("fr-FR", { minimumFractionDigits: 0 }) + " €";
+// Données de démonstration affichées tant que Supabase n'a pas de données
+const DEMO_DATA: TBalancePoint[] = [
+  { mois: "Sep", solde: 3200, depenses: 1800 },
+  { mois: "Oct", solde: 3800, depenses: 1650 },
+  { mois: "Nov", solde: 3100, depenses: 2100 },
+  { mois: "Déc", solde: 4200, depenses: 1400 },
+  { mois: "Jan", solde: 3900, depenses: 1950 },
+  { mois: "Fév", solde: 4650, depenses: 1850 },
+];
 
-type IBalanceChartProps = {
-  data: TDataPoint[];
-};
+function formatEur(n: number): string {
+  return n.toLocaleString("fr-FR", { minimumFractionDigits: 0 }) + " €";
+}
 
 export default function BalanceChart({ data }: IBalanceChartProps) {
+  const chartData = data.length > 0 ? data : DEMO_DATA;
+
   return (
     <ResponsiveContainer width="100%" height={200}>
-      <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+      <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="gradSolde" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="#f97316" stopOpacity={0.25} />
@@ -53,8 +61,8 @@ export default function BalanceChart({ data }: IBalanceChartProps) {
         <YAxis hide />
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
-          formatter={(v: number, name: string) => [
-            formatEur(v),
+          formatter={(value: number, name: string) => [
+            formatEur(value),
             name === "solde" ? "Solde" : "Dépenses",
           ]}
         />
@@ -65,7 +73,7 @@ export default function BalanceChart({ data }: IBalanceChartProps) {
           strokeWidth={2}
           fill="url(#gradSolde)"
           dot={false}
-          activeDot={{ r: 4, fill: "#f97316" }}
+          activeDot={{ r: 4, fill: "#f97316", strokeWidth: 0 }}
         />
         <Area
           type="monotone"
@@ -74,7 +82,7 @@ export default function BalanceChart({ data }: IBalanceChartProps) {
           strokeWidth={2}
           fill="url(#gradDepenses)"
           dot={false}
-          activeDot={{ r: 4, fill: "#6366f1" }}
+          activeDot={{ r: 4, fill: "#6366f1", strokeWidth: 0 }}
         />
       </AreaChart>
     </ResponsiveContainer>
