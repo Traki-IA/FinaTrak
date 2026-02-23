@@ -48,6 +48,25 @@ export async function fetchSoldeInitial(): Promise<number> {
   return data ? Number(data.valeur) : 0;
 }
 
+/**
+ * Vérifie si le solde initial a déjà été défini (la clé existe en base).
+ * Permet de distinguer "non défini" de "défini à 0".
+ */
+export async function fetchSoldeInitialIsSet(): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("settings")
+    .select("cle")
+    .eq("cle", "solde_initial")
+    .maybeSingle();
+
+  if (error) {
+    console.error("[dashboard] fetchSoldeInitialIsSet:", error.message);
+    return false;
+  }
+
+  return data !== null;
+}
+
 export async function upsertSoldeInitial(montant: number): Promise<void> {
   const { error } = await supabase
     .from("settings")

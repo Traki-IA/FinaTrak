@@ -1,12 +1,15 @@
 import { Suspense } from "react";
 import ParametresContent from "./ParametresContent";
-import { fetchSoldeInitial } from "@/lib/dashboard";
+import { fetchSoldeInitial, fetchSoldeInitialIsSet } from "@/lib/dashboard";
 
 export const dynamic = "force-dynamic";
 
 async function ParametresData() {
-  const soldeInitial = await fetchSoldeInitial();
-  return <ParametresContent soldeInitial={soldeInitial} />;
+  const [soldeInitial, isLocked] = await Promise.all([
+    fetchSoldeInitial(),
+    fetchSoldeInitialIsSet(),
+  ]);
+  return <ParametresContent soldeInitial={soldeInitial} isLocked={isLocked} />;
 }
 
 export default function ParametresPage() {
