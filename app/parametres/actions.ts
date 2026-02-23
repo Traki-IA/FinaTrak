@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { upsertSoldeInitial, fetchSoldeInitialIsSet } from "@/lib/dashboard";
+import { upsertSoldeInitial } from "@/lib/dashboard";
 
 const SoldeInitialSchema = z.object({
   montant: z.number().finite(),
@@ -15,15 +15,6 @@ export async function updateSoldeInitial(
 
   if (!parsed.success) {
     return { success: false, error: "Montant invalide" };
-  }
-
-  // Le solde initial ne peut être défini qu'une seule fois
-  const alreadySet = await fetchSoldeInitialIsSet();
-  if (alreadySet) {
-    return {
-      success: false,
-      error: "Le solde initial a déjà été défini et ne peut pas être modifié.",
-    };
   }
 
   try {
