@@ -1,18 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2 } from "lucide-react";
-import { insertTransaction } from "./actions";
-import type { TCategorie, TObjectif } from "@/types";
+import { insertTransaction, updateTransaction } from "./actions";
+import type { TCategorie, TObjectif, TTransactionWithCategorie } from "@/types";
 
 interface ITransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categories: TCategorie[];
   objectifs: TObjectif[];
+  /** Si fourni, le modal s'ouvre en mode édition */
+  transaction?: TTransactionWithCategorie | null;
 }
 
 const INITIAL_FORM = {
@@ -29,11 +31,33 @@ export default function TransactionModal({
   onOpenChange,
   categories,
   objectifs,
+  transaction,
 }: ITransactionModalProps) {
   const router = useRouter();
+  const isEditing = Boolean(transaction);
+
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Pré-remplir le formulaire à l'ouverture selon le mode
+  useEffect(() => {
+    if (open) {
+      if (transaction) {
+        setForm({
+          montant: String(transaction.montant),
+          type: transaction.type,
+          categorie_id: transaction.categorie_id ?? "",
+          description: transaction.description ?? "",
+          date: transaction.date,
+          objectif_id: "",
+        });
+      } else {
+        setForm(INITIAL_FORM);
+      }
+      setErrors({});
+    }
+  }, [open, transaction]);
 
   function set<K extends keyof typeof INITIAL_FORM>(
     key: K,
@@ -60,33 +84,53 @@ export default function TransactionModal({
     if (!validate()) return;
 
     setIsSubmitting(true);
-    const result = await insertTransaction({
-      montant: parseFloat(form.montant),
-      type: form.type,
-      categorie_id: form.categorie_id || null,
-      description: form.description || null,
-      date: form.date,
-      objectif_id: form.objectif_id || null,
-    });
-    setIsSubmitting(false);
 
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
-    }
+    if (isEditing && transaction) {
+      const result = await updateTransaction({
+        id: transaction.id,
+        montant: parseFloat(form.montant),
+        type: form.type,
+        categorie_id: form.categorie_id || null,
+        description: form.description || null,
+        date: form.date,
+      });
 
-    if (result.objectifUpdated) {
-      const objectif = objectifs.find((o) => o.id === form.objectif_id);
-      toast.success(
-        `Transaction ajoutée · Progression de « ${objectif?.nom} » mise à jour`
-      );
+      setIsSubmitting(false);
+
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success("Transaction modifiée !");
     } else {
-      toast.success("Transaction ajoutée !");
+      const result = await insertTransaction({
+        montant: parseFloat(form.montant),
+        type: form.type,
+        categorie_id: form.categorie_id || null,
+        description: form.description || null,
+        date: form.date,
+        objectif_id: form.objectif_id || null,
+      });
+
+      setIsSubmitting(false);
+
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
+      }
+
+      if (result.objectifUpdated) {
+        const objectif = objectifs.find((o) => o.id === form.objectif_id);
+        toast.success(
+          `Transaction ajoutée · Progression de « ${objectif?.nom} » mise à jour`
+        );
+      } else {
+        toast.success("Transaction ajoutée !");
+      }
     }
 
     onOpenChange(false);
-    setForm(INITIAL_FORM);
-    setErrors({});
     router.refresh();
   }
 
@@ -101,7 +145,7 @@ export default function TransactionModal({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <Dialog.Title className="text-lg font-semibold text-white">
-              Nouvelle transaction
+              {isEditing ? "Modifier la transaction" : "Nouvelle transaction"}
             </Dialog.Title>
             <Dialog.Close className="text-white/40 hover:text-white transition-colors rounded-lg p-1 hover:bg-white/[0.06]">
               <X size={18} />
@@ -204,8 +248,8 @@ export default function TransactionModal({
               )}
             </div>
 
-            {/* Objectif lié */}
-            {objectifs.length > 0 && (
+            {/* Objectif lié — création uniquement */}
+            {!isEditing && objectifs.length > 0 && (
               <div className="space-y-1.5">
                 <label className="text-sm text-white/60 font-medium">
                   Lier à un objectif{" "}
@@ -240,43 +284,44 @@ export default function TransactionModal({
                 </select>
 
                 {/* Aperçu de la progression si un objectif est sélectionné */}
-                {form.objectif_id && (() => {
-                  const obj = objectifs.find((o) => o.id === form.objectif_id);
-                  const montantSaisi = parseFloat(form.montant) || 0;
-                  if (!obj) return null;
-                  const apres = Math.min(
-                    obj.montant_actuel + montantSaisi,
-                    obj.montant_cible
-                  );
-                  const pctApres = Math.round(
-                    (apres / obj.montant_cible) * 100
-                  );
-                  return (
-                    <div className="bg-white/[0.03] border border-white/[0.07] rounded-xl px-3 py-2.5 text-xs space-y-1.5">
-                      <p className="text-white/50">
-                        Progression après ajout :
-                      </p>
-                      <div className="h-1.5 bg-white/[0.07] rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-orange-500 transition-all duration-300"
-                          style={{ width: `${pctApres}%` }}
-                        />
+                {form.objectif_id &&
+                  (() => {
+                    const obj = objectifs.find((o) => o.id === form.objectif_id);
+                    const montantSaisi = parseFloat(form.montant) || 0;
+                    if (!obj) return null;
+                    const apres = Math.min(
+                      obj.montant_actuel + montantSaisi,
+                      obj.montant_cible
+                    );
+                    const pctApres = Math.round(
+                      (apres / obj.montant_cible) * 100
+                    );
+                    return (
+                      <div className="bg-white/[0.03] border border-white/[0.07] rounded-xl px-3 py-2.5 text-xs space-y-1.5">
+                        <p className="text-white/50">
+                          Progression après ajout :
+                        </p>
+                        <div className="h-1.5 bg-white/[0.07] rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-orange-500 transition-all duration-300"
+                            style={{ width: `${pctApres}%` }}
+                          />
+                        </div>
+                        <p className="text-white/70 font-medium">
+                          {new Intl.NumberFormat("fr-FR", {
+                            style: "currency",
+                            currency: "EUR",
+                          }).format(apres)}{" "}
+                          /{" "}
+                          {new Intl.NumberFormat("fr-FR", {
+                            style: "currency",
+                            currency: "EUR",
+                          }).format(obj.montant_cible)}{" "}
+                          <span className="text-orange-400">({pctApres}%)</span>
+                        </p>
                       </div>
-                      <p className="text-white/70 font-medium">
-                        {new Intl.NumberFormat("fr-FR", {
-                          style: "currency",
-                          currency: "EUR",
-                        }).format(apres)}{" "}
-                        /{" "}
-                        {new Intl.NumberFormat("fr-FR", {
-                          style: "currency",
-                          currency: "EUR",
-                        }).format(obj.montant_cible)}{" "}
-                        <span className="text-orange-400">({pctApres}%)</span>
-                      </p>
-                    </div>
-                  );
-                })()}
+                    );
+                  })()}
               </div>
             )}
 
@@ -296,7 +341,13 @@ export default function TransactionModal({
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white transition-all"
               >
                 {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-                {isSubmitting ? "Ajout en cours…" : "Ajouter"}
+                {isSubmitting
+                  ? isEditing
+                    ? "Modification…"
+                    : "Ajout en cours…"
+                  : isEditing
+                  ? "Modifier"
+                  : "Ajouter"}
               </button>
             </div>
           </form>
