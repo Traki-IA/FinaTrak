@@ -1,20 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2 } from "lucide-react";
-import { insertTransaction, updateTransaction } from "./actions";
-import type { TCategorie, TObjectif, TTransactionWithCategorie } from "@/types";
+import { insertTransaction } from "./actions";
+import type { TCategorie, TObjectif } from "@/types";
 
 interface ITransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categories: TCategorie[];
   objectifs: TObjectif[];
-  /** Si fourni, le modal s'ouvre en mode édition */
-  transaction?: TTransactionWithCategorie | null;
 }
 
 const INITIAL_FORM = {
@@ -31,33 +29,12 @@ export default function TransactionModal({
   onOpenChange,
   categories,
   objectifs,
-  transaction,
 }: ITransactionModalProps) {
   const router = useRouter();
-  const isEditing = Boolean(transaction);
 
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Pré-remplir le formulaire à l'ouverture selon le mode
-  useEffect(() => {
-    if (open) {
-      if (transaction) {
-        setForm({
-          montant: String(transaction.montant),
-          type: transaction.type,
-          categorie_id: transaction.categorie_id ?? "",
-          description: transaction.description ?? "",
-          date: transaction.date,
-          objectif_id: "",
-        });
-      } else {
-        setForm(INITIAL_FORM);
-      }
-      setErrors({});
-    }
-  }, [open, transaction]);
 
   function set<K extends keyof typeof INITIAL_FORM>(
     key: K,
@@ -65,6 +42,14 @@ export default function TransactionModal({
   ) {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: "" }));
+  }
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) {
+      setForm(INITIAL_FORM);
+      setErrors({});
+    }
+    onOpenChange(nextOpen);
   }
 
   function validate(): boolean {
@@ -85,49 +70,29 @@ export default function TransactionModal({
 
     setIsSubmitting(true);
 
-    if (isEditing && transaction) {
-      const result = await updateTransaction({
-        id: transaction.id,
-        montant: parseFloat(form.montant),
-        type: form.type,
-        categorie_id: form.categorie_id || null,
-        description: form.description || null,
-        date: form.date,
-      });
+    const result = await insertTransaction({
+      montant: parseFloat(form.montant),
+      type: form.type,
+      categorie_id: form.categorie_id || null,
+      description: form.description || null,
+      date: form.date,
+      objectif_id: form.objectif_id || null,
+    });
 
-      setIsSubmitting(false);
+    setIsSubmitting(false);
 
-      if ("error" in result) {
-        toast.error(result.error);
-        return;
-      }
+    if ("error" in result) {
+      toast.error(result.error);
+      return;
+    }
 
-      toast.success("Transaction modifiée !");
+    if (result.objectifUpdated) {
+      const objectif = objectifs.find((o) => o.id === form.objectif_id);
+      toast.success(
+        `Transaction ajoutée · Progression de « ${objectif?.nom} » mise à jour`
+      );
     } else {
-      const result = await insertTransaction({
-        montant: parseFloat(form.montant),
-        type: form.type,
-        categorie_id: form.categorie_id || null,
-        description: form.description || null,
-        date: form.date,
-        objectif_id: form.objectif_id || null,
-      });
-
-      setIsSubmitting(false);
-
-      if ("error" in result) {
-        toast.error(result.error);
-        return;
-      }
-
-      if (result.objectifUpdated) {
-        const objectif = objectifs.find((o) => o.id === form.objectif_id);
-        toast.success(
-          `Transaction ajoutée · Progression de « ${objectif?.nom} » mise à jour`
-        );
-      } else {
-        toast.success("Transaction ajoutée !");
-      }
+      toast.success("Transaction ajoutée !");
     }
 
     onOpenChange(false);
@@ -135,7 +100,7 @@ export default function TransactionModal({
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Portal>
         {/* Overlay */}
         <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
@@ -145,7 +110,7 @@ export default function TransactionModal({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <Dialog.Title className="text-lg font-semibold text-white">
-              {isEditing ? "Modifier la transaction" : "Nouvelle transaction"}
+              Nouvelle transaction
             </Dialog.Title>
             <Dialog.Close className="text-white/40 hover:text-white transition-colors rounded-lg p-1 hover:bg-white/[0.06]">
               <X size={18} />
@@ -248,8 +213,8 @@ export default function TransactionModal({
               )}
             </div>
 
-            {/* Objectif lié — création uniquement */}
-            {!isEditing && objectifs.length > 0 && (
+            {/* Objectif lié */}
+            {objectifs.length > 0 && (
               <div className="space-y-1.5">
                 <label className="text-sm text-white/60 font-medium">
                   Lier à un objectif{" "}
@@ -341,13 +306,7 @@ export default function TransactionModal({
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white transition-all"
               >
                 {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-                {isSubmitting
-                  ? isEditing
-                    ? "Modification…"
-                    : "Ajout en cours…"
-                  : isEditing
-                  ? "Modifier"
-                  : "Ajouter"}
+                {isSubmitting ? "Ajout en cours…" : "Ajouter"}
               </button>
             </div>
           </form>

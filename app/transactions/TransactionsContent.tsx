@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Pencil } from "lucide-react";
+import { Plus } from "lucide-react";
 import TransactionModal from "./TransactionModal";
 import type { TTransactionWithCategorie, TCategorie, TObjectif } from "@/types";
 
@@ -59,11 +59,9 @@ function FilterSelect({
 function TransactionCard({
   transaction,
   index,
-  onEdit,
 }: {
   transaction: TTransactionWithCategorie;
   index: number;
-  onEdit: (t: TTransactionWithCategorie) => void;
 }) {
   const isRevenu = transaction.type === "revenu";
   const couleur = transaction.categories?.couleur ?? "#94a3b8";
@@ -122,22 +120,14 @@ function TransactionCard({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 flex-shrink-0">
-        <span
-          className={`text-sm font-semibold tabular-nums whitespace-nowrap ${
-            isRevenu ? "text-emerald-400" : "text-red-400"
-          }`}
-        >
-          {isRevenu ? "+" : "−"}
-          {formatEur(transaction.montant)}
-        </span>
-        <button
-          onClick={() => onEdit(transaction)}
-          className="text-white/25 hover:text-orange-400 transition-colors p-1.5 rounded-lg hover:bg-orange-500/10"
-        >
-          <Pencil size={13} />
-        </button>
-      </div>
+      <span
+        className={`text-sm font-semibold tabular-nums whitespace-nowrap ${
+          isRevenu ? "text-emerald-400" : "text-red-400"
+        }`}
+      >
+        {isRevenu ? "+" : "−"}
+        {formatEur(transaction.montant)}
+      </span>
     </motion.div>
   );
 }
@@ -147,11 +137,9 @@ function TransactionCard({
 function TransactionRow({
   transaction,
   index,
-  onEdit,
 }: {
   transaction: TTransactionWithCategorie;
   index: number;
-  onEdit: (t: TTransactionWithCategorie) => void;
 }) {
   const isRevenu = transaction.type === "revenu";
 
@@ -219,16 +207,6 @@ function TransactionRow({
         {isRevenu ? "+" : "−"}
         {formatEur(transaction.montant)}
       </td>
-
-      {/* Actions */}
-      <td className="px-4 py-4 text-center">
-        <button
-          onClick={() => onEdit(transaction)}
-          className="text-white/25 hover:text-orange-400 transition-colors p-1.5 rounded-lg hover:bg-orange-500/10"
-        >
-          <Pencil size={13} />
-        </button>
-      </td>
     </motion.tr>
   );
 }
@@ -247,21 +225,9 @@ export default function TransactionsContent({
   objectifs,
 }: ITransactionsContentProps) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] =
-    useState<TTransactionWithCategorie | null>(null);
   const [filterMois, setFilterMois] = useState("all");
   const [filterCategorie, setFilterCategorie] = useState("all");
   const [filterType, setFilterType] = useState("all");
-
-  function handleEdit(transaction: TTransactionWithCategorie) {
-    setEditingTransaction(transaction);
-    setModalOpen(true);
-  }
-
-  function handleModalOpenChange(open: boolean) {
-    setModalOpen(open);
-    if (!open) setEditingTransaction(null);
-  }
 
   // Unique month options extracted from transactions, preserving sort order
   const moisOptions = useMemo(() => {
@@ -320,10 +286,7 @@ export default function TransactionsContent({
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => {
-            setEditingTransaction(null);
-            setModalOpen(true);
-          }}
+          onClick={() => setModalOpen(true)}
           className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
         >
           <Plus size={16} />
@@ -413,12 +376,7 @@ export default function TransactionsContent({
             </motion.p>
           ) : (
             filtered.map((t, i) => (
-              <TransactionCard
-                key={t.id}
-                transaction={t}
-                index={i}
-                onEdit={handleEdit}
-              />
+              <TransactionCard key={t.id} transaction={t} index={i} />
             ))
           )}
         </AnimatePresence>
@@ -447,8 +405,6 @@ export default function TransactionsContent({
                     </th>
                   )
                 )}
-                {/* Colonne actions */}
-                <th className="px-4 py-4 w-12" />
               </tr>
             </thead>
 
@@ -462,7 +418,7 @@ export default function TransactionsContent({
                     exit={{ opacity: 0 }}
                   >
                     <td
-                      colSpan={6}
+                      colSpan={5}
                       className="text-center text-white/30 text-sm py-20"
                     >
                       Aucune transaction trouvée
@@ -470,12 +426,7 @@ export default function TransactionsContent({
                   </motion.tr>
                 ) : (
                   filtered.map((t, i) => (
-                    <TransactionRow
-                      key={t.id}
-                      transaction={t}
-                      index={i}
-                      onEdit={handleEdit}
-                    />
+                    <TransactionRow key={t.id} transaction={t} index={i} />
                   ))
                 )}
               </AnimatePresence>
@@ -487,10 +438,9 @@ export default function TransactionsContent({
       {/* ── Modal ── */}
       <TransactionModal
         open={modalOpen}
-        onOpenChange={handleModalOpenChange}
+        onOpenChange={setModalOpen}
         categories={categories}
         objectifs={objectifs}
-        transaction={editingTransaction}
       />
     </main>
   );
