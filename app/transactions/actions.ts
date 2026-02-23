@@ -14,7 +14,17 @@ const TransactionSchema = z.object({
   objectif_id: z.string().uuid().nullable().optional(),
 });
 
+const UpdateTransactionSchema = z.object({
+  id: z.string().uuid("Identifiant invalide"),
+  montant: z.number().positive("Le montant doit être positif"),
+  type: z.enum(["revenu", "depense"]),
+  categorie_id: z.string().nullable(),
+  description: z.string().nullable(),
+  date: z.string().min(1, "La date est requise"),
+});
+
 export type TInsertTransactionInput = z.infer<typeof TransactionSchema>;
+export type TUpdateTransactionInput = z.infer<typeof UpdateTransactionSchema>;
 
 type TActionResult =
   | { success: true; objectifUpdated: boolean }
@@ -64,4 +74,47 @@ export async function insertTransaction(
   revalidatePath("/transactions");
   revalidatePath("/dashboard");
   return { success: true, objectifUpdated };
+}
+
+export async function updateTransaction(
+  input: TUpdateTransactionInput
+): Promise<TActionResult> {
+  const parsed = UpdateTransactionSchema.safeParse(input);
+
+  if (!parsed.success) {
+    const firstIssue = parsed.error.issues[0];
+    return { error: firstIssue?.message ?? "Données invalides" };
+  }
+
+  const { id, ...updateData } = parsed.data;
+
+  const { error } = await supabase
+    .from("transactions")
+    .update(updateData)
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/transactions");
+  revalidatePath("/dashboard");
+  return { success: true, objectifUpdated: false };
+}
+
+export async function deleteTransaction(
+  id: string
+): Promise<{ success: true } | { error: string }> {
+  if (!z.string().uuid().safeParse(id).success) {
+    return { error: "Identifiant invalide" };
+  }
+
+  const { error } = await supabase
+    .from("transactions")
+    .delete()
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/transactions");
+  revalidatePath("/dashboard");
+  return { success: true };
 }

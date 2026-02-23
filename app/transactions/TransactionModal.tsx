@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2 } from "lucide-react";
-import { insertTransaction } from "./actions";
-import type { TCategorie, TObjectif } from "@/types";
+import { insertTransaction, updateTransaction } from "./actions";
+import type { TCategorie, TObjectif, TTransactionWithCategorie } from "@/types";
 
 interface ITransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categories: TCategorie[];
   objectifs: TObjectif[];
+  transaction?: TTransactionWithCategorie;
 }
 
 const INITIAL_FORM = {
@@ -29,12 +30,28 @@ export default function TransactionModal({
   onOpenChange,
   categories,
   objectifs,
+  transaction,
 }: ITransactionModalProps) {
   const router = useRouter();
+  const isEditMode = Boolean(transaction);
 
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Pre-fill form when opening in edit mode
+  useEffect(() => {
+    if (open && transaction) {
+      setForm({
+        montant: transaction.montant.toString(),
+        type: transaction.type,
+        categorie_id: transaction.categorie_id ?? "",
+        description: transaction.description ?? "",
+        date: transaction.date,
+        objectif_id: "",
+      });
+    }
+  }, [open, transaction]);
 
   function set<K extends keyof typeof INITIAL_FORM>(
     key: K,
@@ -70,29 +87,49 @@ export default function TransactionModal({
 
     setIsSubmitting(true);
 
-    const result = await insertTransaction({
-      montant: parseFloat(form.montant),
-      type: form.type,
-      categorie_id: form.categorie_id || null,
-      description: form.description || null,
-      date: form.date,
-      objectif_id: form.objectif_id || null,
-    });
+    if (isEditMode && transaction) {
+      const result = await updateTransaction({
+        id: transaction.id,
+        montant: parseFloat(form.montant),
+        type: form.type,
+        categorie_id: form.categorie_id || null,
+        description: form.description || null,
+        date: form.date,
+      });
 
-    setIsSubmitting(false);
+      setIsSubmitting(false);
 
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
-    }
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
+      }
 
-    if (result.objectifUpdated) {
-      const objectif = objectifs.find((o) => o.id === form.objectif_id);
-      toast.success(
-        `Transaction ajoutée · Progression de « ${objectif?.nom} » mise à jour`
-      );
+      toast.success("Transaction modifiée !");
     } else {
-      toast.success("Transaction ajoutée !");
+      const result = await insertTransaction({
+        montant: parseFloat(form.montant),
+        type: form.type,
+        categorie_id: form.categorie_id || null,
+        description: form.description || null,
+        date: form.date,
+        objectif_id: form.objectif_id || null,
+      });
+
+      setIsSubmitting(false);
+
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
+      }
+
+      if (result.objectifUpdated) {
+        const objectif = objectifs.find((o) => o.id === form.objectif_id);
+        toast.success(
+          `Transaction ajoutée · Progression de « ${objectif?.nom} » mise à jour`
+        );
+      } else {
+        toast.success("Transaction ajoutée !");
+      }
     }
 
     onOpenChange(false);
@@ -110,7 +147,7 @@ export default function TransactionModal({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <Dialog.Title className="text-lg font-semibold text-white">
-              Nouvelle transaction
+              {isEditMode ? "Modifier la transaction" : "Nouvelle transaction"}
             </Dialog.Title>
             <Dialog.Close className="text-white/40 hover:text-white transition-colors rounded-lg p-1 hover:bg-white/[0.06]">
               <X size={18} />
@@ -213,8 +250,8 @@ export default function TransactionModal({
               )}
             </div>
 
-            {/* Objectif lié */}
-            {objectifs.length > 0 && (
+            {/* Objectif lié — création uniquement */}
+            {!isEditMode && objectifs.length > 0 && (
               <div className="space-y-1.5">
                 <label className="text-sm text-white/60 font-medium">
                   Lier à un objectif{" "}
@@ -306,7 +343,13 @@ export default function TransactionModal({
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white transition-all"
               >
                 {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-                {isSubmitting ? "Ajout en cours…" : "Ajouter"}
+                {isSubmitting
+                  ? isEditMode
+                    ? "Modification…"
+                    : "Ajout en cours…"
+                  : isEditMode
+                  ? "Modifier"
+                  : "Ajouter"}
               </button>
             </div>
           </form>
