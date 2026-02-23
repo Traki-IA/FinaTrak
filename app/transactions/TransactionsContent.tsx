@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Plus, Lock } from "lucide-react";
 import TransactionModal from "./TransactionModal";
 import type { TTransactionWithCategorie, TCategorie, TObjectif } from "@/types";
 
@@ -120,14 +120,17 @@ function TransactionCard({
         </div>
       </div>
 
-      <span
-        className={`text-sm font-semibold tabular-nums whitespace-nowrap ${
-          isRevenu ? "text-emerald-400" : "text-red-400"
-        }`}
-      >
-        {isRevenu ? "+" : "−"}
-        {formatEur(transaction.montant)}
-      </span>
+      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+        <span
+          className={`text-sm font-semibold tabular-nums whitespace-nowrap ${
+            isRevenu ? "text-emerald-400" : "text-red-400"
+          }`}
+        >
+          {isRevenu ? "+" : "−"}
+          {formatEur(transaction.montant)}
+        </span>
+        <Lock size={10} className="text-white/20" />
+      </div>
     </motion.div>
   );
 }
@@ -206,6 +209,11 @@ function TransactionRow({
       >
         {isRevenu ? "+" : "−"}
         {formatEur(transaction.montant)}
+      </td>
+
+      {/* Verrouillé */}
+      <td className="px-4 py-4 text-center">
+        <Lock size={12} className="text-white/20 mx-auto" />
       </td>
     </motion.tr>
   );
@@ -405,6 +413,8 @@ export default function TransactionsContent({
                     </th>
                   )
                 )}
+                {/* Empty header for the lock column */}
+                <th className="px-4 py-4 w-8" />
               </tr>
             </thead>
 
@@ -418,7 +428,7 @@ export default function TransactionsContent({
                     exit={{ opacity: 0 }}
                   >
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       className="text-center text-white/30 text-sm py-20"
                     >
                       Aucune transaction trouvée
