@@ -8,6 +8,7 @@ import {
   Receipt,
   BarChart3,
   Target,
+  Settings,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
   { href: "/budget", label: "Budget", icon: Receipt },
   { href: "/bilan", label: "Bilan", icon: BarChart3 },
   { href: "/objectifs", label: "Objectifs", icon: Target },
+  { href: "/parametres", label: "Paramètres", icon: Settings },
 ];
 
 export default function Navbar() {

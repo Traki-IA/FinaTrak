@@ -51,7 +51,7 @@ export async function fetchSoldeInitial(): Promise<number> {
 export async function upsertSoldeInitial(montant: number): Promise<void> {
   const { error } = await supabase
     .from("settings")
-    .upsert({ cle: "solde_initial", valeur: String(montant) });
+    .upsert({ cle: "solde_initial", valeur: String(montant) }, { onConflict: "cle" });
 
   if (error) {
     throw new Error(`upsertSoldeInitial: ${error.message}`);
