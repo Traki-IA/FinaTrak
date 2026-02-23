@@ -81,6 +81,14 @@ Ce fichier définit les conventions et règles de développement pour le projet 
 - Lazy loading sur les composants lourds
 - Optimisation des images avec `next/image`
 
+## Règles importantes
+
+### Règles absolues
+- Ne jamais inventer de règles métier, contraintes ou comportements qui ne sont pas explicitement définis dans ce fichier ou dans le code existant
+- Si une règle n'est pas documentée ici, elle n'existe pas
+- En cas de doute sur une règle métier, poser la question avant de coder
+- Toujours lire le code existant avant de supposer un comportement
+
 ## Variables d'environnement
 
 Voir `.env.example` pour la liste complète.
