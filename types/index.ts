@@ -55,6 +55,7 @@ export type TBudgetItemWithRelations = TBudgetItem & {
 // ── Types dashboard ──────────────────────────────────────────────────────────
 
 export type TDashboardStats = {
+  soldeInitial: number;
   soldeTotal: number;
   revenus: number;
   depenses: number;

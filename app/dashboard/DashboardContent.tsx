@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import {
   Wallet,
@@ -7,10 +8,15 @@ import {
   TrendingDown,
   PiggyBank,
   ArrowRight,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import BalanceChart from "./BalanceChart";
 import CategoryChart from "./CategoryChart";
+import { updateSoldeInitial } from "./actions";
 import type {
   TDashboardStats,
   TTransactionWithCategorie,
@@ -31,9 +37,9 @@ interface IDashboardContentProps {
 interface IKpiCard {
   label: string;
   valeur: number;
-  variation: string;
   positif: boolean;
   icon: React.ReactNode;
+  subtitle: string;
 }
 
 // ── Constantes & helpers ─────────────────────────────────────────────────────
@@ -58,37 +64,139 @@ function formatEur(n: number): string {
 function buildKpiCards(stats: TDashboardStats): IKpiCard[] {
   return [
     {
-      label: "Solde total",
-      valeur: stats.soldeTotal,
-      variation: "+19,2 %",
-      positif: true,
-      icon: <Wallet size={16} />,
-    },
-    {
       label: "Revenus du mois",
       valeur: stats.revenus,
-      variation: "+0 %",
       positif: true,
       icon: <TrendingUp size={16} />,
+      subtitle: "mois en cours",
     },
     {
       label: "Dépenses du mois",
       valeur: stats.depenses,
-      variation: "-6,3 %",
       positif: false,
       icon: <TrendingDown size={16} />,
+      subtitle: "mois en cours",
     },
     {
       label: "Épargne nette",
       valeur: stats.epargne,
-      variation: "+15,1 %",
-      positif: true,
+      positif: stats.epargne >= 0,
       icon: <PiggyBank size={16} />,
+      subtitle: "revenus − dépenses du mois",
     },
   ];
 }
 
 // ── Sous-composants ──────────────────────────────────────────────────────────
+
+/**
+ * Carte "Solde total" avec éditeur inline du solde initial.
+ * Le solde affiché = solde initial + tous les revenus − toutes les dépenses.
+ */
+function SoldeCard({ stats }: { stats: TDashboardStats }) {
+  const [editing, setEditing] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  function handleEditStart() {
+    setInputValue(String(stats.soldeInitial));
+    setEditing(true);
+  }
+
+  function handleCancel() {
+    setEditing(false);
+  }
+
+  function handleSubmit() {
+    const montant = parseFloat(inputValue.replace(",", "."));
+    if (isNaN(montant)) {
+      toast.error("Montant invalide");
+      return;
+    }
+    startTransition(async () => {
+      const result = await updateSoldeInitial(montant);
+      if (result.success) {
+        setEditing(false);
+        toast.success("Solde initial mis à jour");
+      } else {
+        toast.error(result.error ?? "Erreur lors de la mise à jour");
+      }
+    });
+  }
+
+  return (
+    <motion.div variants={FADE_UP} transition={{ duration: 0.35 }}>
+      <motion.div
+        whileHover={{ scale: 1.02, borderColor: "rgba(249,115,22,0.25)" }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      >
+        <Card>
+          <CardContent>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] text-white/40 uppercase tracking-widest">
+                Solde total
+              </p>
+              <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                <Wallet size={16} />
+              </span>
+            </div>
+
+            <p className="text-2xl font-bold tabular-nums leading-none text-white">
+              {formatEur(stats.soldeTotal)}
+              <span className="text-sm text-white/35 font-normal ml-1">€</span>
+            </p>
+
+            {editing ? (
+              <div className="flex items-center gap-1.5 mt-2.5">
+                <input
+                  type="number"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e: { key: string }) => {
+                    if (e.key === "Enter") handleSubmit();
+                    if (e.key === "Escape") handleCancel();
+                  }}
+                  className="flex-1 min-w-0 text-xs bg-white/[0.06] border border-white/10 rounded-lg px-2 py-1 text-white outline-none focus:border-orange-500/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  placeholder="Solde initial (€)"
+                  disabled={isPending}
+                  autoFocus
+                />
+                <button
+                  onClick={handleSubmit}
+                  disabled={isPending}
+                  className="p-1 rounded text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                  title="Valider"
+                >
+                  <Check size={14} />
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className="p-1 rounded text-rose-400 hover:bg-rose-500/10 transition-colors"
+                  title="Annuler"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 mt-2.5">
+                <p className="text-xs text-white/35 font-medium">
+                  Solde initial : {formatEur(stats.soldeInitial)} €
+                </p>
+                <button
+                  onClick={handleEditStart}
+                  className="p-0.5 rounded text-white/25 hover:text-orange-400 transition-colors"
+                  title="Modifier le solde initial"
+                >
+                  <Pencil size={11} />
+                </button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 function KpiCard({ kpi }: { kpi: IKpiCard }) {
   return (
@@ -117,12 +225,8 @@ function KpiCard({ kpi }: { kpi: IKpiCard }) {
               {formatEur(kpi.valeur)}
               <span className="text-sm text-white/35 font-normal ml-1">€</span>
             </p>
-            <p
-              className={`text-xs mt-2.5 font-medium ${
-                kpi.positif ? "text-emerald-400" : "text-rose-400"
-              }`}
-            >
-              {kpi.positif ? "▲" : "▼"} {kpi.variation} ce mois
+            <p className="text-xs mt-2.5 font-medium text-white/35">
+              {kpi.subtitle}
             </p>
           </CardContent>
         </Card>
@@ -167,7 +271,7 @@ function TransactionRow({ tx }: { tx: TTransactionWithCategorie }) {
           tx.type === "revenu" ? "text-emerald-400" : "text-white/65"
         }`}
       >
-        {tx.type === "revenu" ? "+" : ""}
+        {tx.type === "revenu" ? "+" : "−"}
         {formatEur(tx.montant)} €
       </span>
     </motion.li>
@@ -208,6 +312,10 @@ export default function DashboardContent({
         initial="hidden"
         animate="visible"
       >
+        {/* Solde total — carte éditable (solde initial + flux cumulés) */}
+        <SoldeCard stats={stats} />
+
+        {/* Revenus, Dépenses, Épargne du mois */}
         {kpiCards.map((kpi) => (
           <KpiCard key={kpi.label} kpi={kpi} />
         ))}
