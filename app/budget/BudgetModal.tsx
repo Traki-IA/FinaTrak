@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2, Plus, Link2, Target } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { insertBudgetItem } from "./actions";
-import type { TCategorie, TObjectif } from "@/types";
+import { insertBudgetItem, updateBudgetItem } from "./actions";
+import type { TBudgetItemWithRelations, TCategorie, TObjectif } from "@/types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -18,6 +18,7 @@ interface IBudgetModalProps {
   onOpenChange: (open: boolean) => void;
   categories: TCategorie[];
   objectifs: TObjectif[];
+  item?: TBudgetItemWithRelations;
 }
 
 const INITIAL_FORM = {
@@ -25,7 +26,6 @@ const INITIAL_FORM = {
   montant: "",
   frequence: "mensuel" as "mensuel" | "annuel",
   categorie_id: "",
-  // Objectif
   objectifMode: "none" as ObjectifMode,
   objectif_id: "",
   objectif_nom: "",
@@ -33,7 +33,7 @@ const INITIAL_FORM = {
   objectif_periode: "ponctuel" as "mensuel" | "annuel" | "ponctuel",
 };
 
-// ── Section objectif mode button ──────────────────────────────────────────────
+// ── Mode button ───────────────────────────────────────────────────────────────
 
 function ModeButton({
   active,
@@ -69,11 +69,34 @@ export default function BudgetModal({
   onOpenChange,
   categories,
   objectifs,
+  item,
 }: IBudgetModalProps) {
   const router = useRouter();
+  const isEditing = !!item;
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (!open) return;
+    if (item) {
+      setForm({
+        nom: item.nom,
+        montant: item.montant.toString(),
+        frequence: item.frequence,
+        categorie_id: item.categorie_id ?? "",
+        objectifMode: item.objectif_id ? "existing" : "none",
+        objectif_id: item.objectif_id ?? "",
+        objectif_nom: "",
+        objectif_cible: "",
+        objectif_periode: "ponctuel",
+      });
+    } else {
+      setForm(INITIAL_FORM);
+    }
+    setErrors({});
+  }, [open, item]);
 
   function set<K extends keyof typeof INITIAL_FORM>(
     key: K,
@@ -89,7 +112,7 @@ export default function BudgetModal({
     const m = parseFloat(form.montant);
     if (!form.montant || isNaN(m) || m <= 0)
       next.montant = "Montant invalide (doit être > 0)";
-    if (form.objectifMode === "new") {
+    if (!isEditing && form.objectifMode === "new") {
       if (!form.objectif_nom.trim())
         next.objectif_nom = "Le nom de l'objectif est requis";
       const c = parseFloat(form.objectif_cible);
@@ -105,21 +128,36 @@ export default function BudgetModal({
     if (!validate()) return;
 
     setIsSubmitting(true);
-    const result = await insertBudgetItem({
-      nom: form.nom.trim(),
-      montant: parseFloat(form.montant),
-      frequence: form.frequence,
-      categorie_id: form.categorie_id || null,
-      objectif_id:
-        form.objectifMode === "existing" ? form.objectif_id || null : null,
-      creer_objectif: form.objectifMode === "new",
-      objectif_nom:
-        form.objectifMode === "new" ? form.objectif_nom.trim() : null,
-      objectif_cible:
-        form.objectifMode === "new" ? parseFloat(form.objectif_cible) : null,
-      objectif_periode:
-        form.objectifMode === "new" ? form.objectif_periode : null,
-    });
+
+    let result;
+
+    if (isEditing && item) {
+      result = await updateBudgetItem(item.id, {
+        nom: form.nom.trim(),
+        montant: parseFloat(form.montant),
+        frequence: form.frequence,
+        categorie_id: form.categorie_id || null,
+        objectif_id:
+          form.objectifMode === "existing" ? form.objectif_id || null : null,
+      });
+    } else {
+      result = await insertBudgetItem({
+        nom: form.nom.trim(),
+        montant: parseFloat(form.montant),
+        frequence: form.frequence,
+        categorie_id: form.categorie_id || null,
+        objectif_id:
+          form.objectifMode === "existing" ? form.objectif_id || null : null,
+        creer_objectif: form.objectifMode === "new",
+        objectif_nom:
+          form.objectifMode === "new" ? form.objectif_nom.trim() : null,
+        objectif_cible:
+          form.objectifMode === "new" ? parseFloat(form.objectif_cible) : null,
+        objectif_periode:
+          form.objectifMode === "new" ? form.objectif_periode : null,
+      });
+    }
+
     setIsSubmitting(false);
 
     if ("error" in result) {
@@ -127,14 +165,14 @@ export default function BudgetModal({
       return;
     }
 
-    const successMsg =
-      form.objectifMode === "new"
-        ? `Charge ajoutée · Objectif « ${form.objectif_nom} » créé !`
-        : "Charge budgétaire ajoutée !";
+    const successMsg = isEditing
+      ? "Charge modifiée !"
+      : form.objectifMode === "new"
+      ? `Charge ajoutée · Objectif « ${form.objectif_nom} » créé !`
+      : "Charge budgétaire ajoutée !";
+
     toast.success(successMsg);
     onOpenChange(false);
-    setForm(INITIAL_FORM);
-    setErrors({});
     router.refresh();
   }
 
@@ -149,7 +187,7 @@ export default function BudgetModal({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <Dialog.Title className="text-lg font-semibold text-white">
-              Nouvelle charge budgétaire
+              {isEditing ? "Modifier la charge" : "Nouvelle charge budgétaire"}
             </Dialog.Title>
             <Dialog.Close className="text-white/40 hover:text-white transition-colors rounded-lg p-1 hover:bg-white/[0.06]">
               <X size={18} />
@@ -249,7 +287,7 @@ export default function BudgetModal({
                 </label>
               </div>
 
-              {/* Mode selector */}
+              {/* Mode selector — in edit mode, no "new" option */}
               <div className="flex gap-2">
                 <ModeButton
                   active={objectifMode === "none"}
@@ -263,12 +301,14 @@ export default function BudgetModal({
                   icon={<Link2 size={13} />}
                   label="Lier un existant"
                 />
-                <ModeButton
-                  active={objectifMode === "new"}
-                  onClick={() => set("objectifMode", "new")}
-                  icon={<Plus size={13} />}
-                  label="Créer un objectif"
-                />
+                {!isEditing && (
+                  <ModeButton
+                    active={objectifMode === "new"}
+                    onClick={() => set("objectifMode", "new")}
+                    icon={<Plus size={13} />}
+                    label="Créer un objectif"
+                  />
+                )}
               </div>
 
               {/* Mode: Lier un objectif existant */}
@@ -308,15 +348,14 @@ export default function BudgetModal({
                     </select>
                     {objectifs.length === 0 && (
                       <p className="text-white/30 text-xs mt-1.5">
-                        Aucun objectif existant. Utilisez « Créer un objectif »
-                        pour en définir un.
+                        Aucun objectif existant.
                       </p>
                     )}
                   </motion.div>
                 )}
 
-                {/* Mode: Créer un nouvel objectif */}
-                {objectifMode === "new" && (
+                {/* Mode: Créer un nouvel objectif (creation only) */}
+                {!isEditing && objectifMode === "new" && (
                   <motion.div
                     key="new"
                     initial={{ opacity: 0, height: 0 }}
@@ -330,16 +369,17 @@ export default function BudgetModal({
                         Un nouvel objectif sera créé et lié à cette charge
                       </p>
 
-                      {/* Nom objectif */}
                       <div className="space-y-1.5">
                         <label className="text-xs text-white/50 font-medium">
-                          Nom de l'objectif
+                          Nom de l&apos;objectif
                         </label>
                         <input
                           type="text"
                           placeholder="Ex : Épargne vacances, Fonds urgence…"
                           value={form.objectif_nom}
-                          onChange={(e) => set("objectif_nom", e.target.value)}
+                          onChange={(e) =>
+                            set("objectif_nom", e.target.value)
+                          }
                           className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/20 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors"
                         />
                         {errors.objectif_nom && (
@@ -349,7 +389,6 @@ export default function BudgetModal({
                         )}
                       </div>
 
-                      {/* Montant cible + période */}
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
                           <label className="text-xs text-white/50 font-medium">
@@ -427,7 +466,13 @@ export default function BudgetModal({
                 {isSubmitting && (
                   <Loader2 size={14} className="animate-spin" />
                 )}
-                {isSubmitting ? "Enregistrement…" : "Ajouter la charge"}
+                {isSubmitting
+                  ? isEditing
+                    ? "Modification…"
+                    : "Enregistrement…"
+                  : isEditing
+                  ? "Enregistrer"
+                  : "Ajouter la charge"}
               </button>
             </div>
           </form>

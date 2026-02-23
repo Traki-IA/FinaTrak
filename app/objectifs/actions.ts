@@ -55,3 +55,23 @@ export async function deleteObjectif(id: string): Promise<TActionResult> {
   revalidatePath("/objectifs");
   return { success: true };
 }
+
+export async function updateObjectif(
+  id: string,
+  input: TInsertObjectifInput
+): Promise<TActionResult> {
+  const parsed = ObjectifSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
+  }
+
+  const { error } = await supabase
+    .from("objectifs")
+    .update(parsed.data)
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/objectifs");
+  return { success: true };
+}

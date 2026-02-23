@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Reorder, useDragControls } from "framer-motion";
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -9,9 +11,10 @@ import {
   BarChart3,
   Target,
   Settings,
+  GripVertical,
 } from "lucide-react";
 
-const NAV_ITEMS = [
+const DEFAULT_NAV_ITEMS = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
   { href: "/budget", label: "Budget", icon: Receipt },
@@ -20,8 +23,94 @@ const NAV_ITEMS = [
   { href: "/parametres", label: "Paramètres", icon: Settings },
 ];
 
+const STORAGE_KEY = "finatrak_nav_order";
+
+type TNavItem = (typeof DEFAULT_NAV_ITEMS)[number];
+
+// ── Draggable nav item ────────────────────────────────────────────────────────
+
+function DraggableNavItem({
+  navItem,
+  isActive,
+}: {
+  navItem: TNavItem;
+  isActive: boolean;
+}) {
+  const controls = useDragControls();
+  const Icon = navItem.icon;
+
+  return (
+    <Reorder.Item
+      value={navItem}
+      dragListener={false}
+      dragControls={controls}
+      as="div"
+      className="group relative"
+    >
+      <div className="flex items-center gap-1">
+        {/* Drag handle - visible on hover */}
+        <GripVertical
+          size={13}
+          className="text-white/0 group-hover:text-white/20 hover:!text-white/50 cursor-grab active:cursor-grabbing flex-shrink-0 touch-none transition-colors -mr-1"
+          onPointerDown={(e) => controls.start(e)}
+        />
+        <Link
+          href={navItem.href}
+          className={`flex flex-1 items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+            isActive
+              ? "bg-orange-500/15 text-orange-400"
+              : "text-white/40 hover:text-white hover:bg-white/[0.05]"
+          }`}
+        >
+          <Icon size={17} strokeWidth={isActive ? 2.2 : 1.8} />
+          {navItem.label}
+        </Link>
+      </div>
+    </Reorder.Item>
+  );
+}
+
+// ── Navbar component ──────────────────────────────────────────────────────────
+
 export default function Navbar() {
   const pathname = usePathname();
+  const [items, setItems] = useState<TNavItem[]>(DEFAULT_NAV_ITEMS);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const order: string[] = JSON.parse(stored);
+        const reordered = order
+          .map((href) => DEFAULT_NAV_ITEMS.find((i) => i.href === href))
+          .filter(Boolean) as TNavItem[];
+        // Append any new items not in stored order
+        const remaining = DEFAULT_NAV_ITEMS.filter(
+          (i) => !order.includes(i.href)
+        );
+        setItems([...reordered, ...remaining]);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  function handleReorder(newItems: TNavItem[]) {
+    setItems(newItems);
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(newItems.map((i) => i.href))
+      );
+    } catch {
+      // ignore
+    }
+  }
+
+  // Use default order until mounted (avoid hydration mismatch)
+  const displayItems = mounted ? items : DEFAULT_NAV_ITEMS;
 
   return (
     <>
@@ -34,26 +123,22 @@ export default function Navbar() {
           </span>
         </div>
 
-        {/* Nav links */}
-        <nav className="flex-1 px-3 space-y-0.5">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            const isActive = pathname === href;
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  isActive
-                    ? "bg-orange-500/15 text-orange-400"
-                    : "text-white/40 hover:text-white hover:bg-white/[0.05]"
-                }`}
-              >
-                <Icon size={17} strokeWidth={isActive ? 2.2 : 1.8} />
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Nav links - draggable */}
+        <Reorder.Group
+          axis="y"
+          values={items}
+          onReorder={handleReorder}
+          as="nav"
+          className="flex-1 px-3 space-y-0.5 overflow-visible"
+        >
+          {displayItems.map((navItem) => (
+            <DraggableNavItem
+              key={navItem.href}
+              navItem={navItem}
+              isActive={pathname === navItem.href}
+            />
+          ))}
+        </Reorder.Group>
 
         {/* Footer */}
         <div className="px-5 py-5 border-t border-white/[0.05]">
@@ -63,7 +148,7 @@ export default function Navbar() {
 
       {/* ── Bottom bar mobile ── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#07070f]/95 backdrop-blur border-t border-white/[0.07] flex z-30 pb-safe">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {displayItems.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href;
           return (
             <Link

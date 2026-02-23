@@ -103,3 +103,35 @@ export async function deleteBudgetItem(id: string): Promise<TActionResult> {
   revalidatePath("/budget");
   return { success: true };
 }
+
+// ── Mise à jour ───────────────────────────────────────────────────────────────
+
+const UpdateBudgetItemSchema = z.object({
+  nom: z.string().min(1, "Le nom est requis"),
+  montant: z.number().positive("Le montant doit être positif"),
+  frequence: z.enum(["mensuel", "annuel"]),
+  categorie_id: z.string().nullable(),
+  objectif_id: z.string().uuid().nullable(),
+});
+
+export type TUpdateBudgetItemInput = z.infer<typeof UpdateBudgetItemSchema>;
+
+export async function updateBudgetItem(
+  id: string,
+  input: TUpdateBudgetItemInput
+): Promise<TActionResult> {
+  const parsed = UpdateBudgetItemSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
+  }
+
+  const { error } = await supabase
+    .from("budget_items")
+    .update(parsed.data)
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/budget");
+  return { success: true };
+}

@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2 } from "lucide-react";
-import { insertObjectif } from "./actions";
+import { insertObjectif, updateObjectif } from "./actions";
+import type { TObjectif } from "@/types";
 
 interface IObjectifModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  objectif?: TObjectif;
 }
 
 const INITIAL_FORM = {
@@ -28,10 +30,28 @@ const PERIODE_LABELS: Record<string, string> = {
 export default function ObjectifModal({
   open,
   onOpenChange,
+  objectif,
 }: IObjectifModalProps) {
+  const isEditing = !!objectif;
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    if (objectif) {
+      setForm({
+        nom: objectif.nom,
+        montant_cible: objectif.montant_cible.toString(),
+        montant_actuel: objectif.montant_actuel.toString(),
+        periode: objectif.periode,
+        date_fin: objectif.date_fin ?? "",
+      });
+    } else {
+      setForm(INITIAL_FORM);
+    }
+    setErrors({});
+  }, [open, objectif]);
 
   function set<K extends keyof typeof INITIAL_FORM>(
     key: K,
@@ -59,13 +79,19 @@ export default function ObjectifModal({
     if (!validate()) return;
 
     setIsSubmitting(true);
-    const result = await insertObjectif({
+    const data = {
       nom: form.nom.trim(),
       montant_cible: parseFloat(form.montant_cible),
       montant_actuel: parseFloat(form.montant_actuel),
       periode: form.periode,
       date_fin: form.date_fin || null,
-    });
+    };
+
+    const result =
+      isEditing && objectif
+        ? await updateObjectif(objectif.id, data)
+        : await insertObjectif(data);
+
     setIsSubmitting(false);
 
     if ("error" in result) {
@@ -73,10 +99,8 @@ export default function ObjectifModal({
       return;
     }
 
-    toast.success("Objectif créé !");
+    toast.success(isEditing ? "Objectif modifié !" : "Objectif créé !");
     onOpenChange(false);
-    setForm(INITIAL_FORM);
-    setErrors({});
   }
 
   return (
@@ -88,7 +112,7 @@ export default function ObjectifModal({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <Dialog.Title className="text-lg font-semibold text-white">
-              Nouvel objectif
+              {isEditing ? "Modifier l'objectif" : "Nouvel objectif"}
             </Dialog.Title>
             <Dialog.Close className="text-white/40 hover:text-white transition-colors rounded-lg p-1 hover:bg-white/[0.06]">
               <X size={18} />
@@ -99,7 +123,7 @@ export default function ObjectifModal({
             {/* Nom */}
             <div className="space-y-1.5">
               <label className="text-sm text-white/60 font-medium">
-                Nom de l'objectif
+                Nom de l&apos;objectif
               </label>
               <input
                 type="text"
@@ -210,7 +234,13 @@ export default function ObjectifModal({
                 {isSubmitting && (
                   <Loader2 size={14} className="animate-spin" />
                 )}
-                {isSubmitting ? "Création…" : "Créer"}
+                {isSubmitting
+                  ? isEditing
+                    ? "Modification…"
+                    : "Création…"
+                  : isEditing
+                  ? "Enregistrer"
+                  : "Créer"}
               </button>
             </div>
           </form>
