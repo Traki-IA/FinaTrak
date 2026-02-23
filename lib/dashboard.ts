@@ -9,15 +9,19 @@ import type {
 
 // ── Helpers privés ───────────────────────────────────────────────────────────
 
+/**
+ * Retourne les bornes ISO (YYYY-MM-DD) du mois courant sans conversion UTC
+ * pour éviter les décalages de timezone côté serveur.
+ */
 function getPeriodeBounds(): { debut: string; fin: string } {
   const now = new Date();
-  const debut = new Date(now.getFullYear(), now.getMonth(), 1)
-    .toISOString()
-    .split("T")[0];
-  const fin = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-    .toISOString()
-    .split("T")[0];
-  return { debut, fin };
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+  return {
+    debut: `${year}-${month}-01`,
+    fin: `${year}-${month}-${String(lastDay).padStart(2, "0")}`,
+  };
 }
 
 function labelMois(dateStr: string): string {
@@ -27,36 +31,104 @@ function labelMois(dateStr: string): string {
   });
 }
 
+// ── Solde initial ────────────────────────────────────────────────────────────
+
+export async function fetchSoldeInitial(): Promise<number> {
+  const { data, error } = await supabase
+    .from("settings")
+    .select("valeur")
+    .eq("cle", "solde_initial")
+    .maybeSingle();
+
+  if (error) {
+    console.error("[dashboard] fetchSoldeInitial:", error.message);
+    return 0;
+  }
+
+  return data ? Number(data.valeur) : 0;
+}
+
+export async function upsertSoldeInitial(montant: number): Promise<void> {
+  const { error } = await supabase
+    .from("settings")
+    .upsert({ cle: "solde_initial", valeur: String(montant) }, { onConflict: "cle" });
+
+  if (error) {
+    throw new Error(`upsertSoldeInitial: ${error.message}`);
+  }
+}
+
 // ── Fonctions exportées ──────────────────────────────────────────────────────
 
 export async function fetchDashboardStats(): Promise<TDashboardStats> {
   const { debut, fin } = getPeriodeBounds();
 
-  const { data, error } = await supabase
+  console.log(`[dashboard] Période mois courant : ${debut} → ${fin}`);
+
+  // Transactions du mois courant (pour revenus/dépenses/épargne du mois)
+  const { data: monthData, error: monthError } = await supabase
     .from("transactions")
     .select("montant, type")
     .gte("date", debut)
     .lte("date", fin);
 
-  if (error) {
-    throw new Error(`fetchDashboardStats: ${error.message}`);
+  if (monthError) {
+    console.error("[dashboard] fetchDashboardStats (mois):", monthError.message);
+    throw new Error(`fetchDashboardStats (mois): ${monthError.message}`);
   }
 
-  const rows = data ?? [];
+  // Toutes les transactions (pour le solde total cumulé)
+  const { data: allData, error: allError } = await supabase
+    .from("transactions")
+    .select("montant, type");
 
-  const revenus = rows
+  if (allError) {
+    console.error("[dashboard] fetchDashboardStats (total):", allError.message);
+    throw new Error(`fetchDashboardStats (total): ${allError.message}`);
+  }
+
+  const soldeInitial = await fetchSoldeInitial();
+
+  const monthRows = monthData ?? [];
+  const allRows = allData ?? [];
+
+  console.log(
+    `[dashboard] Transactions mois: ${monthRows.length}, Total: ${allRows.length}, Solde initial: ${soldeInitial}`
+  );
+
+  type TRow = { montant: number; type: string };
+
+  // KPI mensuels
+  const revenus = (monthRows as TRow[])
     .filter((t) => t.type === "revenu")
-    .reduce((sum, t) => sum + (t.montant as number), 0);
+    .reduce((sum, t) => sum + Number(t.montant), 0);
 
-  const depenses = rows
+  const depenses = (monthRows as TRow[])
     .filter((t) => t.type === "depense")
-    .reduce((sum, t) => sum + (t.montant as number), 0);
+    .reduce((sum, t) => sum + Number(t.montant), 0);
+
+  // Solde total = initial + tous les revenus - toutes les dépenses
+  const totalRevenus = (allRows as TRow[])
+    .filter((t) => t.type === "revenu")
+    .reduce((sum, t) => sum + Number(t.montant), 0);
+
+  const totalDepenses = (allRows as TRow[])
+    .filter((t) => t.type === "depense")
+    .reduce((sum, t) => sum + Number(t.montant), 0);
+
+  const soldeTotal = soldeInitial + totalRevenus - totalDepenses;
+  const epargne = revenus - depenses;
+
+  console.log(
+    `[dashboard] Revenus mois: ${revenus}, Dépenses mois: ${depenses}, Solde total: ${soldeTotal}, Épargne: ${epargne}`
+  );
 
   return {
-    soldeTotal: revenus - depenses,
+    soldeInitial,
+    soldeTotal,
     revenus,
     depenses,
-    epargne: Math.max(0, revenus - depenses),
+    epargne,
   };
 }
 
@@ -79,19 +151,19 @@ export async function fetchRecentTransactions(): Promise<
 export async function fetchDepensesParCategorie(): Promise<
   TDepenseCategorie[]
 > {
-  const { debut } = getPeriodeBounds();
+  const { debut, fin } = getPeriodeBounds();
 
   const { data, error } = await supabase
     .from("transactions")
     .select("montant, categories(nom, couleur)")
     .eq("type", "depense")
-    .gte("date", debut);
+    .gte("date", debut)
+    .lte("date", fin); // borne supérieure manquante corrigée
 
   if (error) {
     throw new Error(`fetchDepensesParCategorie: ${error.message}`);
   }
 
-  // Regroupement par catégorie
   const grouped = new Map<string, TDepenseCategorie>();
 
   for (const row of data ?? []) {
@@ -101,9 +173,9 @@ export async function fetchDepensesParCategorie(): Promise<
 
     const existing = grouped.get(nom);
     if (existing) {
-      existing.valeur += row.montant as number;
+      existing.valeur += Number(row.montant);
     } else {
-      grouped.set(nom, { nom, valeur: row.montant as number, couleur });
+      grouped.set(nom, { nom, valeur: Number(row.montant), couleur });
     }
   }
 
@@ -127,10 +199,10 @@ export async function fetchBalanceHistory(): Promise<TBalancePoint[]> {
     const entry = monthly.get(mois) ?? { solde: 0, depenses: 0 };
 
     if (row.type === "revenu") {
-      entry.solde += row.montant as number;
+      entry.solde += Number(row.montant);
     } else {
-      entry.solde -= row.montant as number;
-      entry.depenses += row.montant as number;
+      entry.solde -= Number(row.montant);
+      entry.depenses += Number(row.montant);
     }
 
     monthly.set(mois, entry);
