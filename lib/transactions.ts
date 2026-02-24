@@ -17,7 +17,7 @@ export async function fetchCategories(): Promise<TCategorie[]> {
   const { data, error } = await supabase
     .from("categories")
     .select("*")
-    .order("nom");
+    .order("sort_order", { ascending: true });
 
   if (error) throw new Error(`fetchCategories: ${error.message}`);
   return (data ?? []) as TCategorie[];

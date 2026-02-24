@@ -6,17 +6,12 @@ import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import TransactionModal from "./TransactionModal";
+import FilterSelect from "@/components/FilterSelect";
 import { deleteTransaction } from "./actions";
+import { formatEur } from "@/lib/format";
 import type { TTransactionWithCategorie, TCategorie, TObjectif } from "@/types";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-function formatEur(amount: number): string {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-  }).format(amount);
-}
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("fr-FR");
@@ -32,29 +27,6 @@ function getMoisLabel(dateStr: string): string {
     month: "long",
     year: "numeric",
   });
-}
-
-// ── Filter Select ─────────────────────────────────────────────────────────────
-
-function FilterSelect({
-  value,
-  onChange,
-  children,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="bg-white/[0.05] border border-white/[0.1] text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-orange-500/50 transition-colors cursor-pointer"
-      style={{ colorScheme: "dark" }}
-    >
-      {children}
-    </select>
-  );
 }
 
 // ── Transaction Card (mobile) ─────────────────────────────────────────────────
@@ -92,10 +64,10 @@ function TransactionCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.2, delay: Math.min(index * 0.025, 0.3) }}
-      className="flex items-center gap-3 p-4 border-b border-white/[0.04] last:border-0"
+      className="flex items-center gap-2.5 p-3 border-b border-white/[0.04] last:border-0"
     >
       <span
-        className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
         style={{ background: `${couleur}18`, color: couleur }}
       >
         {initiale}
@@ -216,19 +188,19 @@ function TransactionRow({
       className="border-b border-white/[0.04] hover:bg-white/[0.025] transition-colors group"
     >
       {/* Date */}
-      <td className="px-6 py-4 text-white/55 text-sm whitespace-nowrap">
+      <td className="px-4 py-3 text-white/55 text-sm whitespace-nowrap">
         {formatDate(transaction.date)}
       </td>
 
       {/* Description */}
-      <td className="px-6 py-4 text-white text-sm max-w-[200px] truncate">
+      <td className="px-4 py-3 text-white text-sm max-w-[200px] truncate">
         {transaction.description ?? (
           <span className="text-white/25 italic">—</span>
         )}
       </td>
 
       {/* Catégorie */}
-      <td className="px-6 py-4">
+      <td className="px-4 py-3">
         {transaction.categories ? (
           <span
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
@@ -249,7 +221,7 @@ function TransactionRow({
       </td>
 
       {/* Type */}
-      <td className="px-6 py-4">
+      <td className="px-4 py-3">
         <span
           className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium ${
             isRevenu
@@ -263,7 +235,7 @@ function TransactionRow({
 
       {/* Montant */}
       <td
-        className={`px-6 py-4 text-right text-sm font-semibold whitespace-nowrap ${
+        className={`px-4 py-3 text-right text-sm font-semibold whitespace-nowrap ${
           isRevenu ? "text-emerald-400" : "text-red-400"
         }`}
       >
@@ -536,7 +508,7 @@ export default function TransactionsContent({
                   (col, i) => (
                     <th
                       key={i}
-                      className={`text-white/35 text-xs font-medium px-6 py-4 uppercase tracking-wider ${
+                      className={`text-white/35 text-xs font-medium px-4 py-3 uppercase tracking-wider ${
                         col === "Montant" ? "text-right" : "text-left"
                       } ${col === "" ? "px-4 w-24" : ""}`}
                     >
@@ -585,6 +557,7 @@ export default function TransactionsContent({
 
       {/* ── Modal ── */}
       <TransactionModal
+        key={editingTransaction?.id ?? "new"}
         open={modalOpen}
         onOpenChange={setModalOpen}
         categories={categories}

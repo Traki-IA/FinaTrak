@@ -1,31 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
-  Trash2,
-  Loader2,
+  Pencil,
   Receipt,
   TrendingDown,
   CalendarDays,
   Link2,
+  GripVertical,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
+import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
+import FilterSelect from "@/components/FilterSelect";
 import BudgetModal from "./BudgetModal";
-import { toggleBudgetItem, deleteBudgetItem } from "./actions";
+import {
+  toggleBudgetItem,
+  deleteBudgetItem,
+  reorderBudgetItems,
+} from "./actions";
+import { formatEur } from "@/lib/format";
 import type { TBudgetItemWithRelations, TCategorie, TObjectif } from "@/types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatEur(n: number) {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-  }).format(n);
-}
 
 function annualise(montant: number, frequence: "mensuel" | "annuel"): number {
   return frequence === "mensuel" ? montant * 12 : montant;
@@ -102,12 +118,43 @@ function Toggle({
   );
 }
 
-// ── Budget Item Row ───────────────────────────────────────────────────────────
+// ── Sortable Budget Item Row ─────────────────────────────────────────────────
 
-function BudgetItemRow({ item }: { item: TBudgetItemWithRelations }) {
+function SortableBudgetItemRow({
+  item,
+  confirmingDeleteId,
+  onEdit,
+  onDeleteRequest,
+  onDeleteConfirm,
+  onDeleteCancel,
+  dragEnabled,
+}: {
+  item: TBudgetItemWithRelations;
+  confirmingDeleteId: string | null;
+  onEdit: (item: TBudgetItemWithRelations) => void;
+  onDeleteRequest: (id: string) => void;
+  onDeleteConfirm: (id: string) => void;
+  onDeleteCancel: () => void;
+  dragEnabled: boolean;
+}) {
   const router = useRouter();
   const [toggling, setToggling] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id, disabled: !dragEnabled });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.5 : undefined,
+  };
 
   async function handleToggle(actif: boolean) {
     setToggling(true);
@@ -120,10 +167,9 @@ function BudgetItemRow({ item }: { item: TBudgetItemWithRelations }) {
     router.refresh();
   }
 
-  async function handleDelete() {
-    setDeleting(true);
+  async function handleDeleteConfirm() {
+    onDeleteConfirm(item.id);
     const result = await deleteBudgetItem(item.id);
-    setDeleting(false);
     if ("error" in result) {
       toast.error(result.error);
       return;
@@ -133,82 +179,105 @@ function BudgetItemRow({ item }: { item: TBudgetItemWithRelations }) {
   }
 
   const couleur = item.categories?.couleur ?? "#94a3b8";
+  const isConfirming = confirmingDeleteId === item.id;
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -16 }}
-      transition={{ duration: 0.22 }}
-      className={`flex items-center gap-4 p-4 rounded-2xl border transition-colors ${
-        item.actif
-          ? "bg-white/[0.04] border-white/[0.07] hover:border-white/[0.12]"
-          : "bg-white/[0.01] border-white/[0.04] opacity-50"
-      }`}
-    >
-      {/* Icône catégorie */}
-      <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-bold"
-        style={{ background: `${couleur}18`, color: couleur }}
+    <div ref={setNodeRef} style={style}>
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, x: -16 }}
+        transition={{ duration: 0.22 }}
+        className={`flex items-center gap-3 p-3 rounded-2xl border transition-colors ${
+          item.actif
+            ? "bg-white/[0.04] border-white/[0.07] hover:border-white/[0.12]"
+            : "bg-white/[0.01] border-white/[0.04] opacity-50"
+        }`}
       >
-        {item.nom[0]?.toUpperCase()}
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white truncate">{item.nom}</p>
-        <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mt-0.5">
-          {item.categories && (
-            <span
-              className="text-[10px] px-1.5 py-0.5 rounded-md font-medium"
-              style={{
-                background: `${couleur}18`,
-                color: couleur,
-              }}
-            >
-              {item.categories.nom}
-            </span>
-          )}
-          {item.objectifs && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-orange-500/10 text-orange-400 flex items-center gap-1">
-              <Link2 size={9} />
-              {item.objectifs.nom}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Montant */}
-      <div className="text-right flex-shrink-0">
-        <p className="text-sm font-semibold text-white tabular-nums">
-          {formatEur(item.montant)}
-        </p>
-        <p className="text-[10px] text-white/35">
-          /{item.frequence === "mensuel" ? "mois" : "an"}
-        </p>
-      </div>
-
-      {/* Toggle */}
-      <Toggle
-        checked={item.actif}
-        onChange={handleToggle}
-        disabled={toggling}
-      />
-
-      {/* Delete */}
-      <button
-        onClick={handleDelete}
-        disabled={deleting}
-        className="text-white/25 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-500/10 flex-shrink-0 disabled:opacity-50"
-      >
-        {deleting ? (
-          <Loader2 size={15} className="animate-spin" />
-        ) : (
-          <Trash2 size={15} />
+        {/* Drag handle */}
+        {dragEnabled && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="text-white/20 hover:text-white/50 cursor-grab active:cursor-grabbing flex-shrink-0 touch-none"
+          >
+            <GripVertical size={14} />
+          </button>
         )}
-      </button>
-    </motion.div>
+
+        {/* Icône catégorie */}
+        <div
+          className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-bold"
+          style={{ background: `${couleur}18`, color: couleur }}
+        >
+          {item.nom[0]?.toUpperCase()}
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-white truncate">
+              {item.nom}
+            </p>
+            {item.categories && (
+              <span
+                className="text-[10px] px-1.5 py-0.5 rounded-md font-medium flex-shrink-0 hidden sm:inline-block"
+                style={{
+                  background: `${couleur}18`,
+                  color: couleur,
+                }}
+              >
+                {item.categories.nom}
+              </span>
+            )}
+            {item.objectifs && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-orange-500/10 text-orange-400 flex items-center gap-1 flex-shrink-0 hidden sm:inline-flex">
+                <Link2 size={9} />
+                {item.objectifs.nom}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Montant */}
+        <div className="text-right flex-shrink-0">
+          <p className="text-sm font-semibold text-white tabular-nums whitespace-nowrap">
+            {formatEur(item.montant)}
+            <span className="text-[10px] text-white/35 ml-0.5">
+              /{item.frequence === "mensuel" ? "mois" : "an"}
+            </span>
+          </p>
+        </div>
+
+        {/* Toggle */}
+        <Toggle
+          checked={item.actif}
+          onChange={handleToggle}
+          disabled={toggling}
+        />
+
+        {/* Actions */}
+        <div className="flex items-center gap-0.5 flex-shrink-0">
+          {!isConfirming && (
+            <button
+              onClick={() => onEdit(item)}
+              className="p-1.5 rounded-lg text-white/25 hover:text-white hover:bg-white/[0.07] transition-colors"
+              title="Modifier"
+            >
+              <Pencil size={13} />
+            </button>
+          )}
+          <ConfirmDeleteButton
+            isConfirming={isConfirming}
+            onDeleteRequest={() => onDeleteRequest(item.id)}
+            onDeleteConfirm={handleDeleteConfirm}
+            onDeleteCancel={onDeleteCancel}
+            size={13}
+          />
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
@@ -239,7 +308,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
   );
 }
 
-// ── Section ───────────────────────────────────────────────────────────────────
+// ── Section with DnD ─────────────────────────────────────────────────────────
 
 function Section({
   title,
@@ -247,14 +316,40 @@ function Section({
   items,
   totalLabel,
   total,
+  confirmingDeleteId,
+  onEdit,
+  onDeleteRequest,
+  onDeleteConfirm,
+  onDeleteCancel,
+  onReorder,
+  dragEnabled,
 }: {
   title: string;
   icon: React.ReactNode;
   items: TBudgetItemWithRelations[];
   totalLabel: string;
   total: number;
+  confirmingDeleteId: string | null;
+  onEdit: (item: TBudgetItemWithRelations) => void;
+  onDeleteRequest: (id: string) => void;
+  onDeleteConfirm: (id: string) => void;
+  onDeleteCancel: () => void;
+  onReorder: (activeId: string, overId: string) => void;
+  dragEnabled: boolean;
 }) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor)
+  );
+
   if (items.length === 0) return null;
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      onReorder(active.id as string, over.id as string);
+    }
+  }
 
   return (
     <div className="mb-6">
@@ -272,13 +367,33 @@ function Section({
         </span>
       </div>
 
-      <div className="space-y-2">
-        <AnimatePresence>
-          {items.map((item) => (
-            <BudgetItemRow key={item.id} item={item} />
-          ))}
-        </AnimatePresence>
-      </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={items.map((i) => i.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-1.5">
+            <AnimatePresence>
+              {items.map((item) => (
+                <SortableBudgetItemRow
+                  key={item.id}
+                  item={item}
+                  confirmingDeleteId={confirmingDeleteId}
+                  onEdit={onEdit}
+                  onDeleteRequest={onDeleteRequest}
+                  onDeleteConfirm={onDeleteConfirm}
+                  onDeleteCancel={onDeleteCancel}
+                  dragEnabled={dragEnabled}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 }
@@ -292,15 +407,68 @@ interface IBudgetContentProps {
 }
 
 export default function BudgetContent({
-  items,
+  items: initialItems,
   categories,
   objectifs,
 }: IBudgetContentProps) {
+  const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<
+    TBudgetItemWithRelations | undefined
+  >(undefined);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null
+  );
+  const [localItems, setLocalItems] = useState(initialItems);
 
-  const actifs = items.filter((i) => i.actif);
-  const mensuels = items.filter((i) => i.frequence === "mensuel");
-  const annuels = items.filter((i) => i.frequence === "annuel");
+  // Filters
+  const [filterCategorie, setFilterCategorie] = useState("all");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "actif" | "inactif"
+  >("all");
+  const [sortBy, setSortBy] = useState<
+    "sort_order" | "montant_asc" | "montant_desc" | "nom"
+  >("sort_order");
+
+  // Sync when server data changes
+  const serverKey = initialItems.map((i) => `${i.id}-${i.sort_order}-${i.actif}-${i.montant}`).join("|");
+  useMemo(() => {
+    setLocalItems(initialItems);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverKey]);
+
+  const dragEnabled = sortBy === "sort_order";
+
+  // Filtered + sorted
+  const filteredItems = useMemo(() => {
+    let result = [...localItems];
+
+    if (filterCategorie !== "all") {
+      result = result.filter((i) => i.categorie_id === filterCategorie);
+    }
+
+    if (filterStatus === "actif") {
+      result = result.filter((i) => i.actif);
+    } else if (filterStatus === "inactif") {
+      result = result.filter((i) => !i.actif);
+    }
+
+    if (sortBy === "montant_desc") {
+      result.sort((a, b) => b.montant - a.montant);
+    } else if (sortBy === "montant_asc") {
+      result.sort((a, b) => a.montant - b.montant);
+    } else if (sortBy === "nom") {
+      result.sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
+    }
+
+    return result;
+  }, [localItems, filterCategorie, filterStatus, sortBy]);
+
+  const isFiltered = filterCategorie !== "all" || filterStatus !== "all";
+
+  const actifs = filteredItems.filter((i) => i.actif);
+  const mensuels = filteredItems.filter((i) => i.frequence === "mensuel");
+  const annuels = filteredItems.filter((i) => i.frequence === "annuel");
 
   const budgetMensuel = actifs.reduce(
     (sum, i) => sum + mensualise(i.montant, i.frequence),
@@ -319,24 +487,58 @@ export default function BudgetContent({
     .reduce((s, i) => s + i.montant, 0);
 
   const linkedObjectifs = new Set(
-    items.filter((i) => i.objectif_id).map((i) => i.objectif_id)
+    filteredItems.filter((i) => i.objectif_id).map((i) => i.objectif_id)
   ).size;
 
+  function openAddModal() {
+    setEditingItem(undefined);
+    setModalOpen(true);
+  }
+
+  function openEditModal(item: TBudgetItemWithRelations) {
+    setEditingItem(item);
+    setModalOpen(true);
+  }
+
+  function handleDeleteConfirm(id: string) {
+    setConfirmingDeleteId(null);
+    setLocalItems((prev) => prev.filter((i) => i.id !== id));
+  }
+
+  function handleReorder(activeId: string, overId: string) {
+    setLocalItems((prev) => {
+      const oldIndex = prev.findIndex((i) => i.id === activeId);
+      const newIndex = prev.findIndex((i) => i.id === overId);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      const reordered = arrayMove(prev, oldIndex, newIndex);
+
+      reorderBudgetItems(reordered.map((i) => i.id)).then((result) => {
+        if ("error" in result) {
+          toast.error("Erreur lors de la réorganisation");
+          router.refresh();
+        }
+      });
+
+      return reordered;
+    });
+  }
+
   return (
-    <main className="min-h-screen bg-background p-6 md:p-8">
+    <main className="min-h-screen bg-background p-4 sm:p-6 md:p-8">
       {/* ── Header ── */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex items-start justify-between mb-8"
+        className="flex items-start justify-between mb-6 sm:mb-8"
       >
         <div>
           <h1 className="text-2xl font-bold text-white">Budget annuel</h1>
           <p className="text-white/40 text-sm mt-1">
-            {items.length} charge{items.length !== 1 ? "s" : ""} planifiée
-            {items.length !== 1 ? "s" : ""}
-            {actifs.length !== items.length && (
+            {filteredItems.length} charge
+            {filteredItems.length !== 1 ? "s" : ""}
+            {isFiltered ? " filtrées" : " planifiées"}
+            {actifs.length !== filteredItems.length && (
               <span className="text-white/25 ml-1">
                 · {actifs.length} active{actifs.length !== 1 ? "s" : ""}
               </span>
@@ -344,23 +546,84 @@ export default function BudgetContent({
           </p>
         </div>
 
-        {items.length > 0 && (
+        {localItems.length > 0 && (
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => setModalOpen(true)}
+            onClick={openAddModal}
             className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
           >
             <Plus size={16} />
-            Ajouter
+            <span className="hidden sm:inline">Ajouter</span>
           </motion.button>
         )}
       </motion.div>
 
-      {items.length === 0 ? (
-        <EmptyState onAdd={() => setModalOpen(true)} />
+      {localItems.length === 0 ? (
+        <EmptyState onAdd={openAddModal} />
       ) : (
         <>
+          {/* ── Filters ── */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.05, duration: 0.3 }}
+            className="flex flex-wrap gap-2 sm:gap-3 mb-5"
+          >
+            <FilterSelect
+              value={filterCategorie}
+              onChange={setFilterCategorie}
+            >
+              <option value="all" className="bg-[#0f0f1a]">
+                Toutes les catégories
+              </option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id} className="bg-[#0f0f1a]">
+                  {cat.nom}
+                </option>
+              ))}
+            </FilterSelect>
+
+            <FilterSelect
+              value={filterStatus}
+              onChange={(v) =>
+                setFilterStatus(v as "all" | "actif" | "inactif")
+              }
+            >
+              <option value="all" className="bg-[#0f0f1a]">
+                Toutes
+              </option>
+              <option value="actif" className="bg-[#0f0f1a]">
+                Actives
+              </option>
+              <option value="inactif" className="bg-[#0f0f1a]">
+                Inactives
+              </option>
+            </FilterSelect>
+
+            <FilterSelect
+              value={sortBy}
+              onChange={(v) =>
+                setSortBy(
+                  v as "sort_order" | "montant_asc" | "montant_desc" | "nom"
+                )
+              }
+            >
+              <option value="sort_order" className="bg-[#0f0f1a]">
+                Ordre personnalisé
+              </option>
+              <option value="montant_desc" className="bg-[#0f0f1a]">
+                Montant ↓
+              </option>
+              <option value="montant_asc" className="bg-[#0f0f1a]">
+                Montant ↑
+              </option>
+              <option value="nom" className="bg-[#0f0f1a]">
+                Nom (A-Z)
+              </option>
+            </FilterSelect>
+          </motion.div>
+
           {/* ── KPIs ── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -371,21 +634,27 @@ export default function BudgetContent({
             <KpiCard
               label="Budget mensuel"
               value={formatEur(budgetMensuel)}
-              sub="Charges fixes / mois"
+              sub={
+                isFiltered
+                  ? "Charges filtrées / mois"
+                  : "Charges fixes / mois"
+              }
               icon={<TrendingDown size={16} />}
               color="#f97316"
             />
             <KpiCard
               label="Budget annuel"
               value={formatEur(budgetAnnuel)}
-              sub="Projection sur 12 mois"
+              sub={
+                isFiltered ? "Projection filtrée" : "Projection sur 12 mois"
+              }
               icon={<CalendarDays size={16} />}
               color="#6366f1"
             />
             <KpiCard
               label="Objectifs liés"
               value={String(linkedObjectifs)}
-              sub={`sur ${items.length} charge${items.length !== 1 ? "s" : ""}`}
+              sub={`sur ${filteredItems.length} charge${filteredItems.length !== 1 ? "s" : ""}`}
               icon={<Link2 size={16} />}
               color="#14b8a6"
             />
@@ -403,6 +672,13 @@ export default function BudgetContent({
               items={mensuels}
               totalLabel="Total actif / mois"
               total={totalMensuels}
+              confirmingDeleteId={confirmingDeleteId}
+              onEdit={openEditModal}
+              onDeleteRequest={setConfirmingDeleteId}
+              onDeleteConfirm={handleDeleteConfirm}
+              onDeleteCancel={() => setConfirmingDeleteId(null)}
+              onReorder={handleReorder}
+              dragEnabled={dragEnabled}
             />
             <Section
               title="Charges annuelles"
@@ -410,16 +686,25 @@ export default function BudgetContent({
               items={annuels}
               totalLabel="Total actif / an"
               total={totalAnnuels}
+              confirmingDeleteId={confirmingDeleteId}
+              onEdit={openEditModal}
+              onDeleteRequest={setConfirmingDeleteId}
+              onDeleteConfirm={handleDeleteConfirm}
+              onDeleteCancel={() => setConfirmingDeleteId(null)}
+              onReorder={handleReorder}
+              dragEnabled={dragEnabled}
             />
           </motion.div>
         </>
       )}
 
       <BudgetModal
+        key={editingItem?.id ?? "new"}
         open={modalOpen}
         onOpenChange={setModalOpen}
         categories={categories}
         objectifs={objectifs}
+        budgetItem={editingItem}
       />
     </main>
   );

@@ -10,6 +10,8 @@ import {
   Target,
   Settings,
 } from "lucide-react";
+import CategoryList from "@/components/CategoryList";
+import type { TCategorie } from "@/types";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
@@ -20,7 +22,11 @@ const NAV_ITEMS = [
   { href: "/parametres", label: "Paramètres", icon: Settings },
 ];
 
-export default function Navbar() {
+interface INavbarProps {
+  categories: TCategorie[];
+}
+
+export default function Navbar({ categories }: INavbarProps) {
   const pathname = usePathname();
 
   return (
@@ -35,7 +41,7 @@ export default function Navbar() {
         </div>
 
         {/* Nav links */}
-        <nav className="flex-1 px-3 space-y-0.5">
+        <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
             return (
@@ -53,6 +59,16 @@ export default function Navbar() {
               </Link>
             );
           })}
+
+          {/* Categories section */}
+          {categories.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-white/[0.05]">
+              <p className="text-[10px] text-white/25 uppercase tracking-widest font-medium px-3 mb-2">
+                Catégories
+              </p>
+              <CategoryList categories={categories} />
+            </div>
+          )}
         </nav>
 
         {/* Footer */}

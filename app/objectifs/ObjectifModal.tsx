@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2 } from "lucide-react";
-import { insertObjectif } from "./actions";
+import { insertObjectif, updateObjectif } from "./actions";
+import type { TObjectif } from "@/types";
 
 interface IObjectifModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  objectif?: TObjectif;
 }
 
 const INITIAL_FORM = {
@@ -28,8 +31,21 @@ const PERIODE_LABELS: Record<string, string> = {
 export default function ObjectifModal({
   open,
   onOpenChange,
+  objectif,
 }: IObjectifModalProps) {
-  const [form, setForm] = useState(INITIAL_FORM);
+  const router = useRouter();
+  const isEditMode = Boolean(objectif);
+  const [form, setForm] = useState(() =>
+    objectif
+      ? {
+          nom: objectif.nom,
+          montant_cible: objectif.montant_cible.toString(),
+          montant_actuel: objectif.montant_actuel.toString(),
+          periode: objectif.periode,
+          date_fin: objectif.date_fin ?? "",
+        }
+      : INITIAL_FORM
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -39,6 +55,14 @@ export default function ObjectifModal({
   ) {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: "" }));
+  }
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) {
+      setForm(INITIAL_FORM);
+      setErrors({});
+    }
+    onOpenChange(nextOpen);
   }
 
   function validate(): boolean {
@@ -59,28 +83,50 @@ export default function ObjectifModal({
     if (!validate()) return;
 
     setIsSubmitting(true);
-    const result = await insertObjectif({
-      nom: form.nom.trim(),
-      montant_cible: parseFloat(form.montant_cible),
-      montant_actuel: parseFloat(form.montant_actuel),
-      periode: form.periode,
-      date_fin: form.date_fin || null,
-    });
-    setIsSubmitting(false);
 
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
+    if (isEditMode && objectif) {
+      const result = await updateObjectif({
+        id: objectif.id,
+        nom: form.nom.trim(),
+        montant_cible: parseFloat(form.montant_cible),
+        montant_actuel: parseFloat(form.montant_actuel),
+        periode: form.periode,
+        date_fin: form.date_fin || null,
+      });
+
+      setIsSubmitting(false);
+
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success("Objectif modifié !");
+    } else {
+      const result = await insertObjectif({
+        nom: form.nom.trim(),
+        montant_cible: parseFloat(form.montant_cible),
+        montant_actuel: parseFloat(form.montant_actuel),
+        periode: form.periode,
+        date_fin: form.date_fin || null,
+      });
+
+      setIsSubmitting(false);
+
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success("Objectif créé !");
     }
 
-    toast.success("Objectif créé !");
-    onOpenChange(false);
-    setForm(INITIAL_FORM);
-    setErrors({});
+    handleOpenChange(false);
+    router.refresh();
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
 
@@ -88,7 +134,7 @@ export default function ObjectifModal({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <Dialog.Title className="text-lg font-semibold text-white">
-              Nouvel objectif
+              {isEditMode ? "Modifier l'objectif" : "Nouvel objectif"}
             </Dialog.Title>
             <Dialog.Close className="text-white/40 hover:text-white transition-colors rounded-lg p-1 hover:bg-white/[0.06]">
               <X size={18} />
@@ -99,7 +145,7 @@ export default function ObjectifModal({
             {/* Nom */}
             <div className="space-y-1.5">
               <label className="text-sm text-white/60 font-medium">
-                Nom de l'objectif
+                Nom de l&apos;objectif
               </label>
               <input
                 type="text"
@@ -177,7 +223,7 @@ export default function ObjectifModal({
               </div>
             </div>
 
-            {/* Date fin (optionnelle) */}
+            {/* Date fin */}
             <div className="space-y-1.5">
               <label className="text-sm text-white/60 font-medium">
                 Date limite{" "}
@@ -210,7 +256,13 @@ export default function ObjectifModal({
                 {isSubmitting && (
                   <Loader2 size={14} className="animate-spin" />
                 )}
-                {isSubmitting ? "Création…" : "Créer"}
+                {isSubmitting
+                  ? isEditMode
+                    ? "Modification…"
+                    : "Création…"
+                  : isEditMode
+                  ? "Modifier"
+                  : "Créer"}
               </button>
             </div>
           </form>

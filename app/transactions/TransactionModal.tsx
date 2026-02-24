@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -35,23 +35,20 @@ export default function TransactionModal({
   const router = useRouter();
   const isEditMode = Boolean(transaction);
 
-  const [form, setForm] = useState(INITIAL_FORM);
+  const [form, setForm] = useState(() =>
+    transaction
+      ? {
+          montant: transaction.montant.toString(),
+          type: transaction.type,
+          categorie_id: transaction.categorie_id ?? "",
+          description: transaction.description ?? "",
+          date: transaction.date,
+          objectif_id: "",
+        }
+      : INITIAL_FORM
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Pre-fill form when opening in edit mode
-  useEffect(() => {
-    if (open && transaction) {
-      setForm({
-        montant: transaction.montant.toString(),
-        type: transaction.type,
-        categorie_id: transaction.categorie_id ?? "",
-        description: transaction.description ?? "",
-        date: transaction.date,
-        objectif_id: "",
-      });
-    }
-  }, [open, transaction]);
 
   function set<K extends keyof typeof INITIAL_FORM>(
     key: K,

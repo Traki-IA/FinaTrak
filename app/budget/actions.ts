@@ -11,7 +11,6 @@ const BudgetItemSchema = z.object({
   montant: z.number().positive("Le montant doit être positif"),
   frequence: z.enum(["mensuel", "annuel"]),
   categorie_id: z.string().nullable(),
-  // Objectif : ID existant ou création à la volée
   objectif_id: z.string().uuid().nullable(),
   creer_objectif: z.boolean(),
   objectif_nom: z.string().nullable(),
@@ -19,7 +18,17 @@ const BudgetItemSchema = z.object({
   objectif_periode: z.enum(["mensuel", "annuel", "ponctuel"]).nullable(),
 });
 
+const UpdateBudgetItemSchema = z.object({
+  id: z.string().uuid("Identifiant invalide"),
+  nom: z.string().min(1, "Le nom est requis"),
+  montant: z.number().positive("Le montant doit être positif"),
+  frequence: z.enum(["mensuel", "annuel"]),
+  categorie_id: z.string().nullable(),
+  objectif_id: z.string().uuid().nullable(),
+});
+
 export type TInsertBudgetItemInput = z.infer<typeof BudgetItemSchema>;
+export type TUpdateBudgetItemInput = z.infer<typeof UpdateBudgetItemSchema>;
 
 type TActionResult = { success: true } | { error: string };
 
@@ -99,6 +108,47 @@ export async function deleteBudgetItem(id: string): Promise<TActionResult> {
     .eq("id", id);
 
   if (error) return { error: error.message };
+
+  revalidatePath("/budget");
+  return { success: true };
+}
+
+// ── Mise à jour ──────────────────────────────────────────────────────────────
+
+export async function updateBudgetItem(
+  input: TUpdateBudgetItemInput
+): Promise<TActionResult> {
+  const parsed = UpdateBudgetItemSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
+  }
+
+  const { id, ...updateData } = parsed.data;
+
+  const { error } = await supabase
+    .from("budget_items")
+    .update(updateData)
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/budget");
+  return { success: true };
+}
+
+// ── Réorganisation ───────────────────────────────────────────────────────────
+
+export async function reorderBudgetItems(
+  orderedIds: string[]
+): Promise<TActionResult> {
+  for (let i = 0; i < orderedIds.length; i++) {
+    const { error } = await supabase
+      .from("budget_items")
+      .update({ sort_order: i })
+      .eq("id", orderedIds[i]);
+
+    if (error) return { error: error.message };
+  }
 
   revalidatePath("/budget");
   return { success: true };
