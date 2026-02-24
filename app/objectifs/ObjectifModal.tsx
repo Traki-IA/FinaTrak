@@ -35,19 +35,30 @@ export default function ObjectifModal({
 }: IObjectifModalProps) {
   const router = useRouter();
   const isEditMode = Boolean(objectif);
+
+  function buildForm(o: TObjectif) {
+    return {
+      nom: o.nom,
+      montant_cible: o.montant_cible.toString(),
+      montant_actuel: o.montant_actuel.toString(),
+      periode: o.periode,
+      date_fin: o.date_fin ?? "",
+    };
+  }
+
   const [form, setForm] = useState(() =>
-    objectif
-      ? {
-          nom: objectif.nom,
-          montant_cible: objectif.montant_cible.toString(),
-          montant_actuel: objectif.montant_actuel.toString(),
-          periode: objectif.periode,
-          date_fin: objectif.date_fin ?? "",
-        }
-      : INITIAL_FORM
+    objectif ? buildForm(objectif) : INITIAL_FORM
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Sync form when objectif prop changes (React render-time adjustment)
+  const [prevObjectifId, setPrevObjectifId] = useState(objectif?.id);
+  if (objectif?.id !== prevObjectifId) {
+    setPrevObjectifId(objectif?.id);
+    setForm(objectif ? buildForm(objectif) : INITIAL_FORM);
+    setErrors({});
+  }
 
   function set<K extends keyof typeof INITIAL_FORM>(
     key: K,
