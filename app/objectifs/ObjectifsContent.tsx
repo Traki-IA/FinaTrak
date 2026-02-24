@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -364,14 +364,14 @@ export default function ObjectifsContent({
   );
   const [localObjectifs, setLocalObjectifs] = useState(initialObjectifs);
 
-  // Sync when server data changes
-  if (
-    initialObjectifs.length !== localObjectifs.length ||
-    initialObjectifs.map((o) => o.id).join(",") !==
-      localObjectifs.map((o) => o.id).join(",")
-  ) {
+  // Sync when server data changes (including field edits)
+  const serverKey = initialObjectifs
+    .map((o) => `${o.id}-${o.sort_order}-${o.nom}-${o.montant_cible}-${o.montant_actuel}-${o.date_fin}-${o.periode}`)
+    .join("|");
+  useMemo(() => {
     setLocalObjectifs(initialObjectifs);
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverKey]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
