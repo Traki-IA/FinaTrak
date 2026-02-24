@@ -35,20 +35,30 @@ export default function TransactionModal({
   const router = useRouter();
   const isEditMode = Boolean(transaction);
 
+  function buildForm(t: TTransactionWithCategorie) {
+    return {
+      montant: t.montant.toString(),
+      type: t.type,
+      categorie_id: t.categorie_id ?? "",
+      description: t.description ?? "",
+      date: t.date,
+      objectif_id: "",
+    };
+  }
+
   const [form, setForm] = useState(() =>
-    transaction
-      ? {
-          montant: transaction.montant.toString(),
-          type: transaction.type,
-          categorie_id: transaction.categorie_id ?? "",
-          description: transaction.description ?? "",
-          date: transaction.date,
-          objectif_id: "",
-        }
-      : INITIAL_FORM
+    transaction ? buildForm(transaction) : INITIAL_FORM
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Sync form when transaction prop changes (React render-time adjustment)
+  const [prevTransactionId, setPrevTransactionId] = useState(transaction?.id);
+  if (transaction?.id !== prevTransactionId) {
+    setPrevTransactionId(transaction?.id);
+    setForm(transaction ? buildForm(transaction) : INITIAL_FORM);
+    setErrors({});
+  }
 
   function set<K extends keyof typeof INITIAL_FORM>(
     key: K,

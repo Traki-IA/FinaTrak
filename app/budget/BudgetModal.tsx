@@ -73,23 +73,34 @@ export default function BudgetModal({
 }: IBudgetModalProps) {
   const router = useRouter();
   const isEditMode = Boolean(budgetItem);
+
+  function buildForm(item: TBudgetItemWithRelations) {
+    return {
+      nom: item.nom,
+      montant: item.montant.toString(),
+      frequence: item.frequence,
+      categorie_id: item.categorie_id ?? "",
+      objectifMode: (item.objectif_id ? "existing" : "none") as ObjectifMode,
+      objectif_id: item.objectif_id ?? "",
+      objectif_nom: "",
+      objectif_cible: "",
+      objectif_periode: "ponctuel" as "mensuel" | "annuel" | "ponctuel",
+    };
+  }
+
   const [form, setForm] = useState(() =>
-    budgetItem
-      ? {
-          nom: budgetItem.nom,
-          montant: budgetItem.montant.toString(),
-          frequence: budgetItem.frequence,
-          categorie_id: budgetItem.categorie_id ?? "",
-          objectifMode: (budgetItem.objectif_id ? "existing" : "none") as ObjectifMode,
-          objectif_id: budgetItem.objectif_id ?? "",
-          objectif_nom: "",
-          objectif_cible: "",
-          objectif_periode: "ponctuel" as "mensuel" | "annuel" | "ponctuel",
-        }
-      : INITIAL_FORM
+    budgetItem ? buildForm(budgetItem) : INITIAL_FORM
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Sync form when budgetItem prop changes (React render-time adjustment)
+  const [prevItemId, setPrevItemId] = useState(budgetItem?.id);
+  if (budgetItem?.id !== prevItemId) {
+    setPrevItemId(budgetItem?.id);
+    setForm(budgetItem ? buildForm(budgetItem) : INITIAL_FORM);
+    setErrors({});
+  }
 
   function set<K extends keyof typeof INITIAL_FORM>(
     key: K,
