@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { supabase } from "@/lib/supabase";
 import { upsertSoldeInitial } from "@/lib/dashboard";
+import { getActiveCompteId } from "@/lib/active-compte";
 
 const SoldeInitialSchema = z.object({
   montant: z.number().finite(),
@@ -19,7 +20,8 @@ export async function updateSoldeInitial(
   }
 
   try {
-    await upsertSoldeInitial(parsed.data.montant);
+    const compteId = await getActiveCompteId();
+    await upsertSoldeInitial(compteId, parsed.data.montant);
     revalidatePath("/parametres");
     revalidatePath("/dashboard");
     return { success: true };
@@ -46,6 +48,24 @@ export async function reorderCategories(
 
     if (error) return { error: error.message };
   }
+
+  revalidatePath("/");
+  return { success: true };
+}
+
+// ── Mise à jour de l'ordre de navigation ─────────────────────────────────────
+
+export async function updateNavOrder(
+  orderedKeys: string[]
+): Promise<TActionResult> {
+  const { error } = await supabase
+    .from("settings")
+    .upsert(
+      { cle: "nav_order", valeur: JSON.stringify(orderedKeys) },
+      { onConflict: "cle" }
+    );
+
+  if (error) return { error: error.message };
 
   revalidatePath("/");
   return { success: true };

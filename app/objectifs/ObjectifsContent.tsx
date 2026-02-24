@@ -351,8 +351,10 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 
 export default function ObjectifsContent({
   objectifs: initialObjectifs,
+  compteId,
 }: {
   objectifs: TObjectif[];
+  compteId: string;
 }) {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
@@ -496,6 +498,7 @@ export default function ObjectifsContent({
         open={modalOpen}
         onOpenChange={setModalOpen}
         objectif={editingObjectif}
+        compteId={compteId}
       />
     </main>
   );

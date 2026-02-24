@@ -9,15 +9,18 @@ import {
   fetchDepensesParCategorie,
   fetchBalanceHistory,
 } from "@/lib/dashboard";
+import { getActiveCompteId } from "@/lib/active-compte";
 
 // ── Chargement des données côté serveur ──────────────────────────────────────
 
 async function DashboardData() {
+  const compteId = await getActiveCompteId();
+
   const [stats, transactions, categories, history] = await Promise.all([
-    fetchDashboardStats(),
-    fetchRecentTransactions(),
-    fetchDepensesParCategorie(),
-    fetchBalanceHistory(),
+    fetchDashboardStats(compteId),
+    fetchRecentTransactions(compteId),
+    fetchDepensesParCategorie(compteId),
+    fetchBalanceHistory(compteId),
   ]);
 
   const moisLabel = new Date().toLocaleDateString("fr-FR", {

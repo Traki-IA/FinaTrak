@@ -14,6 +14,7 @@ interface ITransactionModalProps {
   categories: TCategorie[];
   objectifs: TObjectif[];
   transaction?: TTransactionWithCategorie;
+  compteId: string;
 }
 
 const INITIAL_FORM = {
@@ -31,6 +32,7 @@ export default function TransactionModal({
   categories,
   objectifs,
   transaction,
+  compteId,
 }: ITransactionModalProps) {
   const router = useRouter();
   const isEditMode = Boolean(transaction);
@@ -119,6 +121,7 @@ export default function TransactionModal({
         categorie_id: form.categorie_id || null,
         description: form.description || null,
         date: form.date,
+        compte_id: compteId,
         objectif_id: form.objectif_id || null,
       });
 

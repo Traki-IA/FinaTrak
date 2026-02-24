@@ -10,6 +10,7 @@ const TransactionSchema = z.object({
   categorie_id: z.string().nullable(),
   description: z.string().nullable(),
   date: z.string().min(1, "La date est requise"),
+  compte_id: z.string().uuid("Compte invalide"),
   // objectif_id n'est pas stocké en base, il sert uniquement à mettre à jour la progression
   objectif_id: z.string().uuid().nullable().optional(),
 });

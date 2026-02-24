@@ -404,12 +404,14 @@ interface IBudgetContentProps {
   items: TBudgetItemWithRelations[];
   categories: TCategorie[];
   objectifs: TObjectif[];
+  compteId: string;
 }
 
 export default function BudgetContent({
   items: initialItems,
   categories,
   objectifs,
+  compteId,
 }: IBudgetContentProps) {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
@@ -705,6 +707,7 @@ export default function BudgetContent({
         categories={categories}
         objectifs={objectifs}
         budgetItem={editingItem}
+        compteId={compteId}
       />
     </main>
   );

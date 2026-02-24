@@ -43,10 +43,11 @@ function labelMois(moisKey: string): string {
 
 // ── Fetch principal ───────────────────────────────────────────────────────────
 
-export async function fetchBilanData(): Promise<TBilanData> {
+export async function fetchBilanData(compteId: string): Promise<TBilanData> {
   const { data, error } = await supabase
     .from("transactions")
     .select("*, categories(*)")
+    .eq("compte_id", compteId)
     .order("date", { ascending: true });
 
   if (error) throw new Error(`fetchBilanData: ${error.message}`);

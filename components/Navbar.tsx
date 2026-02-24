@@ -2,31 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  ArrowLeftRight,
-  Receipt,
-  BarChart3,
-  Target,
-  Settings,
-} from "lucide-react";
-import CategoryList from "@/components/CategoryList";
-import type { TCategorie } from "@/types";
-
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
-  { href: "/budget", label: "Budget", icon: Receipt },
-  { href: "/bilan", label: "Bilan", icon: BarChart3 },
-  { href: "/objectifs", label: "Objectifs", icon: Target },
-  { href: "/parametres", label: "Paramètres", icon: Settings },
-];
+import AccountSwitcher from "@/components/AccountSwitcher";
+import NavList, { ALL_NAV_ITEMS } from "@/components/NavList";
+import type { TCompte } from "@/types";
 
 interface INavbarProps {
-  categories: TCategorie[];
+  comptes: TCompte[];
+  activeCompteId: string;
+  navOrder: string[];
 }
 
-export default function Navbar({ categories }: INavbarProps) {
+export default function Navbar({ comptes, activeCompteId, navOrder }: INavbarProps) {
   const pathname = usePathname();
 
   return (
@@ -40,50 +26,31 @@ export default function Navbar({ categories }: INavbarProps) {
           </span>
         </div>
 
-        {/* Nav links */}
-        <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            const isActive = pathname === href;
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  isActive
-                    ? "bg-orange-500/15 text-orange-400"
-                    : "text-white/40 hover:text-white hover:bg-white/[0.05]"
-                }`}
-              >
-                <Icon size={17} strokeWidth={isActive ? 2.2 : 1.8} />
-                {label}
-              </Link>
-            );
-          })}
+        {/* Account Switcher */}
+        {comptes.length > 0 && (
+          <div className="px-3 mb-4">
+            <AccountSwitcher comptes={comptes} activeCompteId={activeCompteId} />
+          </div>
+        )}
 
-          {/* Categories section */}
-          {categories.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-white/[0.05]">
-              <p className="text-[10px] text-white/25 uppercase tracking-widest font-medium px-3 mb-2">
-                Catégories
-              </p>
-              <CategoryList categories={categories} />
-            </div>
-          )}
+        {/* Nav links (drag-and-drop) */}
+        <nav className="flex-1 px-3 overflow-y-auto">
+          <NavList savedOrder={navOrder} />
         </nav>
 
         {/* Footer */}
         <div className="px-5 py-5 border-t border-white/[0.05]">
-          <p className="text-[11px] text-white/20">FinaTrak · v0.1</p>
+          <p className="text-[11px] text-white/20">FinaTrak · v0.2</p>
         </div>
       </aside>
 
       {/* ── Bottom bar mobile ── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#07070f]/95 backdrop-blur border-t border-white/[0.07] flex z-30 pb-safe">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {ALL_NAV_ITEMS.map(({ key, href, label, icon: Icon }) => {
           const isActive = pathname === href;
           return (
             <Link
-              key={href}
+              key={key}
               href={href}
               className={`flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-medium transition-colors ${
                 isActive ? "text-orange-400" : "text-white/35"

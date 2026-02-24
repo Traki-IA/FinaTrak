@@ -12,6 +12,7 @@ const BudgetItemSchema = z.object({
   frequence: z.enum(["mensuel", "annuel"]),
   categorie_id: z.string().nullable(),
   objectif_id: z.string().uuid().nullable(),
+  compte_id: z.string().uuid("Compte invalide"),
   creer_objectif: z.boolean(),
   objectif_nom: z.string().nullable(),
   objectif_cible: z.number().positive().nullable(),
@@ -62,6 +63,7 @@ export async function insertBudgetItem(
           montant_cible: objectif_cible,
           montant_actuel: 0,
           periode: objectif_periode ?? "ponctuel",
+          compte_id: itemData.compte_id,
         },
       ])
       .select("id")

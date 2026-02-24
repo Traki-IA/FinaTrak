@@ -3,7 +3,8 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Toaster } from "sonner";
 import Navbar from "@/components/Navbar";
-import { fetchCategories } from "@/lib/transactions";
+import { fetchComptes, fetchNavOrder } from "@/lib/comptes";
+import { getActiveCompteId, DEFAULT_COMPTE_ID } from "@/lib/active-compte";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -36,9 +37,18 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let categories: Awaited<ReturnType<typeof fetchCategories>> = [];
+  let comptes: Awaited<ReturnType<typeof fetchComptes>> = [];
+  let activeCompteId = DEFAULT_COMPTE_ID;
+  let navOrder: string[] = [];
+
   try {
-    categories = await fetchCategories();
+    [comptes, navOrder] = await Promise.all([fetchComptes(), fetchNavOrder()]);
+    activeCompteId = await getActiveCompteId();
+
+    // Vérifier que le compte actif existe toujours
+    if (comptes.length > 0 && !comptes.find((c) => c.id === activeCompteId)) {
+      activeCompteId = comptes[0].id;
+    }
   } catch {
     // Supabase may not be configured during build
   }
@@ -48,7 +58,7 @@ export default async function RootLayout({
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased bg-background`}
       >
-        <Navbar categories={categories} />
+        <Navbar comptes={comptes} activeCompteId={activeCompteId} navOrder={navOrder} />
         {/* Décalage du contenu à droite du sidebar sur desktop, padding bas sur mobile */}
         <div className="md:ml-56 pb-20 md:pb-0">
           {children}

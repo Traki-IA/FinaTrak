@@ -3,14 +3,17 @@ import { fetchAllTransactions, fetchCategories } from "@/lib/transactions";
 import { fetchObjectifs } from "@/lib/objectifs";
 import TransactionsContent from "./TransactionsContent";
 import TransactionsSkeleton from "./TransactionsSkeleton";
+import { getActiveCompteId } from "@/lib/active-compte";
 
 export const dynamic = "force-dynamic";
 
 async function TransactionsData() {
+  const compteId = await getActiveCompteId();
+
   const [transactions, categories, objectifs] = await Promise.all([
-    fetchAllTransactions(),
+    fetchAllTransactions(compteId),
     fetchCategories(),
-    fetchObjectifs(),
+    fetchObjectifs(compteId),
   ]);
 
   return (
@@ -18,6 +21,7 @@ async function TransactionsData() {
       transactions={transactions}
       categories={categories}
       objectifs={objectifs}
+      compteId={compteId}
     />
   );
 }

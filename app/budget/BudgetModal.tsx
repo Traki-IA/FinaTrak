@@ -19,6 +19,7 @@ interface IBudgetModalProps {
   categories: TCategorie[];
   objectifs: TObjectif[];
   budgetItem?: TBudgetItemWithRelations;
+  compteId: string;
 }
 
 const INITIAL_FORM = {
@@ -70,6 +71,7 @@ export default function BudgetModal({
   categories,
   objectifs,
   budgetItem,
+  compteId,
 }: IBudgetModalProps) {
   const router = useRouter();
   const isEditMode = Boolean(budgetItem);
@@ -168,6 +170,7 @@ export default function BudgetModal({
         categorie_id: form.categorie_id || null,
         objectif_id:
           form.objectifMode === "existing" ? form.objectif_id || null : null,
+        compte_id: compteId,
         creer_objectif: form.objectifMode === "new",
         objectif_nom:
           form.objectifMode === "new" ? form.objectif_nom.trim() : null,
