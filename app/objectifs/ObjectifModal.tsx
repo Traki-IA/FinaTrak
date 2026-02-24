@@ -12,6 +12,7 @@ interface IObjectifModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   objectif?: TObjectif;
+  compteId: string;
 }
 
 const INITIAL_FORM = {
@@ -32,6 +33,7 @@ export default function ObjectifModal({
   open,
   onOpenChange,
   objectif,
+  compteId,
 }: IObjectifModalProps) {
   const router = useRouter();
   const isEditMode = Boolean(objectif);
@@ -120,6 +122,7 @@ export default function ObjectifModal({
         montant_actuel: parseFloat(form.montant_actuel),
         periode: form.periode,
         date_fin: form.date_fin || null,
+        compte_id: compteId,
       });
 
       setIsSubmitting(false);

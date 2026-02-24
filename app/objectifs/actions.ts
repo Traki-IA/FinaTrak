@@ -10,6 +10,7 @@ const ObjectifSchema = z.object({
   montant_actuel: z.number().min(0, "Le montant actuel ne peut pas être négatif"),
   periode: z.enum(["mensuel", "annuel", "ponctuel"]),
   date_fin: z.string().nullable(),
+  compte_id: z.string().uuid("Compte invalide"),
 });
 
 const UpdateObjectifSchema = z.object({

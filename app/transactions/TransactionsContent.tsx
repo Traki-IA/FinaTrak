@@ -292,12 +292,14 @@ interface ITransactionsContentProps {
   transactions: TTransactionWithCategorie[];
   categories: TCategorie[];
   objectifs: TObjectif[];
+  compteId: string;
 }
 
 export default function TransactionsContent({
   transactions,
   categories,
   objectifs,
+  compteId,
 }: ITransactionsContentProps) {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
@@ -563,6 +565,7 @@ export default function TransactionsContent({
         categories={categories}
         objectifs={objectifs}
         transaction={editingTransaction}
+        compteId={compteId}
       />
     </main>
   );

@@ -31,13 +31,13 @@ function labelMois(dateStr: string): string {
   });
 }
 
-// ── Solde initial ────────────────────────────────────────────────────────────
+// ── Solde initial (depuis la table comptes) ──────────────────────────────────
 
-export async function fetchSoldeInitial(): Promise<number> {
+export async function fetchSoldeInitial(compteId: string): Promise<number> {
   const { data, error } = await supabase
-    .from("settings")
-    .select("valeur")
-    .eq("cle", "solde_initial")
+    .from("comptes")
+    .select("solde_initial")
+    .eq("id", compteId)
     .maybeSingle();
 
   if (error) {
@@ -45,18 +45,17 @@ export async function fetchSoldeInitial(): Promise<number> {
     return 0;
   }
 
-  return data ? Number(data.valeur) : 0;
+  return data ? Number(data.solde_initial) : 0;
 }
 
 /**
- * Vérifie si le solde initial a déjà été défini (la clé existe en base).
- * Permet de distinguer "non défini" de "défini à 0".
+ * Vérifie si le compte existe (remplace fetchSoldeInitialIsSet).
  */
-export async function fetchSoldeInitialIsSet(): Promise<boolean> {
+export async function fetchSoldeInitialIsSet(compteId: string): Promise<boolean> {
   const { data, error } = await supabase
-    .from("settings")
-    .select("cle")
-    .eq("cle", "solde_initial")
+    .from("comptes")
+    .select("id")
+    .eq("id", compteId)
     .maybeSingle();
 
   if (error) {
@@ -67,10 +66,14 @@ export async function fetchSoldeInitialIsSet(): Promise<boolean> {
   return data !== null;
 }
 
-export async function upsertSoldeInitial(montant: number): Promise<void> {
+export async function upsertSoldeInitial(
+  compteId: string,
+  montant: number
+): Promise<void> {
   const { error } = await supabase
-    .from("settings")
-    .upsert({ cle: "solde_initial", valeur: String(montant) }, { onConflict: "cle" });
+    .from("comptes")
+    .update({ solde_initial: montant })
+    .eq("id", compteId);
 
   if (error) {
     throw new Error(`upsertSoldeInitial: ${error.message}`);
@@ -79,7 +82,9 @@ export async function upsertSoldeInitial(montant: number): Promise<void> {
 
 // ── Fonctions exportées ──────────────────────────────────────────────────────
 
-export async function fetchDashboardStats(): Promise<TDashboardStats> {
+export async function fetchDashboardStats(
+  compteId: string
+): Promise<TDashboardStats> {
   const { debut, fin } = getPeriodeBounds();
 
   console.log(`[dashboard] Période mois courant : ${debut} → ${fin}`);
@@ -88,6 +93,7 @@ export async function fetchDashboardStats(): Promise<TDashboardStats> {
   const { data: monthData, error: monthError } = await supabase
     .from("transactions")
     .select("montant, type")
+    .eq("compte_id", compteId)
     .gte("date", debut)
     .lte("date", fin);
 
@@ -96,17 +102,18 @@ export async function fetchDashboardStats(): Promise<TDashboardStats> {
     throw new Error(`fetchDashboardStats (mois): ${monthError.message}`);
   }
 
-  // Toutes les transactions (pour le solde total cumulé)
+  // Toutes les transactions du compte (pour le solde total cumulé)
   const { data: allData, error: allError } = await supabase
     .from("transactions")
-    .select("montant, type");
+    .select("montant, type")
+    .eq("compte_id", compteId);
 
   if (allError) {
     console.error("[dashboard] fetchDashboardStats (total):", allError.message);
     throw new Error(`fetchDashboardStats (total): ${allError.message}`);
   }
 
-  const soldeInitial = await fetchSoldeInitial();
+  const soldeInitial = await fetchSoldeInitial(compteId);
 
   const monthRows = monthData ?? [];
   const allRows = allData ?? [];
@@ -151,12 +158,13 @@ export async function fetchDashboardStats(): Promise<TDashboardStats> {
   };
 }
 
-export async function fetchRecentTransactions(): Promise<
-  TTransactionWithCategorie[]
-> {
+export async function fetchRecentTransactions(
+  compteId: string
+): Promise<TTransactionWithCategorie[]> {
   const { data, error } = await supabase
     .from("transactions")
     .select("*, categories(*)")
+    .eq("compte_id", compteId)
     .order("date", { ascending: false })
     .limit(5);
 
@@ -167,17 +175,18 @@ export async function fetchRecentTransactions(): Promise<
   return (data ?? []) as TTransactionWithCategorie[];
 }
 
-export async function fetchDepensesParCategorie(): Promise<
-  TDepenseCategorie[]
-> {
+export async function fetchDepensesParCategorie(
+  compteId: string
+): Promise<TDepenseCategorie[]> {
   const { debut, fin } = getPeriodeBounds();
 
   const { data, error } = await supabase
     .from("transactions")
     .select("montant, categories(nom, couleur)")
     .eq("type", "depense")
+    .eq("compte_id", compteId)
     .gte("date", debut)
-    .lte("date", fin); // borne supérieure manquante corrigée
+    .lte("date", fin);
 
   if (error) {
     throw new Error(`fetchDepensesParCategorie: ${error.message}`);
@@ -201,10 +210,13 @@ export async function fetchDepensesParCategorie(): Promise<
   return Array.from(grouped.values());
 }
 
-export async function fetchBalanceHistory(): Promise<TBalancePoint[]> {
+export async function fetchBalanceHistory(
+  compteId: string
+): Promise<TBalancePoint[]> {
   const { data, error } = await supabase
     .from("transactions")
     .select("montant, type, date")
+    .eq("compte_id", compteId)
     .order("date", { ascending: true });
 
   if (error) {

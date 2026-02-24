@@ -1,3 +1,15 @@
+// ── Comptes bancaires ────────────────────────────────────────────────────────
+
+export type TCompte = {
+  id: string;
+  nom: string;
+  couleur: string;
+  icone: string;
+  solde_initial: number;
+  sort_order: number;
+  created_at: string;
+};
+
 // ── Entités base de données ──────────────────────────────────────────────────
 
 export type TTransaction = {
@@ -6,6 +18,7 @@ export type TTransaction = {
   montant: number;
   type: "depense" | "revenu";
   categorie_id: string | null;
+  compte_id: string;
   description: string | null;
   created_at: string;
 };
@@ -26,6 +39,7 @@ export type TObjectif = {
   montant_actuel: number;
   periode: "mensuel" | "annuel" | "ponctuel";
   date_fin: string | null;
+  compte_id: string;
   sort_order: number;
   created_at: string;
 };
@@ -45,6 +59,7 @@ export type TBudgetItem = {
   frequence: "mensuel" | "annuel";
   categorie_id: string | null;
   objectif_id: string | null;
+  compte_id: string;
   actif: boolean;
   sort_order: number;
   created_at: string;

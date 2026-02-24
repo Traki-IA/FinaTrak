@@ -4,14 +4,17 @@ import { fetchCategories } from "@/lib/transactions";
 import { fetchObjectifs } from "@/lib/objectifs";
 import BudgetContent from "./BudgetContent";
 import BudgetSkeleton from "./BudgetSkeleton";
+import { getActiveCompteId } from "@/lib/active-compte";
 
 export const dynamic = "force-dynamic";
 
 async function BudgetData() {
+  const compteId = await getActiveCompteId();
+
   const [items, categories, objectifs] = await Promise.all([
-    fetchBudgetItems(),
+    fetchBudgetItems(compteId),
     fetchCategories(),
-    fetchObjectifs(),
+    fetchObjectifs(compteId),
   ]);
 
   return (
@@ -19,6 +22,7 @@ async function BudgetData() {
       items={items}
       categories={categories}
       objectifs={objectifs}
+      compteId={compteId}
     />
   );
 }
