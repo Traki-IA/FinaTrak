@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { supabase } from "@/lib/supabase";
 import { upsertSoldeInitial } from "@/lib/dashboard";
 
 const SoldeInitialSchema = z.object({
@@ -28,4 +29,24 @@ export async function updateSoldeInitial(
       error: err instanceof Error ? err.message : "Erreur inconnue",
     };
   }
+}
+
+// ── Réorganisation des catégories ────────────────────────────────────────────
+
+type TActionResult = { success: true } | { error: string };
+
+export async function reorderCategories(
+  orderedIds: string[]
+): Promise<TActionResult> {
+  for (let i = 0; i < orderedIds.length; i++) {
+    const { error } = await supabase
+      .from("categories")
+      .update({ sort_order: i })
+      .eq("id", orderedIds[i]);
+
+    if (error) return { error: error.message };
+  }
+
+  revalidatePath("/");
+  return { success: true };
 }

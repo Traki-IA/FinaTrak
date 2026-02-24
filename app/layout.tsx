@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Toaster } from "sonner";
 import Navbar from "@/components/Navbar";
+import { fetchCategories } from "@/lib/transactions";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -30,17 +31,24 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let categories: Awaited<ReturnType<typeof fetchCategories>> = [];
+  try {
+    categories = await fetchCategories();
+  } catch {
+    // Supabase may not be configured during build
+  }
+
   return (
     <html lang="fr">
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased bg-background`}
       >
-        <Navbar />
+        <Navbar categories={categories} />
         {/* Décalage du contenu à droite du sidebar sur desktop, padding bas sur mobile */}
         <div className="md:ml-56 pb-20 md:pb-0">
           {children}

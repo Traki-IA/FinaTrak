@@ -5,7 +5,7 @@ export async function fetchObjectifs(): Promise<TObjectif[]> {
   const { data, error } = await supabase
     .from("objectifs")
     .select("*")
-    .order("created_at", { ascending: true });
+    .order("sort_order", { ascending: true });
 
   if (error) throw new Error(`fetchObjectifs: ${error.message}`);
   return (data ?? []) as TObjectif[];

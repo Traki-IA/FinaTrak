@@ -15,6 +15,7 @@ export type TCategorie = {
   nom: string;
   couleur: string;
   icone: string;
+  sort_order: number;
   created_at: string;
 };
 
@@ -25,6 +26,7 @@ export type TObjectif = {
   montant_actuel: number;
   periode: "mensuel" | "annuel" | "ponctuel";
   date_fin: string | null;
+  sort_order: number;
   created_at: string;
 };
 
@@ -44,6 +46,7 @@ export type TBudgetItem = {
   categorie_id: string | null;
   objectif_id: string | null;
   actif: boolean;
+  sort_order: number;
   created_at: string;
 };
 
