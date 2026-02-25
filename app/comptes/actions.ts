@@ -120,21 +120,10 @@ export async function reorderComptes(
 // ── Changement de compte actif ───────────────────────────────────────────────
 
 export async function switchCompte(compteId: string): Promise<TActionResult> {
-  if (!compteId || !z.string().uuid().safeParse(compteId).success) {
+  if (!z.string().uuid().safeParse(compteId).success) {
     return { error: "Identifiant invalide" };
   }
 
-  try {
-    await setActiveCompteId(compteId);
-  } catch (err) {
-    return {
-      error:
-        err instanceof Error
-          ? err.message
-          : "Erreur lors du changement de compte",
-    };
-  }
-
-  revalidatePath("/");
+  await setActiveCompteId(compteId);
   return { success: true };
 }

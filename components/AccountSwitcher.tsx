@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Check, Landmark, Wallet, CreditCard, PiggyBank, Building2, Banknote } from "lucide-react";
 import { toast } from "sonner";
@@ -28,7 +27,6 @@ interface IAccountSwitcherProps {
 }
 
 export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwitcherProps) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -46,9 +44,7 @@ export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwi
   }, []);
 
   async function handleSwitch(compteId: string) {
-    // Comparer avec l'ID résolu (activeCompte) plutôt que le prop brut
-    // pour éviter les incohérences quand le cookie est en cours de correction
-    if (compteId === activeCompte?.id) {
+    if (compteId === activeCompteId) {
       setOpen(false);
       return;
     }
@@ -58,12 +54,12 @@ export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwi
 
     if ("error" in result) {
       toast.error(result.error);
+      setSwitching(false);
+      setOpen(false);
     } else {
-      router.refresh();
+      setOpen(false);
+      window.location.reload();
     }
-
-    setSwitching(false);
-    setOpen(false);
   }
 
   if (!activeCompte) return null;
