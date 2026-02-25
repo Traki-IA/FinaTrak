@@ -50,15 +50,22 @@ export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwi
     }
 
     setSwitching(true);
-    const result = await switchCompte(compteId);
 
-    if ("error" in result) {
-      toast.error(result.error);
+    try {
+      const result = await switchCompte(compteId);
+
+      if ("error" in result) {
+        toast.error(result.error);
+        setSwitching(false);
+        setOpen(false);
+      } else {
+        setOpen(false);
+        window.location.reload();
+      }
+    } catch {
+      toast.error("Erreur lors du changement de compte");
       setSwitching(false);
       setOpen(false);
-    } else {
-      setOpen(false);
-      window.location.reload();
     }
   }
 
