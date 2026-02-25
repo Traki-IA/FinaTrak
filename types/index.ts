@@ -20,6 +20,7 @@ export type TTransaction = {
   categorie_id: string | null;
   compte_id: string;
   description: string | null;
+  budget_item_id: string | null;
   created_at: string;
 };
 
@@ -68,6 +69,21 @@ export type TBudgetItem = {
 export type TBudgetItemWithRelations = TBudgetItem & {
   categories: TCategorie | null;
   objectifs: TObjectif | null;
+};
+
+// ── Types objectifs enrichis ─────────────────────────────────────────────
+
+export type TBudgetLineProgress = {
+  id: string;
+  nom: string;
+  montant: number;
+  frequence: "mensuel" | "annuel";
+  consomme: number;
+  restant: number;
+};
+
+export type TObjectifWithBudgetLines = TObjectif & {
+  budget_lines: TBudgetLineProgress[];
 };
 
 // ── Types dashboard ──────────────────────────────────────────────────────────

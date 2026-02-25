@@ -10,6 +10,8 @@ import {
   Target,
   Calendar,
   GripVertical,
+  ChevronDown,
+  TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -36,7 +38,7 @@ import {
   reorderObjectifs,
 } from "./actions";
 import { formatEur } from "@/lib/format";
-import type { TObjectif } from "@/types";
+import type { TObjectifWithBudgetLines } from "@/types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -51,6 +53,15 @@ function formatDate(dateStr: string): string {
 function joursRestants(dateFin: string): number {
   const diff = new Date(dateFin).getTime() - Date.now();
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function moisRestants(dateFin: string): number {
+  const now = new Date();
+  const fin = new Date(dateFin);
+  const mois =
+    (fin.getFullYear() - now.getFullYear()) * 12 +
+    (fin.getMonth() - now.getMonth());
+  return Math.max(1, mois);
 }
 
 const PERIODE_COLORS: Record<string, string> = {
@@ -75,9 +86,9 @@ function SortableObjectifCard({
   onDeleteConfirm,
   onDeleteCancel,
 }: {
-  objectif: TObjectif;
+  objectif: TObjectifWithBudgetLines;
   confirmingDeleteId: string | null;
-  onEdit: (o: TObjectif) => void;
+  onEdit: (o: TObjectifWithBudgetLines) => void;
   onDeleteRequest: (id: string) => void;
   onDeleteConfirm: (id: string) => void;
   onDeleteCancel: () => void;
@@ -88,6 +99,7 @@ function SortableObjectifCard({
   const [inputValue, setInputValue] = useState(
     objectif.montant_actuel.toString()
   );
+  const [budgetLinesOpen, setBudgetLinesOpen] = useState(false);
 
   const {
     attributes,
@@ -110,8 +122,14 @@ function SortableObjectifCard({
     100
   );
   const atteint = objectif.montant_actuel >= objectif.montant_cible;
-  const restant = objectif.montant_cible - objectif.montant_actuel;
+  const restant = Math.max(0, objectif.montant_cible - objectif.montant_actuel);
   const isConfirming = confirmingDeleteId === objectif.id;
+
+  const jours = objectif.date_fin ? joursRestants(objectif.date_fin) : null;
+  const objectifMensuel =
+    !atteint && objectif.date_fin && jours !== null && jours > 0
+      ? restant / moisRestants(objectif.date_fin)
+      : null;
 
   async function handleDeleteConfirm() {
     onDeleteConfirm(objectif.id);
@@ -150,8 +168,6 @@ function SortableObjectifCard({
     : pct >= 33
     ? "#f97316"
     : "#ef4444";
-
-  const jours = objectif.date_fin ? joursRestants(objectif.date_fin) : null;
 
   return (
     <div ref={setNodeRef} style={style}>
@@ -214,11 +230,12 @@ function SortableObjectifCard({
           </div>
         </div>
 
-        {/* Progress */}
+        {/* Progress — Refactorisé */}
         <div>
           <div className="flex items-center justify-between mb-2 text-xs">
             <span className="text-white/50">
-              {formatEur(objectif.montant_actuel)} épargnés
+              {formatEur(objectif.montant_actuel)} sur{" "}
+              {formatEur(objectif.montant_cible)}
             </span>
             <span className="text-white/70 font-medium">
               {pct.toFixed(0)} %
@@ -233,15 +250,16 @@ function SortableObjectifCard({
               style={{ background: barColor }}
             />
           </div>
-          <div className="flex items-center justify-between mt-2 text-xs text-white/40">
-            <span>
-              {atteint
-                ? "Objectif atteint !"
-                : `${formatEur(restant)} restants`}
-            </span>
-            <span className="font-medium text-white/60">
-              {formatEur(objectif.montant_cible)}
-            </span>
+          <div className="mt-2 text-xs">
+            {atteint ? (
+              <span className="text-emerald-400 font-medium">
+                ✓ Objectif atteint !
+              </span>
+            ) : (
+              <span className="text-white/40">
+                Il reste {formatEur(restant)} à couvrir
+              </span>
+            )}
           </div>
         </div>
 
@@ -262,6 +280,104 @@ function SortableObjectifCard({
               : `Échéance : ${formatDate(objectif.date_fin)}${
                   jours !== null ? ` · ${jours} j` : ""
                 }`}
+          </div>
+        )}
+
+        {/* Objectif mensuel */}
+        {objectifMensuel !== null && (
+          <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5">
+            <TrendingUp size={14} className="text-orange-400 flex-shrink-0" />
+            <div className="text-xs">
+              <span className="text-orange-300/70">Objectif mensuel : </span>
+              <span className="text-orange-300 font-semibold">
+                {formatEur(objectifMensuel)}
+              </span>
+              <span className="text-orange-300/50"> / mois</span>
+            </div>
+          </div>
+        )}
+
+        {/* Accordéon lignes de budget */}
+        {objectif.budget_lines.length > 0 && (
+          <div>
+            <button
+              onClick={() => setBudgetLinesOpen(!budgetLinesOpen)}
+              className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors w-full"
+            >
+              <ChevronDown
+                size={13}
+                className={`transition-transform duration-200 ${
+                  budgetLinesOpen ? "rotate-180" : ""
+                }`}
+              />
+              Voir les lignes de budget ({objectif.budget_lines.length})
+            </button>
+
+            <AnimatePresence>
+              {budgetLinesOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-2.5 space-y-2">
+                    {objectif.budget_lines.map((line) => {
+                      const linePct = Math.min(
+                        (line.consomme / line.montant) * 100,
+                        100
+                      );
+                      const lineColor =
+                        linePct >= 100
+                          ? "#22c55e"
+                          : linePct >= 50
+                          ? "#f97316"
+                          : "#ef4444";
+
+                      return (
+                        <div
+                          key={line.id}
+                          className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-3 py-2.5"
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs text-white/60 font-medium truncate">
+                              {line.nom}
+                            </span>
+                            <span className="text-xs text-white/40 flex-shrink-0 ml-2">
+                              {formatEur(line.consomme)} /{" "}
+                              {formatEur(line.montant)}
+                            </span>
+                          </div>
+                          <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${linePct}%` }}
+                              transition={{
+                                duration: 0.6,
+                                ease: "easeOut",
+                              }}
+                              className="h-full rounded-full"
+                              style={{ background: lineColor }}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between mt-1 text-[10px]">
+                            <span className="text-white/30">
+                              {line.frequence === "mensuel"
+                                ? "Mensuel"
+                                : "Annuel"}
+                            </span>
+                            <span className="text-white/40 font-medium">
+                              {linePct.toFixed(0)} %
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
@@ -353,13 +469,13 @@ export default function ObjectifsContent({
   objectifs: initialObjectifs,
   compteId,
 }: {
-  objectifs: TObjectif[];
+  objectifs: TObjectifWithBudgetLines[];
   compteId: string;
 }) {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingObjectif, setEditingObjectif] = useState<
-    TObjectif | undefined
+    TObjectifWithBudgetLines | undefined
   >(undefined);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
     null
@@ -389,7 +505,7 @@ export default function ObjectifsContent({
     setModalOpen(true);
   }
 
-  function openEditModal(objectif: TObjectif) {
+  function openEditModal(objectif: TObjectifWithBudgetLines) {
     setEditingObjectif(objectif);
     setModalOpen(true);
   }

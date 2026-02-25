@@ -13,6 +13,7 @@ const TransactionSchema = z.object({
   compte_id: z.string().uuid("Compte invalide"),
   // objectif_id n'est pas stocké en base, il sert uniquement à mettre à jour la progression
   objectif_id: z.string().uuid().nullable().optional(),
+  budget_item_id: z.string().uuid().nullable().optional(),
 });
 
 const UpdateTransactionSchema = z.object({
@@ -41,9 +42,14 @@ export async function insertTransaction(
     return { error: firstIssue?.message ?? "Données invalides" };
   }
 
-  const { objectif_id, ...transactionData } = parsed.data;
+  const { objectif_id, budget_item_id, ...baseData } = parsed.data;
 
-  // Insertion de la transaction (sans objectif_id, colonne inexistante en base)
+  // Construire les données à insérer (budget_item_id est stocké en base)
+  const transactionData = {
+    ...baseData,
+    budget_item_id: budget_item_id ?? null,
+  };
+
   const { error } = await supabase
     .from("transactions")
     .insert([transactionData]);
@@ -60,8 +66,14 @@ export async function insertTransaction(
       .single();
 
     if (objectif) {
-      const nouveauMontant =
-        (objectif.montant_actuel as number) + parsed.data.montant;
+      const delta =
+        parsed.data.type === "depense"
+          ? -parsed.data.montant
+          : parsed.data.montant;
+      const nouveauMontant = Math.max(
+        0,
+        (objectif.montant_actuel as number) + delta
+      );
       await supabase
         .from("objectifs")
         .update({ montant_actuel: nouveauMontant })

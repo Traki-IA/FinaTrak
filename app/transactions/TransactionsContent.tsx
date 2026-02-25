@@ -9,7 +9,7 @@ import TransactionModal from "./TransactionModal";
 import FilterSelect from "@/components/FilterSelect";
 import { deleteTransaction } from "./actions";
 import { formatEur } from "@/lib/format";
-import type { TTransactionWithCategorie, TCategorie, TObjectif } from "@/types";
+import type { TTransactionWithCategorie, TCategorie, TObjectif, TBudgetItem } from "@/types";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -292,6 +292,7 @@ interface ITransactionsContentProps {
   transactions: TTransactionWithCategorie[];
   categories: TCategorie[];
   objectifs: TObjectif[];
+  budgetItems: TBudgetItem[];
   compteId: string;
 }
 
@@ -299,6 +300,7 @@ export default function TransactionsContent({
   transactions,
   categories,
   objectifs,
+  budgetItems,
   compteId,
 }: ITransactionsContentProps) {
   const router = useRouter();
@@ -564,6 +566,7 @@ export default function TransactionsContent({
         onOpenChange={setModalOpen}
         categories={categories}
         objectifs={objectifs}
+        budgetItems={budgetItems}
         transaction={editingTransaction}
         compteId={compteId}
       />
