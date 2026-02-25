@@ -4,7 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { Toaster } from "sonner";
 import Navbar from "@/components/Navbar";
 import { fetchComptes, fetchNavOrder } from "@/lib/comptes";
-import { getActiveCompteId, DEFAULT_COMPTE_ID } from "@/lib/active-compte";
+import { getActiveCompteId, setActiveCompteId, DEFAULT_COMPTE_ID } from "@/lib/active-compte";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -45,9 +45,10 @@ export default async function RootLayout({
     [comptes, navOrder] = await Promise.all([fetchComptes(), fetchNavOrder()]);
     activeCompteId = await getActiveCompteId();
 
-    // Vérifier que le compte actif existe toujours
+    // Vérifier que le compte actif existe toujours — persister la correction dans le cookie
     if (comptes.length > 0 && !comptes.find((c) => c.id === activeCompteId)) {
       activeCompteId = comptes[0].id;
+      await setActiveCompteId(activeCompteId);
     }
   } catch {
     // Supabase may not be configured during build
