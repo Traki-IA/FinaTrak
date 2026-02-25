@@ -46,7 +46,9 @@ export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwi
   }, []);
 
   async function handleSwitch(compteId: string) {
-    if (compteId === activeCompteId) {
+    // Comparer avec l'ID résolu (activeCompte) plutôt que le prop brut
+    // pour éviter les incohérences quand le cookie est en cours de correction
+    if (compteId === activeCompte?.id) {
       setOpen(false);
       return;
     }
@@ -96,7 +98,7 @@ export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwi
             className="absolute left-0 right-0 top-full mt-1 bg-[#111122] border border-white/[0.08] rounded-xl shadow-xl overflow-hidden z-50"
           >
             {comptes.map((compte) => {
-              const isActive = compte.id === activeCompteId;
+              const isActive = compte.id === activeCompte?.id;
               return (
                 <button
                   key={compte.id}
