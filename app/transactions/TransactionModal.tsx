@@ -6,13 +6,14 @@ import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2 } from "lucide-react";
 import { insertTransaction, updateTransaction } from "./actions";
-import type { TCategorie, TObjectif, TTransactionWithCategorie } from "@/types";
+import type { TCategorie, TObjectif, TBudgetItem, TTransactionWithCategorie } from "@/types";
 
 interface ITransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categories: TCategorie[];
   objectifs: TObjectif[];
+  budgetItems: TBudgetItem[];
   transaction?: TTransactionWithCategorie;
   compteId: string;
 }
@@ -24,6 +25,7 @@ const INITIAL_FORM = {
   description: "",
   date: new Date().toISOString().split("T")[0],
   objectif_id: "",
+  budget_item_id: "",
 };
 
 export default function TransactionModal({
@@ -31,6 +33,7 @@ export default function TransactionModal({
   onOpenChange,
   categories,
   objectifs,
+  budgetItems,
   transaction,
   compteId,
 }: ITransactionModalProps) {
@@ -45,6 +48,7 @@ export default function TransactionModal({
       description: t.description ?? "",
       date: t.date,
       objectif_id: "",
+      budget_item_id: t.budget_item_id ?? "",
     };
   }
 
@@ -123,6 +127,7 @@ export default function TransactionModal({
         date: form.date,
         compte_id: compteId,
         objectif_id: form.objectif_id || null,
+        budget_item_id: form.budget_item_id || null,
       });
 
       setIsSubmitting(false);
@@ -269,7 +274,10 @@ export default function TransactionModal({
                 </label>
                 <select
                   value={form.objectif_id}
-                  onChange={(e) => set("objectif_id", e.target.value)}
+                  onChange={(e) => {
+                    set("objectif_id", e.target.value);
+                    set("budget_item_id", "");
+                  }}
                   className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer appearance-none"
                   style={{ colorScheme: "dark" }}
                 >
@@ -294,6 +302,47 @@ export default function TransactionModal({
                     );
                   })}
                 </select>
+
+                {/* Sélecteur de ligne de budget — conditionnel */}
+                {form.objectif_id &&
+                  (() => {
+                    const linkedBudgetItems = budgetItems.filter(
+                      (bi) => bi.objectif_id === form.objectif_id
+                    );
+                    if (linkedBudgetItems.length === 0) return null;
+                    return (
+                      <div className="space-y-1.5">
+                        <label className="text-sm text-white/60 font-medium">
+                          Ligne de budget{" "}
+                          <span className="text-white/30 font-normal">
+                            (optionnel)
+                          </span>
+                        </label>
+                        <select
+                          value={form.budget_item_id}
+                          onChange={(e) => set("budget_item_id", e.target.value)}
+                          className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer appearance-none"
+                          style={{ colorScheme: "dark" }}
+                        >
+                          <option value="" className="bg-[#0f0f1a]">
+                            Aucune ligne
+                          </option>
+                          {linkedBudgetItems.map((bi) => (
+                            <option
+                              key={bi.id}
+                              value={bi.id}
+                              className="bg-[#0f0f1a]"
+                            >
+                              {bi.nom} ({new Intl.NumberFormat("fr-FR", {
+                                style: "currency",
+                                currency: "EUR",
+                              }).format(bi.montant)})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  })()}
 
                 {/* Aperçu de la progression si un objectif est sélectionné */}
                 {form.objectif_id &&
