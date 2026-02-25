@@ -3,8 +3,9 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Toaster } from "sonner";
 import Navbar from "@/components/Navbar";
+import AccountGuard from "@/components/AccountGuard";
 import { fetchComptes, fetchNavOrder } from "@/lib/comptes";
-import { getActiveCompteId, setActiveCompteId, DEFAULT_COMPTE_ID } from "@/lib/active-compte";
+import { getActiveCompteId, DEFAULT_COMPTE_ID } from "@/lib/active-compte";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -40,15 +41,18 @@ export default async function RootLayout({
   let comptes: Awaited<ReturnType<typeof fetchComptes>> = [];
   let activeCompteId = DEFAULT_COMPTE_ID;
   let navOrder: string[] = [];
+  let needsAccountFix = false;
 
   try {
     [comptes, navOrder] = await Promise.all([fetchComptes(), fetchNavOrder()]);
     activeCompteId = await getActiveCompteId();
 
-    // Vérifier que le compte actif existe toujours — persister la correction dans le cookie
+    // Vérifier que le compte actif existe toujours
     if (comptes.length > 0 && !comptes.find((c) => c.id === activeCompteId)) {
       activeCompteId = comptes[0].id;
-      await setActiveCompteId(activeCompteId);
+      // cookies().set() ne fonctionne PAS dans un Server Component (Next.js 16),
+      // on délègue la correction au composant client AccountGuard.
+      needsAccountFix = true;
     }
   } catch {
     // Supabase may not be configured during build
@@ -60,6 +64,8 @@ export default async function RootLayout({
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased bg-background`}
       >
         <Navbar comptes={comptes} activeCompteId={activeCompteId} navOrder={navOrder} />
+        {/* Correction du cookie via Server Action si le compteId ne correspond à aucun compte */}
+        {needsAccountFix && <AccountGuard compteId={activeCompteId} />}
         {/* Décalage du contenu à droite du sidebar sur desktop, padding bas sur mobile */}
         <div className="md:ml-56 pb-20 md:pb-0">
           {children}
