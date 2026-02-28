@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Check, Landmark, Wallet, CreditCard, PiggyBank, Building2, Banknote } from "lucide-react";
 import { toast } from "sonner";
-import { switchCompte } from "@/app/comptes/actions";
 import type { TCompte } from "@/types";
 
 const ICON_MAP: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
@@ -28,8 +26,6 @@ interface IAccountSwitcherProps {
 }
 
 export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwitcherProps) {
-  const router = useRouter();
-  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -55,15 +51,20 @@ export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwi
     setSwitching(true);
 
     try {
-      const result = await switchCompte(compteId);
+      const res = await fetch("/api/switch-compte", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ compteId }),
+      });
 
-      if ("error" in result) {
-        toast.error(result.error);
+      if (!res.ok) {
+        const data = await res.json();
+        toast.error(data.error ?? "Erreur lors du changement de compte");
         setSwitching(false);
         setOpen(false);
       } else {
         setOpen(false);
-        router.push(pathname);
+        window.location.reload();
       }
     } catch {
       toast.error("Erreur lors du changement de compte");
