@@ -1,15 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 
 const COOKIE_KEY = "active_compte_id";
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const compteId = body.compteId;
+  let body: Record<string, unknown>;
 
-  if (!z.string().uuid().safeParse(compteId).success) {
+  try {
+    body = await request.json();
+  } catch {
+    console.error("[switch-compte] JSON parse error");
     return NextResponse.json(
-      { error: "Identifiant invalide" },
+      { error: "Corps de requête invalide" },
+      { status: 400 }
+    );
+  }
+
+  const compteId = body.compteId;
+  console.log("[switch-compte] received:", JSON.stringify(body));
+
+  if (typeof compteId !== "string" || compteId.length === 0) {
+    console.error("[switch-compte] invalid compteId:", compteId, "type:", typeof compteId);
+    return NextResponse.json(
+      { error: `Identifiant invalide (reçu: ${JSON.stringify(compteId)})` },
       { status: 400 }
     );
   }
@@ -22,5 +34,6 @@ export async function POST(request: NextRequest) {
     sameSite: "lax",
   });
 
+  console.log("[switch-compte] cookie set to:", compteId);
   return response;
 }

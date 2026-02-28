@@ -49,6 +49,7 @@ export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwi
     }
 
     setSwitching(true);
+    console.log("[AccountSwitcher] switching to:", compteId, "from:", activeCompteId);
 
     try {
       const res = await fetch("/api/switch-compte", {
@@ -57,8 +58,11 @@ export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwi
         body: JSON.stringify({ compteId }),
       });
 
+      console.log("[AccountSwitcher] response status:", res.status);
+
       if (!res.ok) {
         const data = await res.json();
+        console.error("[AccountSwitcher] error response:", data);
         toast.error(data.error ?? "Erreur lors du changement de compte");
         setSwitching(false);
         setOpen(false);
