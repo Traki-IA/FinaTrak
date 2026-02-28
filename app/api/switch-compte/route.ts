@@ -16,12 +16,10 @@ export async function POST(request: NextRequest) {
   }
 
   const compteId = body.compteId;
-  console.log("[switch-compte] received:", JSON.stringify(body));
 
   if (typeof compteId !== "string" || compteId.length === 0) {
-    console.error("[switch-compte] invalid compteId:", compteId, "type:", typeof compteId);
     return NextResponse.json(
-      { error: `Identifiant invalide (reçu: ${JSON.stringify(compteId)})` },
+      { error: "Identifiant invalide" },
       { status: 400 }
     );
   }
@@ -34,6 +32,5 @@ export async function POST(request: NextRequest) {
     sameSite: "lax",
   });
 
-  console.log("[switch-compte] cookie set to:", compteId);
   return response;
 }
