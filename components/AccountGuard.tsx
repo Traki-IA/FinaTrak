@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { switchCompte } from "@/app/comptes/actions";
 
 /**
  * Composant invisible qui corrige le cookie `active_compte_id` lorsqu'il ne
- * correspond à aucun compte réel. Appelle `switchCompte` (Server Action)
- * pour persister le bon identifiant — ce qu'un Server Component ne peut pas
- * faire (cookies().set() n'est autorisé que dans les Server Actions / Route Handlers).
+ * correspond a aucun compte reel. Appelle le Route Handler /api/switch-compte
+ * pour persister le bon identifiant via Set-Cookie explicite.
  */
 export default function AccountGuard({ compteId }: { compteId: string }) {
   const didFix = useRef(false);
@@ -16,8 +14,12 @@ export default function AccountGuard({ compteId }: { compteId: string }) {
     if (didFix.current) return;
     didFix.current = true;
 
-    switchCompte(compteId).then((result) => {
-      if (!("error" in result)) {
+    fetch("/api/switch-compte", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ compteId }),
+    }).then((res) => {
+      if (res.ok) {
         window.location.reload();
       }
     });
