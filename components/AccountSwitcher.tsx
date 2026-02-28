@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Check, Landmark, Wallet, CreditCard, PiggyBank, Building2, Banknote } from "lucide-react";
 import { toast } from "sonner";
@@ -27,6 +28,8 @@ interface IAccountSwitcherProps {
 }
 
 export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwitcherProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -50,15 +53,22 @@ export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwi
     }
 
     setSwitching(true);
-    const result = await switchCompte(compteId);
 
-    if ("error" in result) {
-      toast.error(result.error);
+    try {
+      const result = await switchCompte(compteId);
+
+      if ("error" in result) {
+        toast.error(result.error);
+        setSwitching(false);
+        setOpen(false);
+      } else {
+        setOpen(false);
+        router.push(pathname);
+      }
+    } catch {
+      toast.error("Erreur lors du changement de compte");
       setSwitching(false);
       setOpen(false);
-    } else {
-      setOpen(false);
-      window.location.reload();
     }
   }
 

@@ -125,5 +125,6 @@ export async function switchCompte(compteId: string): Promise<TActionResult> {
   }
 
   await setActiveCompteId(compteId);
+  revalidatePath("/", "layout");
   return { success: true };
 }

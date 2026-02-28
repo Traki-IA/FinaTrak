@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { switchCompte } from "@/app/comptes/actions";
 
 /**
@@ -11,7 +10,6 @@ import { switchCompte } from "@/app/comptes/actions";
  * faire (cookies().set() n'est autorisé que dans les Server Actions / Route Handlers).
  */
 export default function AccountGuard({ compteId }: { compteId: string }) {
-  const router = useRouter();
   const didFix = useRef(false);
 
   useEffect(() => {
@@ -20,10 +18,10 @@ export default function AccountGuard({ compteId }: { compteId: string }) {
 
     switchCompte(compteId).then((result) => {
       if (!("error" in result)) {
-        router.refresh();
+        window.location.reload();
       }
     });
-  }, [compteId, router]);
+  }, [compteId]);
 
   return null;
 }
