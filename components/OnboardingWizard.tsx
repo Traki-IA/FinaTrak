@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, ArrowRight, Check, Sparkles } from "lucide-react";
+import { Loader2, ArrowRight, Check, Sparkles, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { insertCompte } from "@/app/(main)/comptes/actions";
 import { CompteIcon, ICON_MAP } from "@/components/AccountSwitcher";
+
+// ── Constants ───────────────────────────────────────────────────────────────
 
 const COULEURS = [
   "#6366f1", "#f59e0b", "#10b981", "#ef4444", "#3b82f6",
@@ -30,25 +32,67 @@ const SLIDE_VARIANTS = {
   }),
 };
 
+const INITIAL_FORM = {
+  nom: "",
+  icone: "landmark",
+  couleur: "#6366f1",
+};
+
+// ── Types ───────────────────────────────────────────────────────────────────
+
+type TPendingCompte = {
+  nom: string;
+  icone: string;
+  couleur: string;
+  solde_initial: string;
+};
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+const formatEur = (value: string) =>
+  new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(
+    parseFloat(value) || 0,
+  );
+
+// ── Wizard ──────────────────────────────────────────────────────────────────
+
 export default function OnboardingWizard() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [nom, setNom] = useState("");
-  const [icone, setIcone] = useState("landmark");
-  const [couleur, setCouleur] = useState("#6366f1");
-  const [soldeInitial, setSoldeInitial] = useState("0");
+  // Liste des comptes en attente de création
+  const [comptes, setComptes] = useState<TPendingCompte[]>([]);
+
+  // Formulaire courant (step 1)
+  const [form, setForm] = useState(INITIAL_FORM);
   const [nomError, setNomError] = useState("");
 
+  function addCompte() {
+    if (!form.nom.trim()) {
+      setNomError("Le nom est requis");
+      return;
+    }
+    setNomError("");
+    setComptes((prev) => [
+      ...prev,
+      { ...form, nom: form.nom.trim(), solde_initial: "0" },
+    ]);
+    // Réinitialiser le formulaire avec la prochaine couleur disponible
+    const usedColors = [...comptes.map((c) => c.couleur), form.couleur];
+    const nextColor = COULEURS.find((c) => !usedColors.includes(c)) ?? COULEURS[0];
+    setForm({ nom: "", icone: "landmark", couleur: nextColor });
+  }
+
+  function removeCompte(index: number) {
+    setComptes((prev) => prev.filter((_, i) => i !== index));
+  }
+
   function goNext() {
-    if (step === 0) {
-      if (!nom.trim()) {
-        setNomError("Le nom est requis");
-        return;
-      }
-      setNomError("");
+    if (step === 0 && comptes.length === 0) {
+      setNomError("Ajoutez au moins un compte");
+      return;
     }
     setDirection(1);
     setStep((s) => s + 1);
@@ -59,23 +103,33 @@ export default function OnboardingWizard() {
     setStep((s) => s - 1);
   }
 
+  function updateSolde(index: number, value: string) {
+    setComptes((prev) =>
+      prev.map((c, i) => (i === index ? { ...c, solde_initial: value } : c)),
+    );
+  }
+
   async function handleCreate() {
     setIsSubmitting(true);
 
-    const result = await insertCompte({
-      nom: nom.trim(),
-      couleur,
-      icone,
-      solde_initial: parseFloat(soldeInitial) || 0,
-    });
+    for (const compte of comptes) {
+      const result = await insertCompte({
+        nom: compte.nom,
+        couleur: compte.couleur,
+        icone: compte.icone,
+        solde_initial: parseFloat(compte.solde_initial) || 0,
+      });
 
-    if ("error" in result) {
-      toast.error(result.error);
-      setIsSubmitting(false);
-      return;
+      if ("error" in result) {
+        toast.error(`Erreur pour "${compte.nom}" : ${result.error}`);
+        setIsSubmitting(false);
+        return;
+      }
     }
 
-    toast.success("Compte créé !");
+    toast.success(
+      comptes.length === 1 ? "Compte créé !" : `${comptes.length} comptes créés !`,
+    );
     router.push("/dashboard");
   }
 
@@ -105,7 +159,7 @@ export default function OnboardingWizard() {
       </div>
 
       {/* Wizard card */}
-      <div className="w-full max-w-md bg-[#12121f] border border-white/10 rounded-2xl p-6 overflow-hidden relative min-h-[380px]">
+      <div className="w-full max-w-md bg-[#12121f] border border-white/10 rounded-2xl p-6 overflow-hidden relative">
         <AnimatePresence mode="wait" custom={direction}>
           {step === 0 && (
             <motion.div
@@ -117,14 +171,14 @@ export default function OnboardingWizard() {
               exit="exit"
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-              <StepAccount
-                nom={nom}
-                setNom={(v) => { setNom(v); if (nomError) setNomError(""); }}
+              <StepAccounts
+                form={form}
+                setForm={setForm}
                 nomError={nomError}
-                icone={icone}
-                setIcone={setIcone}
-                couleur={couleur}
-                setCouleur={setCouleur}
+                setNomError={setNomError}
+                comptes={comptes}
+                onAdd={addCompte}
+                onRemove={removeCompte}
                 onNext={goNext}
               />
             </motion.div>
@@ -140,9 +194,9 @@ export default function OnboardingWizard() {
               exit="exit"
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-              <StepBalance
-                soldeInitial={soldeInitial}
-                setSoldeInitial={setSoldeInitial}
+              <StepBalances
+                comptes={comptes}
+                onUpdateSolde={updateSolde}
                 onNext={goNext}
                 onBack={goBack}
                 onSkip={goNext}
@@ -161,10 +215,7 @@ export default function OnboardingWizard() {
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               <StepConfirm
-                nom={nom}
-                couleur={couleur}
-                icone={icone}
-                soldeInitial={soldeInitial}
+                comptes={comptes}
                 isSubmitting={isSubmitting}
                 onBack={goBack}
                 onCreate={handleCreate}
@@ -177,103 +228,169 @@ export default function OnboardingWizard() {
   );
 }
 
-// ── Step 1: Account name, icon, color ───────────────────────────────────────
+// ── Step 1: Multi-account creation ──────────────────────────────────────────
 
-function StepAccount({
-  nom,
-  setNom,
+function StepAccounts({
+  form,
+  setForm,
   nomError,
-  icone,
-  setIcone,
-  couleur,
-  setCouleur,
+  setNomError,
+  comptes,
+  onAdd,
+  onRemove,
   onNext,
 }: {
-  nom: string;
-  setNom: (v: string) => void;
+  form: typeof INITIAL_FORM;
+  setForm: React.Dispatch<React.SetStateAction<typeof INITIAL_FORM>>;
   nomError: string;
-  icone: string;
-  setIcone: (v: string) => void;
-  couleur: string;
-  setCouleur: (v: string) => void;
+  setNomError: (v: string) => void;
+  comptes: TPendingCompte[];
+  onAdd: () => void;
+  onRemove: (index: number) => void;
   onNext: () => void;
 }) {
+  function set<K extends keyof typeof INITIAL_FORM>(key: K, value: string) {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    if (key === "nom" && nomError) setNomError("");
+  }
+
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-white">Créez votre premier compte</h2>
+        <h2 className="text-lg font-bold text-white">Créez vos comptes</h2>
         <p className="text-sm text-white/40 mt-1">
-          Donnez-lui un nom, une icône et une couleur.
+          Ajoutez un ou plusieurs comptes pour commencer.
         </p>
       </div>
 
-      {/* Nom */}
-      <div>
-        <label className="block text-xs text-white/40 uppercase tracking-widest mb-2">
-          Nom du compte
-        </label>
-        <input
-          type="text"
-          value={nom}
-          onChange={(e) => setNom(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && onNext()}
-          className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500/50 transition-colors"
-          placeholder="Ex: Compte courant"
-          autoFocus
-        />
-        {nomError && <p className="text-red-400 text-xs mt-1">{nomError}</p>}
-      </div>
-
-      {/* Couleur */}
-      <div>
-        <label className="block text-xs text-white/40 uppercase tracking-widest mb-2">
-          Couleur
-        </label>
-        <div className="flex gap-2 flex-wrap">
-          {COULEURS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setCouleur(c)}
-              className={`w-8 h-8 rounded-lg transition-all ${
-                couleur === c
-                  ? "ring-2 ring-white ring-offset-2 ring-offset-[#12121f] scale-110"
-                  : "hover:scale-105"
-              }`}
-              style={{ backgroundColor: c }}
-            />
-          ))}
+      {/* Liste des comptes déjà ajoutés */}
+      {comptes.length > 0 && (
+        <div className="space-y-2">
+          <AnimatePresence mode="popLayout">
+            {comptes.map((compte, index) => (
+              <motion.div
+                key={`${compte.nom}-${index}`}
+                layout
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -100 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5"
+              >
+                <span
+                  className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
+                  style={{ backgroundColor: `${compte.couleur}20`, color: compte.couleur }}
+                >
+                  <CompteIcon icone={compte.icone} size={15} strokeWidth={2} />
+                </span>
+                <span className="text-white text-sm font-medium truncate flex-1">
+                  {compte.nom}
+                </span>
+                <div
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: compte.couleur }}
+                />
+                <button
+                  type="button"
+                  onClick={() => onRemove(index)}
+                  className="text-white/20 hover:text-red-400 transition-colors flex-shrink-0 p-1"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
-      </div>
+      )}
 
-      {/* Icône */}
-      <div>
-        <label className="block text-xs text-white/40 uppercase tracking-widest mb-2">
-          Icône
-        </label>
-        <div className="flex gap-2 flex-wrap">
-          {ICONES.map((iconKey) => (
-            <button
-              key={iconKey}
-              type="button"
-              onClick={() => setIcone(iconKey)}
-              className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all ${
-                icone === iconKey
-                  ? "bg-white/15 text-white ring-1 ring-white/30"
-                  : "bg-white/[0.04] text-white/40 hover:text-white/70 hover:bg-white/[0.08]"
-              }`}
-            >
-              <CompteIcon icone={iconKey} size={18} />
-            </button>
-          ))}
+      {/* Formulaire d'ajout */}
+      <div className="space-y-4 bg-white/[0.02] border border-white/[0.06] rounded-xl p-4">
+        {/* Nom */}
+        <div>
+          <label className="block text-xs text-white/40 uppercase tracking-widest mb-1.5">
+            Nom du compte
+          </label>
+          <input
+            type="text"
+            value={form.nom}
+            onChange={(e) => set("nom", e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                onAdd();
+              }
+            }}
+            className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-orange-500/50 transition-colors"
+            placeholder="Ex: Compte courant"
+            autoFocus
+          />
+          {nomError && comptes.length === 0 && (
+            <p className="text-red-400 text-xs mt-1">{nomError}</p>
+          )}
         </div>
+
+        {/* Couleur */}
+        <div>
+          <label className="block text-xs text-white/40 uppercase tracking-widest mb-1.5">
+            Couleur
+          </label>
+          <div className="flex gap-1.5 flex-wrap">
+            {COULEURS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => set("couleur", c)}
+                className={`w-7 h-7 rounded-lg transition-all ${
+                  form.couleur === c
+                    ? "ring-2 ring-white ring-offset-2 ring-offset-[#12121f] scale-110"
+                    : "hover:scale-105"
+                }`}
+                style={{ backgroundColor: c }}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Icône */}
+        <div>
+          <label className="block text-xs text-white/40 uppercase tracking-widest mb-1.5">
+            Icône
+          </label>
+          <div className="flex gap-1.5 flex-wrap">
+            {ICONES.map((iconKey) => (
+              <button
+                key={iconKey}
+                type="button"
+                onClick={() => set("icone", iconKey)}
+                className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all ${
+                  form.icone === iconKey
+                    ? "bg-white/15 text-white ring-1 ring-white/30"
+                    : "bg-white/[0.04] text-white/40 hover:text-white/70 hover:bg-white/[0.08]"
+                }`}
+              >
+                <CompteIcon icone={iconKey} size={16} />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Bouton Ajouter */}
+        <button
+          type="button"
+          onClick={onAdd}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-white/15 text-white/50 hover:text-white hover:border-orange-500/40 hover:bg-white/[0.03] text-sm transition-all"
+        >
+          <Plus size={16} />
+          Ajouter ce compte
+        </button>
       </div>
 
-      {/* Next */}
+      {/* Continuer */}
       <button
         type="button"
         onClick={onNext}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-orange-500 hover:bg-orange-400 text-white font-semibold text-sm transition-colors"
+        disabled={comptes.length === 0}
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-orange-500 hover:bg-orange-400 text-white font-semibold text-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
       >
         Continuer
         <ArrowRight size={16} />
@@ -282,17 +399,17 @@ function StepAccount({
   );
 }
 
-// ── Step 2: Initial balance ─────────────────────────────────────────────────
+// ── Step 2: Balances per account ────────────────────────────────────────────
 
-function StepBalance({
-  soldeInitial,
-  setSoldeInitial,
+function StepBalances({
+  comptes,
+  onUpdateSolde,
   onNext,
   onBack,
   onSkip,
 }: {
-  soldeInitial: string;
-  setSoldeInitial: (v: string) => void;
+  comptes: TPendingCompte[];
+  onUpdateSolde: (index: number, value: string) => void;
   onNext: () => void;
   onBack: () => void;
   onSkip: () => void;
@@ -300,26 +417,42 @@ function StepBalance({
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-white">Solde initial</h2>
+        <h2 className="text-lg font-bold text-white">Soldes initiaux</h2>
         <p className="text-sm text-white/40 mt-1">
-          Quel est le solde actuel de ce compte ?
+          {comptes.length === 1
+            ? "Quel est le solde actuel de votre compte ?"
+            : "Renseignez le solde actuel de chaque compte."}
         </p>
       </div>
 
-      <div>
-        <label className="block text-xs text-white/40 uppercase tracking-widest mb-2">
-          Montant (€)
-        </label>
-        <input
-          type="number"
-          step="0.01"
-          value={soldeInitial}
-          onChange={(e) => setSoldeInitial(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && onNext()}
-          className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500/50 transition-colors text-2xl font-semibold text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-          placeholder="0.00"
-          autoFocus
-        />
+      <div className="space-y-3">
+        {comptes.map((compte, index) => (
+          <div
+            key={`${compte.nom}-${index}`}
+            className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-3"
+          >
+            <span
+              className="flex items-center justify-center w-9 h-9 rounded-lg flex-shrink-0"
+              style={{ backgroundColor: `${compte.couleur}20`, color: compte.couleur }}
+            >
+              <CompteIcon icone={compte.icone} size={16} strokeWidth={2} />
+            </span>
+            <span className="text-white text-sm font-medium truncate flex-1 min-w-0">
+              {compte.nom}
+            </span>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <input
+                type="number"
+                step="0.01"
+                value={compte.solde_initial}
+                onChange={(e) => onUpdateSolde(index, e.target.value)}
+                className="w-24 bg-white/[0.06] border border-white/10 rounded-lg px-2 py-1.5 text-white text-sm text-right outline-none focus:border-orange-500/50 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                placeholder="0.00"
+              />
+              <span className="text-white/30 text-xs">€</span>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="flex flex-col gap-3 pt-2">
@@ -354,54 +487,51 @@ function StepBalance({
 // ── Step 3: Confirmation ────────────────────────────────────────────────────
 
 function StepConfirm({
-  nom,
-  couleur,
-  icone,
-  soldeInitial,
+  comptes,
   isSubmitting,
   onBack,
   onCreate,
 }: {
-  nom: string;
-  couleur: string;
-  icone: string;
-  soldeInitial: string;
+  comptes: TPendingCompte[];
   isSubmitting: boolean;
   onBack: () => void;
   onCreate: () => void;
 }) {
-  const montant = parseFloat(soldeInitial) || 0;
-  const formatted = new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-  }).format(montant);
-
   return (
     <div className="space-y-6">
       <div className="text-center">
         <Sparkles size={24} className="text-orange-400 mx-auto mb-3" />
         <h2 className="text-lg font-bold text-white">Tout est prêt !</h2>
         <p className="text-sm text-white/40 mt-1">
-          Voici un récapitulatif de votre compte.
+          {comptes.length === 1
+            ? "Voici un récapitulatif de votre compte."
+            : `Voici vos ${comptes.length} comptes.`}
         </p>
       </div>
 
-      {/* Preview card */}
-      <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-5 flex items-center gap-4">
-        <span
-          className="flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0"
-          style={{ backgroundColor: `${couleur}20`, color: couleur }}
-        >
-          <CompteIcon icone={icone} size={22} strokeWidth={2} />
-        </span>
-        <div className="flex-1 min-w-0">
-          <p className="text-white font-semibold truncate">{nom}</p>
-          <p className="text-white/40 text-sm">{formatted}</p>
-        </div>
-        <div
-          className="w-3 h-3 rounded-full flex-shrink-0"
-          style={{ backgroundColor: couleur }}
-        />
+      {/* Accounts list */}
+      <div className="space-y-2">
+        {comptes.map((compte, index) => (
+          <div
+            key={`${compte.nom}-${index}`}
+            className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-4 flex items-center gap-3"
+          >
+            <span
+              className="flex items-center justify-center w-10 h-10 rounded-xl flex-shrink-0"
+              style={{ backgroundColor: `${compte.couleur}20`, color: compte.couleur }}
+            >
+              <CompteIcon icone={compte.icone} size={20} strokeWidth={2} />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-semibold text-sm truncate">{compte.nom}</p>
+              <p className="text-white/40 text-xs">{formatEur(compte.solde_initial)}</p>
+            </div>
+            <div
+              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: compte.couleur }}
+            />
+          </div>
+        ))}
       </div>
 
       <div className="flex flex-col gap-3">
