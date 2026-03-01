@@ -45,6 +45,17 @@ export type TObjectif = {
   created_at: string;
 };
 
+// ── Filtres transactions ─────────────────────────────────────────────────────
+
+export type TTransactionFilters = {
+  dateDebut?: string;
+  dateFin?: string;
+  type?: "depense" | "revenu";
+  categorie_ids?: string[];
+  montant_min?: number;
+  montant_max?: number;
+};
+
 // ── Types composés ───────────────────────────────────────────────────────────
 
 export type TTransactionWithCategorie = TTransaction & {
