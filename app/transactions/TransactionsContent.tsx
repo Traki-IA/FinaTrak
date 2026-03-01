@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
@@ -300,34 +300,8 @@ export default function TransactionsContent({
     null
   );
 
-  // Filtered transactions based on URL searchParams
-  const filtered = useMemo(() => {
-    const dateDebut = searchParams.get("dateDebut") ?? "";
-    const dateFin = searchParams.get("dateFin") ?? "";
-    const filterType = searchParams.get("type") ?? "all";
-    const filterCats =
-      searchParams.get("categories")?.split(",").filter(Boolean) ?? [];
-    const minStr = searchParams.get("montantMin");
-    const maxStr = searchParams.get("montantMax");
-    const min = minStr ? Number(minStr) : null;
-    const max = maxStr ? Number(maxStr) : null;
-
-    return transactions.filter((t) => {
-      if (dateDebut && t.date < dateDebut) return false;
-      if (dateFin && t.date > dateFin) return false;
-      if (filterType !== "all" && t.type !== filterType) return false;
-      if (
-        filterCats.length > 0 &&
-        (!t.categorie_id || !filterCats.includes(t.categorie_id))
-      )
-        return false;
-      if (min !== null && t.montant < min) return false;
-      if (max !== null && t.montant > max) return false;
-      return true;
-    });
-  }, [transactions, searchParams]);
-
-  const totalFiltre = filtered.reduce(
+  // Les transactions sont déjà filtrées côté serveur via searchParams
+  const totalFiltre = transactions.reduce(
     (acc, t) => acc + (t.type === "revenu" ? t.montant : -t.montant),
     0
   );
@@ -365,7 +339,7 @@ export default function TransactionsContent({
         <div>
           <h1 className="text-2xl font-bold text-white">Transactions</h1>
           <p className="text-white/40 text-sm mt-1">
-            {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
+            {transactions.length} transaction{transactions.length !== 1 ? "s" : ""}
             {searchParams.toString() ? " filtrées" : ""}
           </p>
         </div>
@@ -386,7 +360,7 @@ export default function TransactionsContent({
       <FilterBar categories={categories} />
 
       {/* ── Solde filtré ── */}
-      {filtered.length > 0 && (
+      {transactions.length > 0 && (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -412,7 +386,7 @@ export default function TransactionsContent({
         className="md:hidden bg-white/[0.04] border border-white/[0.07] rounded-2xl overflow-hidden"
       >
         <AnimatePresence mode="popLayout">
-          {filtered.length === 0 ? (
+          {transactions.length === 0 ? (
             <motion.p
               key="empty"
               initial={{ opacity: 0 }}
@@ -423,7 +397,7 @@ export default function TransactionsContent({
               Aucune transaction trouvée
             </motion.p>
           ) : (
-            filtered.map((t, i) => (
+            transactions.map((t, i) => (
               <TransactionCard
                 key={t.id}
                 transaction={t}
@@ -467,7 +441,7 @@ export default function TransactionsContent({
 
             <tbody>
               <AnimatePresence mode="popLayout">
-                {filtered.length === 0 ? (
+                {transactions.length === 0 ? (
                   <motion.tr
                     key="empty"
                     initial={{ opacity: 0 }}
@@ -482,7 +456,7 @@ export default function TransactionsContent({
                     </td>
                   </motion.tr>
                 ) : (
-                  filtered.map((t, i) => (
+                  transactions.map((t, i) => (
                     <TransactionRow
                       key={t.id}
                       transaction={t}
