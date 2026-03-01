@@ -49,15 +49,19 @@ export async function middleware(request: NextRequest) {
 
   // Utilisateur connecté, hors /auth et /onboarding → vérifier s'il a des comptes
   if (user && !isAuthRoute && !isOnboardingRoute) {
-    const { count } = await supabase
-      .from("comptes")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id);
+    try {
+      const { count } = await supabase
+        .from("comptes")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
 
-    if (count === 0) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/onboarding";
-      return NextResponse.redirect(url);
+      if (count === 0) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/onboarding";
+        return NextResponse.redirect(url);
+      }
+    } catch {
+      // En cas d'erreur Supabase, laisser passer sans redirection
     }
   }
 
