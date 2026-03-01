@@ -59,3 +59,9 @@ export async function signUp(input: TAuthInput): Promise<TAuthResult> {
     message: "Compte créé ! Vérifiez votre email pour confirmer votre inscription.",
   };
 }
+
+export async function signOutAction(): Promise<void> {
+  const supabase = await createServerSupabaseClient();
+  await supabase.auth.signOut();
+  redirect("/auth");
+}
