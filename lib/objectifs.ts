@@ -1,13 +1,18 @@
-import { supabase } from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase";
+import { requireUserId } from "@/lib/auth";
 import type { TObjectif, TObjectifWithBudgetLines, TBudgetLineProgress } from "@/types";
 
 export async function fetchObjectifs(
   compteId: string
 ): Promise<TObjectif[]> {
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
   const { data, error } = await supabase
     .from("objectifs")
     .select("*")
     .eq("compte_id", compteId)
+    .eq("user_id", userId)
     .order("sort_order", { ascending: true });
 
   if (error) throw new Error(`fetchObjectifs: ${error.message}`);
@@ -17,11 +22,15 @@ export async function fetchObjectifs(
 export async function fetchObjectifsWithBudgetLines(
   compteId: string
 ): Promise<TObjectifWithBudgetLines[]> {
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
   // Récupérer les objectifs
   const { data: objectifs, error: objError } = await supabase
     .from("objectifs")
     .select("*")
     .eq("compte_id", compteId)
+    .eq("user_id", userId)
     .order("sort_order", { ascending: true });
 
   if (objError) throw new Error(`fetchObjectifsWithBudgetLines: ${objError.message}`);
@@ -33,6 +42,7 @@ export async function fetchObjectifsWithBudgetLines(
   const { data: budgetItems, error: biError } = await supabase
     .from("budget_items")
     .select("id, nom, montant, frequence, objectif_id")
+    .eq("user_id", userId)
     .in("objectif_id", objectifIds);
 
   if (biError) throw new Error(`fetchObjectifsWithBudgetLines (budget_items): ${biError.message}`);
@@ -46,6 +56,7 @@ export async function fetchObjectifsWithBudgetLines(
     const { data: transactions, error: txError } = await supabase
       .from("transactions")
       .select("budget_item_id, montant, type")
+      .eq("user_id", userId)
       .in("budget_item_id", budgetItemIds);
 
     if (txError) throw new Error(`fetchObjectifsWithBudgetLines (transactions): ${txError.message}`);

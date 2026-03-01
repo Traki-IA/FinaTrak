@@ -1,4 +1,5 @@
-import { supabase } from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase";
+import { requireUserId } from "@/lib/auth";
 import type { TTransactionWithCategorie } from "@/types";
 
 // ── Types exportés ────────────────────────────────────────────────────────────
@@ -44,10 +45,14 @@ function labelMois(moisKey: string): string {
 // ── Fetch principal ───────────────────────────────────────────────────────────
 
 export async function fetchBilanData(compteId: string): Promise<TBilanData> {
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
   const { data, error } = await supabase
     .from("transactions")
     .select("*, categories(*)")
     .eq("compte_id", compteId)
+    .eq("user_id", userId)
     .order("date", { ascending: true });
 
   if (error) throw new Error(`fetchBilanData: ${error.message}`);

@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { supabase } from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase";
+import { requireUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
 // ── Schémas ───────────────────────────────────────────────────────────────────
@@ -43,6 +44,9 @@ export async function insertBudgetItem(
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
   }
 
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
   const {
     creer_objectif,
     objectif_nom,
@@ -64,6 +68,7 @@ export async function insertBudgetItem(
           montant_actuel: 0,
           periode: objectif_periode ?? "ponctuel",
           compte_id: itemData.compte_id,
+          user_id: userId,
         },
       ])
       .select("id")
@@ -76,7 +81,7 @@ export async function insertBudgetItem(
 
   const { error } = await supabase
     .from("budget_items")
-    .insert([{ ...itemData, objectif_id }]);
+    .insert([{ ...itemData, objectif_id, user_id: userId }]);
 
   if (error) return { error: error.message };
 
@@ -90,6 +95,8 @@ export async function toggleBudgetItem(
   id: string,
   actif: boolean
 ): Promise<TActionResult> {
+  const supabase = await createServerSupabaseClient();
+
   const { error } = await supabase
     .from("budget_items")
     .update({ actif })
@@ -104,6 +111,8 @@ export async function toggleBudgetItem(
 // ── Suppression ───────────────────────────────────────────────────────────────
 
 export async function deleteBudgetItem(id: string): Promise<TActionResult> {
+  const supabase = await createServerSupabaseClient();
+
   const { error } = await supabase
     .from("budget_items")
     .delete()
@@ -125,6 +134,7 @@ export async function updateBudgetItem(
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
   }
 
+  const supabase = await createServerSupabaseClient();
   const { id, ...updateData } = parsed.data;
 
   const { error } = await supabase
@@ -143,6 +153,8 @@ export async function updateBudgetItem(
 export async function reorderBudgetItems(
   orderedIds: string[]
 ): Promise<TActionResult> {
+  const supabase = await createServerSupabaseClient();
+
   for (let i = 0; i < orderedIds.length; i++) {
     const { error } = await supabase
       .from("budget_items")

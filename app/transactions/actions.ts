@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { supabase } from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase";
+import { requireUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
 const TransactionSchema = z.object({
@@ -42,12 +43,16 @@ export async function insertTransaction(
     return { error: firstIssue?.message ?? "Données invalides" };
   }
 
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
   const { objectif_id, budget_item_id, ...baseData } = parsed.data;
 
   // Construire les données à insérer (budget_item_id est stocké en base)
   const transactionData = {
     ...baseData,
     budget_item_id: budget_item_id ?? null,
+    user_id: userId,
   };
 
   const { error } = await supabase
@@ -99,6 +104,7 @@ export async function updateTransaction(
     return { error: firstIssue?.message ?? "Données invalides" };
   }
 
+  const supabase = await createServerSupabaseClient();
   const { id, ...updateData } = parsed.data;
 
   const { error } = await supabase
@@ -119,6 +125,8 @@ export async function deleteTransaction(
   if (!z.string().uuid().safeParse(id).success) {
     return { error: "Identifiant invalide" };
   }
+
+  const supabase = await createServerSupabaseClient();
 
   const { error } = await supabase
     .from("transactions")

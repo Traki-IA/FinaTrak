@@ -1,10 +1,15 @@
-import { supabase } from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase";
+import { requireUserId } from "@/lib/auth";
 import type { TCompte } from "@/types";
 
 export async function fetchComptes(): Promise<TCompte[]> {
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
   const { data, error } = await supabase
     .from("comptes")
     .select("*")
+    .eq("user_id", userId)
     .order("sort_order", { ascending: true });
 
   if (error) throw new Error(`fetchComptes: ${error.message}`);
@@ -12,6 +17,8 @@ export async function fetchComptes(): Promise<TCompte[]> {
 }
 
 export async function fetchNavOrder(): Promise<string[]> {
+  const supabase = await createServerSupabaseClient();
+
   const { data, error } = await supabase
     .from("settings")
     .select("valeur")
