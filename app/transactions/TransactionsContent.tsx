@@ -4,9 +4,9 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import TransactionModal from "./TransactionModal";
-import FilterSelect from "@/components/FilterSelect";
+import FilterBar from "@/components/FilterBar";
 import { deleteTransaction } from "./actions";
 import { formatEur } from "@/lib/format";
 import type { TTransactionWithCategorie, TCategorie, TObjectif, TBudgetItem } from "@/types";
@@ -15,18 +15,6 @@ import type { TTransactionWithCategorie, TCategorie, TObjectif, TBudgetItem } fr
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("fr-FR");
-}
-
-function getMoisKey(dateStr: string): string {
-  return dateStr.slice(0, 7); // "YYYY-MM"
-}
-
-function getMoisLabel(dateStr: string): string {
-  const [year, month] = dateStr.split("-");
-  return new Date(Number(year), Number(month) - 1).toLocaleDateString("fr-FR", {
-    month: "long",
-    year: "numeric",
-  });
 }
 
 // ── Transaction Card (mobile) ─────────────────────────────────────────────────
@@ -304,43 +292,40 @@ export default function TransactionsContent({
   compteId,
 }: ITransactionsContentProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] =
     useState<TTransactionWithCategorie | undefined>(undefined);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
     null
   );
-  const [filterMois, setFilterMois] = useState("all");
-  const [filterCategorie, setFilterCategorie] = useState("all");
-  const [filterType, setFilterType] = useState("all");
 
-  // Unique month options extracted from transactions, preserving sort order
-  const moisOptions = useMemo(() => {
-    const seen = new Set<string>();
-    const options: { key: string; label: string }[] = [];
-    for (const t of transactions) {
-      const key = getMoisKey(t.date);
-      if (!seen.has(key)) {
-        seen.add(key);
-        options.push({ key, label: getMoisLabel(t.date) });
-      }
-    }
-    return options;
-  }, [transactions]);
+  // Filtered transactions based on URL searchParams
+  const filtered = useMemo(() => {
+    const dateDebut = searchParams.get("dateDebut") ?? "";
+    const dateFin = searchParams.get("dateFin") ?? "";
+    const filterType = searchParams.get("type") ?? "all";
+    const filterCats =
+      searchParams.get("categories")?.split(",").filter(Boolean) ?? [];
+    const minStr = searchParams.get("montantMin");
+    const maxStr = searchParams.get("montantMax");
+    const min = minStr ? Number(minStr) : null;
+    const max = maxStr ? Number(maxStr) : null;
 
-  // Filtered + sorted (already sorted desc from server)
-  const filtered = useMemo(
-    () =>
-      transactions.filter((t) => {
-        if (filterMois !== "all" && getMoisKey(t.date) !== filterMois)
-          return false;
-        if (filterCategorie !== "all" && t.categorie_id !== filterCategorie)
-          return false;
-        if (filterType !== "all" && t.type !== filterType) return false;
-        return true;
-      }),
-    [transactions, filterMois, filterCategorie, filterType]
-  );
+    return transactions.filter((t) => {
+      if (dateDebut && t.date < dateDebut) return false;
+      if (dateFin && t.date > dateFin) return false;
+      if (filterType !== "all" && t.type !== filterType) return false;
+      if (
+        filterCats.length > 0 &&
+        (!t.categorie_id || !filterCats.includes(t.categorie_id))
+      )
+        return false;
+      if (min !== null && t.montant < min) return false;
+      if (max !== null && t.montant > max) return false;
+      return true;
+    });
+  }, [transactions, searchParams]);
 
   const totalFiltre = filtered.reduce(
     (acc, t) => acc + (t.type === "revenu" ? t.montant : -t.montant),
@@ -381,11 +366,7 @@ export default function TransactionsContent({
           <h1 className="text-2xl font-bold text-white">Transactions</h1>
           <p className="text-white/40 text-sm mt-1">
             {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
-            {filterMois !== "all" ||
-            filterCategorie !== "all" ||
-            filterType !== "all"
-              ? " filtrées"
-              : ""}
+            {searchParams.toString() ? " filtrées" : ""}
           </p>
         </div>
 
@@ -402,65 +383,26 @@ export default function TransactionsContent({
       </motion.div>
 
       {/* ── Filters ── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1, duration: 0.3 }}
-        className="flex flex-wrap gap-2 sm:gap-3 mb-5"
-      >
-        <FilterSelect value={filterMois} onChange={setFilterMois}>
-          <option value="all" className="bg-[#0f0f1a]">
-            Tous les mois
-          </option>
-          {moisOptions.map((m) => (
-            <option key={m.key} value={m.key} className="bg-[#0f0f1a]">
-              {m.label}
-            </option>
-          ))}
-        </FilterSelect>
+      <FilterBar categories={categories} />
 
-        <FilterSelect value={filterCategorie} onChange={setFilterCategorie}>
-          <option value="all" className="bg-[#0f0f1a]">
-            Catégories
-          </option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id} className="bg-[#0f0f1a]">
-              {cat.nom}
-            </option>
-          ))}
-        </FilterSelect>
-
-        <FilterSelect value={filterType} onChange={setFilterType}>
-          <option value="all" className="bg-[#0f0f1a]">
-            Tous types
-          </option>
-          <option value="revenu" className="bg-[#0f0f1a]">
-            Revenus
-          </option>
-          <option value="depense" className="bg-[#0f0f1a]">
-            Dépenses
-          </option>
-        </FilterSelect>
-
-        {/* Solde filtré */}
-        {filtered.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center ml-auto"
+      {/* ── Solde filtré ── */}
+      {filtered.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex items-center mb-4"
+        >
+          <span className="text-white/40 text-sm mr-2">Solde :</span>
+          <span
+            className={`text-sm font-semibold ${
+              totalFiltre >= 0 ? "text-emerald-400" : "text-red-400"
+            }`}
           >
-            <span className="text-white/40 text-sm mr-2">Solde :</span>
-            <span
-              className={`text-sm font-semibold ${
-                totalFiltre >= 0 ? "text-emerald-400" : "text-red-400"
-              }`}
-            >
-              {totalFiltre >= 0 ? "+" : ""}
-              {formatEur(totalFiltre)}
-            </span>
-          </motion.div>
-        )}
-      </motion.div>
+            {totalFiltre >= 0 ? "+" : ""}
+            {formatEur(totalFiltre)}
+          </span>
+        </motion.div>
+      )}
 
       {/* ── Mobile Cards (hidden on md+) ── */}
       <motion.div
