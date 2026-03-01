@@ -34,6 +34,16 @@ export async function requireAuth(): Promise<Session> {
 }
 
 /**
+ * Retourne le user_id de la session active.
+ * Redirige vers /auth si pas de session.
+ * Centralise l'accès au user_id pour éviter la duplication.
+ */
+export async function requireUserId(): Promise<string> {
+  const session = await requireAuth();
+  return session.user.id;
+}
+
+/**
  * Déconnecte l'utilisateur et redirige vers /auth.
  * À utiliser dans un Server Action.
  */

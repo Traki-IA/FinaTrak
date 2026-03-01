@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { supabase } from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase";
+import { requireUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
 const ObjectifSchema = z.object({
@@ -35,7 +36,13 @@ export async function insertObjectif(
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
   }
 
-  const { error } = await supabase.from("objectifs").insert([parsed.data]);
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
+  const { error } = await supabase
+    .from("objectifs")
+    .insert([{ ...parsed.data, user_id: userId }]);
+
   if (error) return { error: error.message };
 
   revalidatePath("/objectifs");
@@ -50,6 +57,7 @@ export async function updateObjectif(
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
   }
 
+  const supabase = await createServerSupabaseClient();
   const { id, ...updateData } = parsed.data;
 
   const { error } = await supabase
@@ -69,6 +77,8 @@ export async function updateObjectifMontant(
 ): Promise<TActionResult> {
   if (montant_actuel < 0) return { error: "Montant invalide" };
 
+  const supabase = await createServerSupabaseClient();
+
   const { error } = await supabase
     .from("objectifs")
     .update({ montant_actuel })
@@ -81,6 +91,8 @@ export async function updateObjectifMontant(
 }
 
 export async function deleteObjectif(id: string): Promise<TActionResult> {
+  const supabase = await createServerSupabaseClient();
+
   const { error } = await supabase.from("objectifs").delete().eq("id", id);
   if (error) return { error: error.message };
 
@@ -91,6 +103,8 @@ export async function deleteObjectif(id: string): Promise<TActionResult> {
 export async function reorderObjectifs(
   orderedIds: string[]
 ): Promise<TActionResult> {
+  const supabase = await createServerSupabaseClient();
+
   for (let i = 0; i < orderedIds.length; i++) {
     const { error } = await supabase
       .from("objectifs")

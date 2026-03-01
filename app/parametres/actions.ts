@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { supabase } from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase";
 import { upsertSoldeInitial } from "@/lib/dashboard";
 import { getActiveCompteId } from "@/lib/active-compte";
 
@@ -40,6 +40,8 @@ type TActionResult = { success: true } | { error: string };
 export async function reorderCategories(
   orderedIds: string[]
 ): Promise<TActionResult> {
+  const supabase = await createServerSupabaseClient();
+
   for (let i = 0; i < orderedIds.length; i++) {
     const { error } = await supabase
       .from("categories")
@@ -58,6 +60,8 @@ export async function reorderCategories(
 export async function updateNavOrder(
   orderedKeys: string[]
 ): Promise<TActionResult> {
+  const supabase = await createServerSupabaseClient();
+
   const { error } = await supabase
     .from("settings")
     .upsert(

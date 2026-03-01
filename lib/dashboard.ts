@@ -1,4 +1,5 @@
-import { supabase } from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase";
+import { requireUserId } from "@/lib/auth";
 import type {
   TDashboardStats,
   TTransactionWithCategorie,
@@ -34,10 +35,14 @@ function labelMois(dateStr: string): string {
 // ── Solde initial (depuis la table comptes) ──────────────────────────────────
 
 export async function fetchSoldeInitial(compteId: string): Promise<number> {
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
   const { data, error } = await supabase
     .from("comptes")
     .select("solde_initial")
     .eq("id", compteId)
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (error) {
@@ -52,10 +57,14 @@ export async function fetchSoldeInitial(compteId: string): Promise<number> {
  * Vérifie si le compte existe (remplace fetchSoldeInitialIsSet).
  */
 export async function fetchSoldeInitialIsSet(compteId: string): Promise<boolean> {
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
   const { data, error } = await supabase
     .from("comptes")
     .select("id")
     .eq("id", compteId)
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (error) {
@@ -70,10 +79,14 @@ export async function upsertSoldeInitial(
   compteId: string,
   montant: number
 ): Promise<void> {
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
   const { error } = await supabase
     .from("comptes")
     .update({ solde_initial: montant })
-    .eq("id", compteId);
+    .eq("id", compteId)
+    .eq("user_id", userId);
 
   if (error) {
     throw new Error(`upsertSoldeInitial: ${error.message}`);
@@ -85,20 +98,20 @@ export async function upsertSoldeInitial(
 export async function fetchDashboardStats(
   compteId: string
 ): Promise<TDashboardStats> {
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
   const { debut, fin } = getPeriodeBounds();
-
-  console.log(`[dashboard] Période mois courant : ${debut} → ${fin}`);
 
   // Transactions du mois courant (pour revenus/dépenses/épargne du mois)
   const { data: monthData, error: monthError } = await supabase
     .from("transactions")
     .select("montant, type")
     .eq("compte_id", compteId)
+    .eq("user_id", userId)
     .gte("date", debut)
     .lte("date", fin);
 
   if (monthError) {
-    console.error("[dashboard] fetchDashboardStats (mois):", monthError.message);
     throw new Error(`fetchDashboardStats (mois): ${monthError.message}`);
   }
 
@@ -106,10 +119,10 @@ export async function fetchDashboardStats(
   const { data: allData, error: allError } = await supabase
     .from("transactions")
     .select("montant, type")
-    .eq("compte_id", compteId);
+    .eq("compte_id", compteId)
+    .eq("user_id", userId);
 
   if (allError) {
-    console.error("[dashboard] fetchDashboardStats (total):", allError.message);
     throw new Error(`fetchDashboardStats (total): ${allError.message}`);
   }
 
@@ -117,10 +130,6 @@ export async function fetchDashboardStats(
 
   const monthRows = monthData ?? [];
   const allRows = allData ?? [];
-
-  console.log(
-    `[dashboard] Transactions mois: ${monthRows.length}, Total: ${allRows.length}, Solde initial: ${soldeInitial}`
-  );
 
   type TRow = { montant: number; type: string };
 
@@ -145,10 +154,6 @@ export async function fetchDashboardStats(
   const soldeTotal = soldeInitial + totalRevenus - totalDepenses;
   const epargne = revenus - depenses;
 
-  console.log(
-    `[dashboard] Revenus mois: ${revenus}, Dépenses mois: ${depenses}, Solde total: ${soldeTotal}, Épargne: ${epargne}`
-  );
-
   return {
     soldeInitial,
     soldeTotal,
@@ -161,10 +166,14 @@ export async function fetchDashboardStats(
 export async function fetchRecentTransactions(
   compteId: string
 ): Promise<TTransactionWithCategorie[]> {
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
   const { data, error } = await supabase
     .from("transactions")
     .select("*, categories(*)")
     .eq("compte_id", compteId)
+    .eq("user_id", userId)
     .order("date", { ascending: false })
     .limit(5);
 
@@ -178,6 +187,8 @@ export async function fetchRecentTransactions(
 export async function fetchDepensesParCategorie(
   compteId: string
 ): Promise<TDepenseCategorie[]> {
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
   const { debut, fin } = getPeriodeBounds();
 
   const { data, error } = await supabase
@@ -185,6 +196,7 @@ export async function fetchDepensesParCategorie(
     .select("montant, categories(nom, couleur)")
     .eq("type", "depense")
     .eq("compte_id", compteId)
+    .eq("user_id", userId)
     .gte("date", debut)
     .lte("date", fin);
 
@@ -213,10 +225,14 @@ export async function fetchDepensesParCategorie(
 export async function fetchBalanceHistory(
   compteId: string
 ): Promise<TBalancePoint[]> {
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
   const { data, error } = await supabase
     .from("transactions")
     .select("montant, type, date")
     .eq("compte_id", compteId)
+    .eq("user_id", userId)
     .order("date", { ascending: true });
 
   if (error) {

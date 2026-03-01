@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { supabase } from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase";
+import { requireUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { setActiveCompteId } from "@/lib/active-compte";
 
@@ -33,10 +34,14 @@ export async function insertCompte(
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
   }
 
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
   // Calculer le prochain sort_order
   const { data: last } = await supabase
     .from("comptes")
     .select("sort_order")
+    .eq("user_id", userId)
     .order("sort_order", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -45,7 +50,7 @@ export async function insertCompte(
 
   const { error } = await supabase
     .from("comptes")
-    .insert([{ ...parsed.data, sort_order: nextOrder }]);
+    .insert([{ ...parsed.data, sort_order: nextOrder, user_id: userId }]);
 
   if (error) return { error: error.message };
 
@@ -63,6 +68,7 @@ export async function updateCompte(
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
   }
 
+  const supabase = await createServerSupabaseClient();
   const { id, ...updateData } = parsed.data;
 
   const { error } = await supabase
@@ -83,10 +89,14 @@ export async function deleteCompte(id: string): Promise<TActionResult> {
     return { error: "Identifiant invalide" };
   }
 
-  // Vérifier qu'il reste au moins un compte
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
+  // Vérifier qu'il reste au moins un compte pour cet utilisateur
   const { count } = await supabase
     .from("comptes")
-    .select("*", { count: "exact", head: true });
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId);
 
   if ((count ?? 0) <= 1) {
     return { error: "Impossible de supprimer le dernier compte" };
@@ -104,6 +114,8 @@ export async function deleteCompte(id: string): Promise<TActionResult> {
 export async function reorderComptes(
   orderedIds: string[]
 ): Promise<TActionResult> {
+  const supabase = await createServerSupabaseClient();
+
   for (let i = 0; i < orderedIds.length; i++) {
     const { error } = await supabase
       .from("comptes")
@@ -128,3 +140,4 @@ export async function switchCompte(compteId: string): Promise<TActionResult> {
   revalidatePath("/", "layout");
   return { success: true };
 }
+
