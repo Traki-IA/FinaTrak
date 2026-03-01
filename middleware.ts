@@ -29,7 +29,9 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith("/auth");
+  const pathname = request.nextUrl.pathname;
+  const isAuthRoute = pathname.startsWith("/auth");
+  const isOnboardingRoute = pathname.startsWith("/onboarding");
 
   // Utilisateur non connecté sur une route protégée → /auth
   if (!user && !isAuthRoute) {
@@ -43,6 +45,20 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
+  }
+
+  // Utilisateur connecté, hors /auth et /onboarding → vérifier s'il a des comptes
+  if (user && !isAuthRoute && !isOnboardingRoute) {
+    const { count } = await supabase
+      .from("comptes")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id);
+
+    if (count === 0) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/onboarding";
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

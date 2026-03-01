@@ -20,7 +20,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { reorderCategories } from "@/app/parametres/actions";
+import { reorderCategories } from "@/app/(main)/parametres/actions";
 import type { TCategorie } from "@/types";
 
 function SortableCategoryItem({ category }: { category: TCategorie }) {

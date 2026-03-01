@@ -30,7 +30,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { updateNavOrder } from "@/app/parametres/actions";
+import { updateNavOrder } from "@/app/(main)/parametres/actions";
 
 // ── Définition des items de navigation ───────────────────────────────────────
 
