@@ -10,7 +10,7 @@ import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 import CompteModal from "./CompteModal";
 import { CompteIcon } from "@/components/AccountSwitcher";
 import { updateSoldeInitial } from "./actions";
-import { deleteCompte } from "@/app/comptes/actions";
+import { deleteCompte } from "@/app/(main)/comptes/actions";
 import { formatEur } from "@/lib/format";
 import type { TCompte } from "@/types";
 

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2 } from "lucide-react";
-import { insertCompte, updateCompte } from "@/app/comptes/actions";
+import { insertCompte, updateCompte } from "@/app/(main)/comptes/actions";
 import { CompteIcon, ICON_MAP } from "@/components/AccountSwitcher";
 import type { TCompte } from "@/types";
 
