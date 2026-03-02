@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wallet, Check, Plus, Pencil, Landmark, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Landmark, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,13 +10,11 @@ import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 import CompteModal from "./CompteModal";
 import DeleteAccountDialog from "./DeleteAccountDialog";
 import { CompteIcon } from "@/components/AccountSwitcher";
-import { updateSoldeInitial } from "./actions";
 import { deleteCompte } from "@/app/(main)/comptes/actions";
 import { formatEur } from "@/lib/format";
 import type { TCompte } from "@/types";
 
 interface IParametresContentProps {
-  soldeInitial: number;
   comptes: TCompte[];
   activeCompteId: string;
   userEmail: string;
@@ -28,44 +26,17 @@ const FADE_UP = {
 };
 
 export default function ParametresContent({
-  soldeInitial,
   comptes,
   activeCompteId,
   userEmail,
 }: IParametresContentProps) {
   const router = useRouter();
-  const [inputValue, setInputValue] = useState(String(soldeInitial));
-  const [isPending, startTransition] = useTransition();
-  const [saved, setSaved] = useState(false);
 
   // Comptes management
   const [compteModalOpen, setCompteModalOpen] = useState(false);
   const [editingCompte, setEditingCompte] = useState<TCompte | undefined>();
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  const activeCompte = comptes.find((c) => c.id === activeCompteId);
-
-  function handleSubmitSolde(e: React.FormEvent) {
-    e.preventDefault();
-
-    const montant = parseFloat(inputValue.replace(",", "."));
-    if (isNaN(montant)) {
-      toast.error("Veuillez entrer un montant valide");
-      return;
-    }
-
-    startTransition(async () => {
-      const result = await updateSoldeInitial(montant);
-      if (result.success) {
-        setSaved(true);
-        toast.success("Solde initial enregistré");
-        setTimeout(() => setSaved(false), 2000);
-      } else {
-        toast.error(result.error ?? "Erreur lors de la mise à jour");
-      }
-    });
-  }
 
   function openAddCompte() {
     setEditingCompte(undefined);
@@ -103,88 +74,12 @@ export default function ParametresContent({
       </motion.header>
 
       <div className="space-y-6 max-w-2xl">
-        {/* ── Solde initial du compte actif ── */}
-        <motion.div
-          variants={FADE_UP}
-          initial="hidden"
-          animate="visible"
-          transition={{ duration: 0.35 }}
-        >
-          <Card>
-            <CardContent>
-              <div className="flex items-center gap-3 mb-6">
-                <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
-                  <Wallet size={18} />
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-white">
-                    Solde initial
-                    {activeCompte && (
-                      <span className="text-white/40 font-normal ml-1">
-                        — {activeCompte.nom}
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-xs text-white/40 mt-0.5">
-                    Montant de départ avant toute transaction
-                  </p>
-                </div>
-              </div>
-
-              <form onSubmit={handleSubmitSolde} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="solde-initial"
-                    className="block text-xs text-white/40 uppercase tracking-widest mb-2"
-                  >
-                    Montant (€)
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="solde-initial"
-                      type="number"
-                      step="0.01"
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      disabled={isPending}
-                      className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white text-lg font-semibold outline-none focus:border-orange-500/50 transition-colors pr-12 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      placeholder="0.00"
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 text-sm font-medium pointer-events-none">
-                      €
-                    </span>
-                  </div>
-                </div>
-
-                <motion.button
-                  type="submit"
-                  disabled={isPending}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-orange-500 hover:bg-orange-400 text-white font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {saved ? (
-                    <>
-                      <Check size={16} />
-                      Enregistré
-                    </>
-                  ) : isPending ? (
-                    "Enregistrement…"
-                  ) : (
-                    "Enregistrer le solde initial"
-                  )}
-                </motion.button>
-              </form>
-            </CardContent>
-          </Card>
-        </motion.div>
-
         {/* ── Gestion des comptes ── */}
         <motion.div
           variants={FADE_UP}
           initial="hidden"
           animate="visible"
-          transition={{ duration: 0.35, delay: 0.1 }}
+          transition={{ duration: 0.35 }}
         >
           <Card>
             <CardContent>
@@ -293,7 +188,7 @@ export default function ParametresContent({
           variants={FADE_UP}
           initial="hidden"
           animate="visible"
-          transition={{ duration: 0.35, delay: 0.2 }}
+          transition={{ duration: 0.35, delay: 0.1 }}
         >
           <Card className="border-red-500/20">
             <CardContent>
