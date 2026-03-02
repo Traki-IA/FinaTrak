@@ -2,14 +2,17 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Palette } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import AccountCard from "./AccountCard";
+import CategoryList from "@/components/CategoryList";
 import DeleteAccountDialog from "./DeleteAccountDialog";
+import type { TCategorie } from "@/types";
 
 interface IParametresContentProps {
   userEmail: string;
   userDisplayName: string;
+  categories: TCategorie[];
 }
 
 const FADE_UP = {
@@ -20,6 +23,7 @@ const FADE_UP = {
 export default function ParametresContent({
   userEmail,
   userDisplayName,
+  categories,
 }: IParametresContentProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -44,6 +48,31 @@ export default function ParametresContent({
           userEmail={userEmail}
           userDisplayName={userDisplayName}
         />
+
+        {/* ── Catégories ── */}
+        <motion.div
+          variants={FADE_UP}
+          initial="hidden"
+          animate="visible"
+          transition={{ duration: 0.35, delay: 0.05 }}
+        >
+          <Card>
+            <CardContent>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="p-2 rounded-xl bg-violet-500/10 text-violet-400">
+                  <Palette size={18} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-white">Catégories</p>
+                  <p className="text-xs text-white/40 mt-0.5">
+                    Personnalisez vos catégories de dépenses et revenus
+                  </p>
+                </div>
+              </div>
+              <CategoryList categories={categories} />
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* ── Zone de danger ── */}
         <motion.div

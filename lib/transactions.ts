@@ -45,11 +45,13 @@ export async function fetchAllTransactions(
 }
 
 export async function fetchCategories(): Promise<TCategorie[]> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("categories")
     .select("*")
+    .eq("user_id", userId)
     .order("sort_order", { ascending: true });
 
   if (error) throw new Error(`fetchCategories: ${error.message}`);

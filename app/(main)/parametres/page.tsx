@@ -1,16 +1,21 @@
 import { Suspense } from "react";
 import ParametresContent from "./ParametresContent";
 import { requireAuth } from "@/lib/auth";
+import { fetchCategories } from "@/lib/transactions";
 
 export const dynamic = "force-dynamic";
 
 async function ParametresData() {
-  const session = await requireAuth();
+  const [session, categories] = await Promise.all([
+    requireAuth(),
+    fetchCategories(),
+  ]);
 
   return (
     <ParametresContent
       userEmail={session.user.email ?? ""}
       userDisplayName={session.user.user_metadata?.display_name ?? ""}
+      categories={categories}
     />
   );
 }

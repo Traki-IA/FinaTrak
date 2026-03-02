@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Plus, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
@@ -20,10 +20,33 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { reorderCategories } from "@/app/(main)/parametres/actions";
+import { reorderCategories, deleteCategorie } from "@/app/(main)/parametres/actions";
+import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
+import CategorieModal, { ICONE_MAP } from "@/app/(main)/parametres/CategorieModal";
 import type { TCategorie } from "@/types";
 
-function SortableCategoryItem({ category }: { category: TCategorie }) {
+function CategorieIcon({ icone, size = 14, color }: { icone: string; size?: number; color: string }) {
+  const Icon = ICONE_MAP[icone];
+  if (!Icon) return <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />;
+  return <Icon size={size} className="flex-shrink-0" />;
+}
+
+function SortableCategoryItem({
+  category,
+  isConfirming,
+  onEdit,
+  onDeleteRequest,
+  onDeleteConfirm,
+  onDeleteCancel,
+}: {
+  category: TCategorie;
+  isConfirming: boolean;
+  onEdit: (c: TCategorie) => void;
+  onDeleteRequest: (id: string) => void;
+  onDeleteConfirm: (id: string) => void;
+  onDeleteCancel: () => void;
+}) {
+  const router = useRouter();
   const {
     attributes,
     listeners,
@@ -40,6 +63,17 @@ function SortableCategoryItem({ category }: { category: TCategorie }) {
     opacity: isDragging ? 0.5 : undefined,
   };
 
+  async function handleDeleteConfirm() {
+    onDeleteConfirm(category.id);
+    const result = await deleteCategorie(category.id);
+    if ("error" in result) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Catégorie supprimée");
+    router.refresh();
+  }
+
   return (
     <div
       ref={setNodeRef}
@@ -54,10 +88,32 @@ function SortableCategoryItem({ category }: { category: TCategorie }) {
         <GripVertical size={12} />
       </button>
       <span
-        className="w-2 h-2 rounded-full flex-shrink-0"
-        style={{ backgroundColor: category.couleur }}
-      />
-      <span className="text-xs truncate">{category.nom}</span>
+        className="flex items-center justify-center w-5 h-5 rounded flex-shrink-0"
+        style={{ backgroundColor: `${category.couleur}20`, color: category.couleur }}
+      >
+        <CategorieIcon icone={category.icone} size={12} color={category.couleur} />
+      </span>
+      <span className="text-xs truncate flex-1">{category.nom}</span>
+
+      {/* Actions (visibles au hover) */}
+      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        {!isConfirming && (
+          <button
+            onClick={() => onEdit(category)}
+            className="p-1 rounded-md text-white/25 hover:text-white hover:bg-white/[0.07] transition-colors"
+            title="Modifier"
+          >
+            <Pencil size={11} />
+          </button>
+        )}
+        <ConfirmDeleteButton
+          isConfirming={isConfirming}
+          onDeleteRequest={() => onDeleteRequest(category.id)}
+          onDeleteConfirm={handleDeleteConfirm}
+          onDeleteCancel={onDeleteCancel}
+          size={11}
+        />
+      </div>
     </div>
   );
 }
@@ -69,13 +125,15 @@ interface ICategoryListProps {
 export default function CategoryList({ categories }: ICategoryListProps) {
   const router = useRouter();
   const [localCategories, setLocalCategories] = useState(categories);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<TCategorie | undefined>(undefined);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
 
-  // Sync when server data changes
-  if (
-    categories.length !== localCategories.length ||
-    categories.map((c) => c.id).join(",") !==
-      localCategories.map((c) => c.id).join(",")
-  ) {
+  // Sync quand les données serveur changent
+  const serverKey = categories.map((c) => `${c.id}-${c.sort_order}-${c.nom}-${c.couleur}-${c.icone}`).join("|");
+  const [prevServerKey, setPrevServerKey] = useState(serverKey);
+  if (serverKey !== prevServerKey) {
+    setPrevServerKey(serverKey);
     setLocalCategories(categories);
   }
 
@@ -83,6 +141,21 @@ export default function CategoryList({ categories }: ICategoryListProps) {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor)
   );
+
+  function openAddModal() {
+    setEditingCategory(undefined);
+    setModalOpen(true);
+  }
+
+  function openEditModal(cat: TCategorie) {
+    setEditingCategory(cat);
+    setModalOpen(true);
+  }
+
+  function handleDeleteConfirm(id: string) {
+    setConfirmingDeleteId(null);
+    setLocalCategories((prev) => prev.filter((c) => c.id !== id));
+  }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -106,21 +179,54 @@ export default function CategoryList({ categories }: ICategoryListProps) {
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext
-        items={localCategories.map((c) => c.id)}
-        strategy={verticalListSortingStrategy}
+    <>
+      {/* Header avec bouton ajouter */}
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs text-white/30">
+          {localCategories.length} catégorie{localCategories.length !== 1 ? "s" : ""}
+        </p>
+        <button
+          onClick={openAddModal}
+          className="flex items-center gap-1 text-xs text-orange-400 hover:text-orange-300 transition-colors"
+        >
+          <Plus size={13} />
+          Ajouter
+        </button>
+      </div>
+
+      {/* Liste drag-and-drop */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
       >
-        <div className="space-y-0.5">
-          {localCategories.map((cat) => (
-            <SortableCategoryItem key={cat.id} category={cat} />
-          ))}
-        </div>
-      </SortableContext>
-    </DndContext>
+        <SortableContext
+          items={localCategories.map((c) => c.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-0.5">
+            {localCategories.map((cat) => (
+              <SortableCategoryItem
+                key={cat.id}
+                category={cat}
+                isConfirming={confirmingDeleteId === cat.id}
+                onEdit={openEditModal}
+                onDeleteRequest={setConfirmingDeleteId}
+                onDeleteConfirm={handleDeleteConfirm}
+                onDeleteCancel={() => setConfirmingDeleteId(null)}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+
+      {/* Modal */}
+      <CategorieModal
+        key={editingCategory?.id ?? "new"}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        categorie={editingCategory}
+      />
+    </>
   );
 }
