@@ -1,23 +1,16 @@
 import { Suspense } from "react";
 import ParametresContent from "./ParametresContent";
-import { fetchComptes } from "@/lib/comptes";
-import { getActiveCompteId } from "@/lib/active-compte";
 import { requireAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 async function ParametresData() {
-  const [session, compteId, comptes] = await Promise.all([
-    requireAuth(),
-    getActiveCompteId(),
-    fetchComptes(),
-  ]);
+  const session = await requireAuth();
 
   return (
     <ParametresContent
-      comptes={comptes}
-      activeCompteId={compteId}
       userEmail={session.user.email ?? ""}
+      userDisplayName={session.user.user_metadata?.display_name ?? ""}
     />
   );
 }

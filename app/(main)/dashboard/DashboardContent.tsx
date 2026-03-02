@@ -6,16 +6,23 @@ import {
   TrendingUp,
   TrendingDown,
   PiggyBank,
+  Percent,
   ArrowRight,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import BalanceChart from "./BalanceChart";
 import CategoryChart from "./CategoryChart";
+import RevenusDepensesChart from "./RevenusDepensesChart";
+import CategorieBar from "./CategorieBar";
+import PeriodSelector from "./PeriodSelector";
 import type {
   TDashboardStats,
   TTransactionWithCategorie,
   TDepenseCategorie,
   TBalancePoint,
+  TPeriod,
+  TBilanMois,
+  TBilanCategorie,
 } from "@/types";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -25,7 +32,9 @@ interface IDashboardContentProps {
   transactions: TTransactionWithCategorie[];
   categories: TDepenseCategorie[];
   history: TBalancePoint[];
-  moisLabel: string;
+  parMois: TBilanMois[];
+  categoriesDetailed: TBilanCategorie[];
+  period: TPeriod;
 }
 
 interface IKpiCard {
@@ -34,6 +43,7 @@ interface IKpiCard {
   positif: boolean;
   icon: React.ReactNode;
   subtitle: string;
+  isPercent?: boolean;
 }
 
 // ── Constantes & helpers ─────────────────────────────────────────────────────
@@ -48,6 +58,13 @@ const STAGGER_CONTAINER = {
   visible: { transition: { staggerChildren: 0.08 } },
 };
 
+const PERIOD_LABELS: Record<TPeriod, string> = {
+  "1m": "mois en cours",
+  "3m": "3 derniers mois",
+  "6m": "6 derniers mois",
+  "1y": "12 derniers mois",
+};
+
 function formatEur(n: number): string {
   return n.toLocaleString("fr-FR", {
     minimumFractionDigits: 2,
@@ -55,28 +72,37 @@ function formatEur(n: number): string {
   });
 }
 
-function buildKpiCards(stats: TDashboardStats): IKpiCard[] {
+function buildKpiCards(stats: TDashboardStats, period: TPeriod): IKpiCard[] {
+  const subtitle = PERIOD_LABELS[period];
   return [
     {
-      label: "Revenus du mois",
+      label: "Revenus",
       valeur: stats.revenus,
       positif: true,
       icon: <TrendingUp size={16} />,
-      subtitle: "mois en cours",
+      subtitle,
     },
     {
-      label: "Dépenses du mois",
+      label: "Dépenses",
       valeur: stats.depenses,
       positif: false,
       icon: <TrendingDown size={16} />,
-      subtitle: "mois en cours",
+      subtitle,
     },
     {
       label: "Épargne nette",
       valeur: stats.epargne,
       positif: stats.epargne >= 0,
       icon: <PiggyBank size={16} />,
-      subtitle: "revenus − dépenses du mois",
+      subtitle,
+    },
+    {
+      label: "Taux d'épargne",
+      valeur: stats.tauxEpargne,
+      positif: stats.tauxEpargne >= 0,
+      icon: <Percent size={16} />,
+      subtitle,
+      isPercent: true,
     },
   ];
 }
@@ -101,7 +127,7 @@ function SoldeCard({ stats }: { stats: TDashboardStats }) {
               </span>
             </div>
 
-            <p className="text-2xl font-bold tabular-nums leading-none text-white">
+            <p className="text-xl sm:text-2xl font-bold tabular-nums leading-none text-white">
               {formatEur(stats.soldeTotal)}
               <span className="text-sm text-white/35 font-normal ml-1">€</span>
             </p>
@@ -139,9 +165,15 @@ function KpiCard({ kpi }: { kpi: IKpiCard }) {
                 {kpi.icon}
               </span>
             </div>
-            <p className="text-2xl font-bold tabular-nums leading-none text-white">
-              {formatEur(kpi.valeur)}
-              <span className="text-sm text-white/35 font-normal ml-1">€</span>
+            <p className="text-xl sm:text-2xl font-bold tabular-nums leading-none text-white">
+              {kpi.isPercent ? (
+                `${kpi.valeur.toFixed(1)} %`
+              ) : (
+                <>
+                  {formatEur(kpi.valeur)}
+                  <span className="text-sm text-white/35 font-normal ml-1">€</span>
+                </>
+              )}
             </p>
             <p className="text-xs mt-2.5 font-medium text-white/35">
               {kpi.subtitle}
@@ -203,45 +235,47 @@ export default function DashboardContent({
   transactions,
   categories,
   history,
-  moisLabel,
+  parMois,
+  categoriesDetailed,
+  period,
 }: IDashboardContentProps) {
-  const kpiCards = buildKpiCards(stats);
+  const kpiCards = buildKpiCards(stats, period);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white px-4 py-6 lg:px-8 lg:py-8">
 
       {/* ── Header ── */}
       <motion.header
-        className="mb-8"
+        className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <p className="text-xs text-white/35 uppercase tracking-widest font-medium mb-1">
-          {moisLabel}
-        </p>
-        <h1 className="text-2xl font-bold tracking-tight">Tableau de bord</h1>
+        <div>
+          <p className="text-xs text-white/35 uppercase tracking-widest font-medium mb-1">
+            Vue d&apos;ensemble
+          </p>
+          <h1 className="text-2xl font-bold tracking-tight">Tableau de bord</h1>
+        </div>
+        <PeriodSelector current={period} />
       </motion.header>
 
       {/* ── KPI Cards ── */}
       <motion.section
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5"
+        className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3 mb-3 sm:mb-5"
         variants={STAGGER_CONTAINER}
         initial="hidden"
         animate="visible"
       >
-        {/* Solde total — carte éditable (solde initial + flux cumulés) */}
         <SoldeCard stats={stats} />
-
-        {/* Revenus, Dépenses, Épargne du mois */}
         {kpiCards.map((kpi) => (
           <KpiCard key={kpi.label} kpi={kpi} />
         ))}
       </motion.section>
 
-      {/* ── Charts row ── */}
+      {/* ── Charts row 1: Area + Donut ── */}
       <motion.section
-        className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-5"
+        className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-5"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.25 }}
@@ -292,11 +326,71 @@ export default function DashboardContent({
         </Card>
       </motion.section>
 
+      {/* ── Charts row 2: Bar chart revenus vs dépenses ── */}
+      <motion.section
+        className="mb-3 sm:mb-5"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.3 }}
+      >
+        <Card>
+          <CardContent>
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
+              <div>
+                <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">
+                  Revenus vs Dépenses
+                </p>
+                <p className="text-sm text-white/55">{PERIOD_LABELS[period]}</p>
+              </div>
+              <div className="flex items-center gap-4 text-xs text-white/40">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
+                  Revenus
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-orange-500" />
+                  Dépenses
+                </span>
+              </div>
+            </div>
+            <RevenusDepensesChart data={parMois} />
+          </CardContent>
+        </Card>
+      </motion.section>
+
+      {/* ── Catégories détaillées (barres horizontales) ── */}
+      {categoriesDetailed.length > 0 && (
+        <motion.section
+          className="mb-5"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.35 }}
+        >
+          <Card>
+            <CardContent>
+              <p className="text-[10px] text-white/40 uppercase tracking-widest mb-6">
+                Répartition des dépenses
+              </p>
+              <motion.div
+                variants={STAGGER_CONTAINER}
+                initial="hidden"
+                animate="visible"
+                className="space-y-4"
+              >
+                {categoriesDetailed.map((cat) => (
+                  <CategorieBar key={cat.nom} {...cat} />
+                ))}
+              </motion.div>
+            </CardContent>
+          </Card>
+        </motion.section>
+      )}
+
       {/* ── Dernières transactions ── */}
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, delay: 0.35 }}
+        transition={{ duration: 0.45, delay: 0.4 }}
       >
         <Card>
           <CardContent>

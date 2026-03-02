@@ -22,7 +22,7 @@ function formatEur(n: number): string {
 export default function CategoryChart({ data }: ICategoryChartProps) {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[150px]">
+      <div className="flex items-center justify-center h-[120px] sm:h-[150px]">
         <p className="text-white/30 text-sm">Aucune donnée à afficher</p>
       </div>
     );
@@ -30,7 +30,8 @@ export default function CategoryChart({ data }: ICategoryChartProps) {
 
   return (
     <>
-      <ResponsiveContainer width="100%" height={150}>
+      <div className="h-[120px] sm:h-[150px]">
+      <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
@@ -53,6 +54,7 @@ export default function CategoryChart({ data }: ICategoryChartProps) {
           />
         </PieChart>
       </ResponsiveContainer>
+      </div>
 
       <ul className="mt-3 space-y-2">
         {data.map((cat) => (

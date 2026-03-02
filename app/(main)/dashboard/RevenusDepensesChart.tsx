@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import type { TBilanMois } from "@/lib/bilan";
+import type { TBilanMois } from "@/types";
 
 function formatEur(n: number) {
   return new Intl.NumberFormat("fr-FR", {
@@ -51,31 +51,33 @@ export default function RevenusDepensesChart({ data }: { data: TBilanMois[] }) {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <BarChart
-        data={data}
-        barCategoryGap="30%"
-        barGap={4}
-        margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-      >
-        <CartesianGrid
-          vertical={false}
-          stroke="rgba(255,255,255,0.04)"
-          strokeDasharray="0"
-        />
-        <XAxis
-          dataKey="mois"
-          tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
-          axisLine={false}
-          tickLine={false}
-        />
-        <Tooltip
-          content={<CustomTooltip />}
-          cursor={{ fill: "rgba(255,255,255,0.03)" }}
-        />
-        <Bar dataKey="revenus" fill="#22c55e" radius={[6, 6, 0, 0]} />
-        <Bar dataKey="depenses" fill="#f97316" radius={[6, 6, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
+    <div className="h-[220px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={data}
+          barCategoryGap="30%"
+          barGap={4}
+          margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+        >
+          <CartesianGrid
+            vertical={false}
+            stroke="rgba(255,255,255,0.04)"
+            strokeDasharray="0"
+          />
+          <XAxis
+            dataKey="mois"
+            tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <Tooltip
+            content={<CustomTooltip />}
+            cursor={{ fill: "rgba(255,255,255,0.03)" }}
+          />
+          <Bar dataKey="revenus" fill="#22c55e" radius={[6, 6, 0, 0]} />
+          <Bar dataKey="depenses" fill="#f97316" radius={[6, 6, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
