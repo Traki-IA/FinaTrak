@@ -2,12 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wallet, Check, Plus, Pencil, Landmark } from "lucide-react";
+import { Wallet, Check, Plus, Pencil, Landmark, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 import CompteModal from "./CompteModal";
+import DeleteAccountDialog from "./DeleteAccountDialog";
 import { CompteIcon } from "@/components/AccountSwitcher";
 import { updateSoldeInitial } from "./actions";
 import { deleteCompte } from "@/app/(main)/comptes/actions";
@@ -18,6 +19,7 @@ interface IParametresContentProps {
   soldeInitial: number;
   comptes: TCompte[];
   activeCompteId: string;
+  userEmail: string;
 }
 
 const FADE_UP = {
@@ -29,6 +31,7 @@ export default function ParametresContent({
   soldeInitial,
   comptes,
   activeCompteId,
+  userEmail,
 }: IParametresContentProps) {
   const router = useRouter();
   const [inputValue, setInputValue] = useState(String(soldeInitial));
@@ -39,6 +42,7 @@ export default function ParametresContent({
   const [compteModalOpen, setCompteModalOpen] = useState(false);
   const [editingCompte, setEditingCompte] = useState<TCompte | undefined>();
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const activeCompte = comptes.find((c) => c.id === activeCompteId);
 
@@ -283,6 +287,52 @@ export default function ParametresContent({
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* ── Zone de danger ── */}
+        <motion.div
+          variants={FADE_UP}
+          initial="hidden"
+          animate="visible"
+          transition={{ duration: 0.35, delay: 0.2 }}
+        >
+          <Card className="border-red-500/20">
+            <CardContent>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="p-2 rounded-xl bg-red-500/10 text-red-400">
+                  <AlertTriangle size={18} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-red-400">
+                    Zone de danger
+                  </p>
+                  <p className="text-xs text-white/40 mt-0.5">
+                    Actions irréversibles sur votre compte
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-red-500/5 border border-red-500/15 rounded-xl p-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-white">
+                    Supprimer mon compte
+                  </p>
+                  <p className="text-xs text-white/40 mt-1 leading-relaxed">
+                    Supprime définitivement votre compte et toutes vos
+                    données. Cette action est irréversible.
+                  </p>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setDeleteDialogOpen(true)}
+                  className="flex-shrink-0 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold transition-colors"
+                >
+                  Supprimer
+                </motion.button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
 
       {/* ── Modal Compte ── */}
@@ -291,6 +341,13 @@ export default function ParametresContent({
         open={compteModalOpen}
         onOpenChange={setCompteModalOpen}
         compte={editingCompte}
+      />
+
+      {/* ── Dialog Suppression de compte ── */}
+      <DeleteAccountDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        userEmail={userEmail}
       />
     </div>
   );
