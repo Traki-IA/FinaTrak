@@ -31,6 +31,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
+import CategoryFilter from "@/components/CategoryFilter";
 import ObjectifModal from "./ObjectifModal";
 import {
   deleteObjectif,
@@ -38,7 +39,7 @@ import {
   reorderObjectifs,
 } from "./actions";
 import { formatEur } from "@/lib/format";
-import type { TObjectifWithBudgetLines } from "@/types";
+import type { TObjectifWithBudgetLines, TCategorie } from "@/types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -467,9 +468,11 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 
 export default function ObjectifsContent({
   objectifs: initialObjectifs,
+  categories,
   compteId,
 }: {
   objectifs: TObjectifWithBudgetLines[];
+  categories: TCategorie[];
   compteId: string;
 }) {
   const router = useRouter();
@@ -558,17 +561,20 @@ export default function ObjectifsContent({
           </p>
         </div>
 
-        {localObjectifs.length > 0 && (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={openAddModal}
-            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
-          >
-            <Plus size={16} />
-            <span className="hidden sm:inline">Ajouter</span>
-          </motion.button>
-        )}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {categories.length > 0 && <CategoryFilter categories={categories} />}
+          {localObjectifs.length > 0 && (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={openAddModal}
+              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
+            >
+              <Plus size={16} />
+              <span className="hidden sm:inline">Ajouter</span>
+            </motion.button>
+          )}
+        </div>
       </motion.div>
 
       {/* ── Content ── */}

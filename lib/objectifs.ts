@@ -74,6 +74,7 @@ export async function fetchObjectifsWithBudgetLines(
           nom: bi.nom,
           montant: bi.montant,
           frequence: bi.frequence as "mensuel" | "annuel",
+          categorie_id: bi.categorie_id,
           consomme,
           restant: Math.max(0, bi.montant - consomme),
         };
