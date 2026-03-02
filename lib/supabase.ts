@@ -12,6 +12,21 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 /**
+ * Client Supabase admin avec SERVICE_ROLE_KEY.
+ * Contourne le RLS — à utiliser UNIQUEMENT côté serveur pour les
+ * opérations d'administration (suppression de compte, etc.).
+ */
+export function createAdminSupabaseClient() {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceRoleKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY is not defined");
+  }
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
+/**
  * Crée un client Supabase serveur avec gestion des cookies de session.
  * À utiliser dans les Server Components, Server Actions et Route Handlers.
  */
