@@ -1,5 +1,4 @@
-import Navbar from "@/components/Navbar";
-import AccountGuard from "@/components/AccountGuard";
+import MainLayoutShell from "@/components/MainLayoutShell";
 import { fetchComptes, fetchNavOrder } from "@/lib/comptes";
 import { getActiveCompteId, DEFAULT_COMPTE_ID } from "@/lib/active-compte";
 
@@ -26,12 +25,13 @@ export default async function MainLayout({
   }
 
   return (
-    <>
-      <Navbar comptes={comptes} activeCompteId={activeCompteId} navOrder={navOrder} />
-      {needsAccountFix && <AccountGuard compteId={activeCompteId} />}
-      <div className="md:ml-56 pb-20 md:pb-0">
-        {children}
-      </div>
-    </>
+    <MainLayoutShell
+      comptes={comptes}
+      activeCompteId={activeCompteId}
+      navOrder={navOrder}
+      needsAccountFix={needsAccountFix}
+    >
+      {children}
+    </MainLayoutShell>
   );
 }

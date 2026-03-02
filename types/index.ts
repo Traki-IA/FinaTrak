@@ -89,6 +89,7 @@ export type TBudgetLineProgress = {
   nom: string;
   montant: number;
   frequence: "mensuel" | "annuel";
+  categorie_id: string | null;
   consomme: number;
   restant: number;
 };

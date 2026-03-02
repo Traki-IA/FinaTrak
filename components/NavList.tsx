@@ -69,7 +69,15 @@ function getOrderedNavItems(savedOrder: string[]): TNavItem[] {
 
 // ── Composant sortable ───────────────────────────────────────────────────────
 
-function SortableNavItem({ item, isActive }: { item: TNavItem; isActive: boolean }) {
+function SortableNavItem({
+  item,
+  isActive,
+  collapsed,
+}: {
+  item: TNavItem;
+  isActive: boolean;
+  collapsed?: boolean;
+}) {
   const {
     attributes,
     listeners,
@@ -87,6 +95,28 @@ function SortableNavItem({ item, isActive }: { item: TNavItem; isActive: boolean
   };
 
   const Icon = item.icon;
+
+  if (collapsed) {
+    return (
+      <div ref={setNodeRef} style={style} className="relative group">
+        <Link
+          href={item.href}
+          className={`flex items-center justify-center w-full py-2.5 rounded-xl transition-all ${
+            isActive
+              ? "bg-orange-500/15 text-orange-400"
+              : "text-white/40 hover:text-white hover:bg-white/[0.05]"
+          }`}
+        >
+          <Icon size={17} strokeWidth={isActive ? 2.2 : 1.8} />
+        </Link>
+
+        {/* Tooltip */}
+        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-[#1a1a2e] border border-white/[0.1] rounded-lg text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-xl">
+          {item.label}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div ref={setNodeRef} style={style} className="flex items-center group">
@@ -116,9 +146,10 @@ function SortableNavItem({ item, isActive }: { item: TNavItem; isActive: boolean
 
 interface INavListProps {
   savedOrder: string[];
+  collapsed?: boolean;
 }
 
-export default function NavList({ savedOrder }: INavListProps) {
+export default function NavList({ savedOrder, collapsed }: INavListProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [items, setItems] = useState(() => getOrderedNavItems(savedOrder));
@@ -155,6 +186,22 @@ export default function NavList({ savedOrder }: INavListProps) {
 
       return reordered;
     });
+  }
+
+  // En mode collapsed, pas de drag-and-drop (pas assez d'espace)
+  if (collapsed) {
+    return (
+      <div className="space-y-0.5">
+        {items.map((item) => (
+          <SortableNavItem
+            key={item.key}
+            item={item}
+            isActive={pathname === item.href}
+            collapsed
+          />
+        ))}
+      </div>
+    );
   }
 
   return (

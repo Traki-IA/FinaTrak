@@ -57,6 +57,83 @@ export async function reorderCategories(
   return { success: true };
 }
 
+// ── CRUD catégories ──────────────────────────────────────────────────────────
+
+const CategorieSchema = z.object({
+  nom: z.string().min(1, "Le nom est requis").max(50),
+  couleur: z.string().min(1, "La couleur est requise"),
+  icone: z.string().min(1, "L'icône est requise"),
+});
+
+export async function insertCategorie(
+  input: { nom: string; couleur: string; icone: string }
+): Promise<TActionResult> {
+  const parsed = CategorieSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
+  }
+
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
+  // Calculer le prochain sort_order
+  const { data: last } = await supabase
+    .from("categories")
+    .select("sort_order")
+    .eq("user_id", userId)
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const nextOrder = ((last?.sort_order as number) ?? -1) + 1;
+
+  const { error } = await supabase
+    .from("categories")
+    .insert([{ ...parsed.data, sort_order: nextOrder, user_id: userId }]);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/");
+  return { success: true };
+}
+
+export async function updateCategorie(
+  input: { id: string; nom: string; couleur: string; icone: string }
+): Promise<TActionResult> {
+  const schema = CategorieSchema.extend({ id: z.string().uuid() });
+  const parsed = schema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { id, ...updateData } = parsed.data;
+
+  const { error } = await supabase
+    .from("categories")
+    .update(updateData)
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/");
+  return { success: true };
+}
+
+export async function deleteCategorie(id: string): Promise<TActionResult> {
+  if (!z.string().uuid().safeParse(id).success) {
+    return { error: "Identifiant invalide" };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/");
+  return { success: true };
+}
+
 // ── Mise à jour de l'ordre de navigation ─────────────────────────────────────
 
 export async function updateNavOrder(
@@ -145,7 +222,7 @@ export async function deleteUserAccount(
   // Suppression en cascade des données (ordre FK : budget_items → transactions → objectifs → comptes)
   const admin = createAdminSupabaseClient();
 
-  const tables = ["budget_items", "transactions", "objectifs", "comptes"] as const;
+  const tables = ["budget_items", "transactions", "objectifs", "comptes", "categories"] as const;
 
   for (const table of tables) {
     const { error } = await admin.from(table).delete().eq("user_id", userId);
@@ -154,8 +231,7 @@ export async function deleteUserAccount(
     }
   }
 
-  // Supprimer les settings liés (pas de user_id, suppression globale si nécessaire)
-  // Note : les settings et categories sont globales, on ne les supprime pas
+  // Supprimer les settings liés (pas de user_id sur settings)
 
   // Supprimer le compte auth via l'API admin
   const { error: deleteAuthError } = await admin.auth.admin.deleteUser(userId);
