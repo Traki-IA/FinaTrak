@@ -23,9 +23,10 @@ function CompteIcon({ icone, size = 16, strokeWidth = 1.8 }: { icone: string; si
 interface IAccountSwitcherProps {
   comptes: TCompte[];
   activeCompteId: string;
+  collapsed?: boolean;
 }
 
-export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwitcherProps) {
+export default function AccountSwitcher({ comptes, activeCompteId, collapsed }: IAccountSwitcherProps) {
   const [open, setOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -77,24 +78,42 @@ export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwi
 
   return (
     <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen((prev) => !prev)}
-        disabled={switching}
-        className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-white/80 hover:bg-white/[0.05] transition-all"
-      >
-        <span
-          className="flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0"
-          style={{ backgroundColor: `${activeCompte.couleur}20`, color: activeCompte.couleur }}
+      {/* Bouton trigger */}
+      {collapsed ? (
+        <button
+          onClick={() => setOpen((prev) => !prev)}
+          disabled={switching}
+          className="flex items-center justify-center w-full p-2 rounded-xl hover:bg-white/[0.05] transition-all"
+          title={activeCompte.nom}
         >
-          <CompteIcon icone={activeCompte.icone} size={15} strokeWidth={2} />
-        </span>
-        <span className="truncate flex-1 text-left">{activeCompte.nom}</span>
-        <ChevronDown
-          size={14}
-          className={`text-white/30 transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`}
-        />
-      </button>
+          <span
+            className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
+            style={{ backgroundColor: `${activeCompte.couleur}20`, color: activeCompte.couleur }}
+          >
+            <CompteIcon icone={activeCompte.icone} size={16} strokeWidth={2} />
+          </span>
+        </button>
+      ) : (
+        <button
+          onClick={() => setOpen((prev) => !prev)}
+          disabled={switching}
+          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-white/80 hover:bg-white/[0.05] transition-all"
+        >
+          <span
+            className="flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0"
+            style={{ backgroundColor: `${activeCompte.couleur}20`, color: activeCompte.couleur }}
+          >
+            <CompteIcon icone={activeCompte.icone} size={15} strokeWidth={2} />
+          </span>
+          <span className="truncate flex-1 text-left">{activeCompte.nom}</span>
+          <ChevronDown
+            size={14}
+            className={`text-white/30 transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`}
+          />
+        </button>
+      )}
 
+      {/* Dropdown */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -102,7 +121,11 @@ export default function AccountSwitcher({ comptes, activeCompteId }: IAccountSwi
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 right-0 top-full mt-1 bg-[#111122] border border-white/[0.08] rounded-xl shadow-xl overflow-hidden z-50"
+            className={`absolute bg-[#111122] border border-white/[0.08] rounded-xl shadow-xl overflow-hidden z-50 ${
+              collapsed
+                ? "left-full ml-2 top-0 w-52"
+                : "left-0 right-0 top-full mt-1"
+            }`}
           >
             {comptes.map((compte) => {
               const isActive = compte.id === activeCompte?.id;
