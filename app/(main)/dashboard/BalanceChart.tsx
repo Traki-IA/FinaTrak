@@ -29,14 +29,15 @@ function formatEur(n: number): string {
 export default function BalanceChart({ data }: IBalanceChartProps) {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[200px]">
+      <div className="flex items-center justify-center h-[160px] sm:h-[200px]">
         <p className="text-white/30 text-sm">Aucune donnée à afficher</p>
       </div>
     );
   }
 
   return (
-    <ResponsiveContainer width="100%" height={200}>
+    <div className="h-[160px] sm:h-[200px]">
+    <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="gradSolde" x1="0" y1="0" x2="0" y2="1">
@@ -82,5 +83,6 @@ export default function BalanceChart({ data }: IBalanceChartProps) {
         />
       </AreaChart>
     </ResponsiveContainer>
+    </div>
   );
 }

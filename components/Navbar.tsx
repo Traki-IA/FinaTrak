@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut } from "lucide-react";
 import AccountSwitcher from "@/components/AccountSwitcher";
 import NavList, { ALL_NAV_ITEMS } from "@/components/NavList";
-import { signOutAction } from "@/app/auth/actions";
 import type { TCompte } from "@/types";
 
 interface INavbarProps {
@@ -41,16 +39,7 @@ export default function Navbar({ comptes, activeCompteId, navOrder }: INavbarPro
         </nav>
 
         {/* Footer */}
-        <div className="px-3 py-4 border-t border-white/[0.05] space-y-3">
-          <form action={signOutAction}>
-            <button
-              type="submit"
-              className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-white/[0.05] transition-colors"
-            >
-              <LogOut size={16} strokeWidth={1.7} />
-              Déconnexion
-            </button>
-          </form>
+        <div className="px-3 py-4 border-t border-white/[0.05]">
           <p className="text-[11px] text-white/20 px-2">FinaTrak · v0.2</p>
         </div>
       </aside>
@@ -63,24 +52,15 @@ export default function Navbar({ comptes, activeCompteId, navOrder }: INavbarPro
             <Link
               key={key}
               href={href}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-medium transition-colors ${
+              className={`flex-1 flex flex-col items-center gap-0.5 py-2 text-[9px] font-medium transition-colors ${
                 isActive ? "text-orange-400" : "text-white/35"
               }`}
             >
-              <Icon size={20} strokeWidth={isActive ? 2.2 : 1.7} />
+              <Icon size={18} strokeWidth={isActive ? 2.2 : 1.7} />
               {label.split(" ")[0]}
             </Link>
           );
         })}
-        <form action={signOutAction} className="flex-1 flex">
-          <button
-            type="submit"
-            className="flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-medium text-white/35 hover:text-white/70 transition-colors"
-          >
-            <LogOut size={20} strokeWidth={1.7} />
-            Sortir
-          </button>
-        </form>
       </nav>
     </>
   );

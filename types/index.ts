@@ -97,6 +97,25 @@ export type TObjectifWithBudgetLines = TObjectif & {
   budget_lines: TBudgetLineProgress[];
 };
 
+// ── Types période & bilan ────────────────────────────────────────────────────
+
+export type TPeriod = "1m" | "3m" | "6m" | "1y";
+
+export type TBilanMois = {
+  mois: string;
+  moisKey: string;
+  revenus: number;
+  depenses: number;
+  epargne: number;
+};
+
+export type TBilanCategorie = {
+  nom: string;
+  couleur: string;
+  total: number;
+  pourcentage: number;
+};
+
 // ── Types dashboard ──────────────────────────────────────────────────────────
 
 export type TDashboardStats = {
@@ -105,6 +124,7 @@ export type TDashboardStats = {
   revenus: number;
   depenses: number;
   epargne: number;
+  tauxEpargne: number;
 };
 
 export type TBalancePoint = {

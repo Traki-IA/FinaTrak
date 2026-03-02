@@ -77,6 +77,41 @@ export async function updateNavOrder(
   return { success: true };
 }
 
+// ── Mise à jour du profil utilisateur ────────────────────────────────────────
+
+type TProfileResult = { success: true } | { error: string };
+
+export async function updateUserDisplayName(
+  displayName: string
+): Promise<TProfileResult> {
+  const parsed = z.string().min(1, "Le nom est requis").safeParse(displayName);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Nom invalide" };
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.auth.updateUser({
+    data: { display_name: parsed.data },
+  });
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/parametres");
+  return { success: true };
+}
+
+export async function updateUserPassword(
+  newPassword: string
+): Promise<TProfileResult> {
+  const parsed = z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères").safeParse(newPassword);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Mot de passe invalide" };
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.auth.updateUser({ password: parsed.data });
+
+  if (error) return { error: error.message };
+
+  return { success: true };
+}
+
 // ── Suppression définitive du compte utilisateur ─────────────────────────────
 
 const DeleteAccountSchema = z.object({
