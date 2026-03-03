@@ -10,6 +10,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import Shell from "@/components/layout/Shell";
 import BalanceChart from "./BalanceChart";
 import CategoryChart from "./CategoryChart";
 import RevenusDepensesChart from "./RevenusDepensesChart";
@@ -242,7 +243,7 @@ export default function DashboardContent({
   const kpiCards = buildKpiCards(stats, period);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white px-4 py-6 lg:px-8 lg:py-8">
+    <Shell>
 
       {/* ── Header ── */}
       <motion.header
@@ -262,7 +263,7 @@ export default function DashboardContent({
 
       {/* ── KPI Cards ── */}
       <motion.section
-        className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3 mb-3 sm:mb-5"
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 mb-3 sm:mb-5"
         variants={STAGGER_CONTAINER}
         initial="hidden"
         animate="visible"
@@ -275,13 +276,13 @@ export default function DashboardContent({
 
       {/* ── Charts row 1: Area + Donut ── */}
       <motion.section
-        className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-5"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-5"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.25 }}
       >
         {/* Area chart */}
-        <Card className="lg:col-span-2">
+        <Card className="md:col-span-2 lg:col-span-2">
           <CardContent>
             <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">
               Évolution du solde
@@ -424,6 +425,6 @@ export default function DashboardContent({
           </CardContent>
         </Card>
       </motion.section>
-    </div>
+    </Shell>
   );
 }

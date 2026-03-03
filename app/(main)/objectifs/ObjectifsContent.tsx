@@ -32,6 +32,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 import CategoryFilter from "@/components/CategoryFilter";
+import Shell from "@/components/layout/Shell";
 import ObjectifModal from "./ObjectifModal";
 import {
   deleteObjectif,
@@ -540,7 +541,7 @@ export default function ObjectifsContent({
   }
 
   return (
-    <main className="min-h-screen bg-background p-4 sm:p-6 md:p-8">
+    <Shell>
       {/* ── Header ── */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
@@ -594,7 +595,7 @@ export default function ObjectifsContent({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
               <AnimatePresence>
                 {localObjectifs.map((o) => (
@@ -622,6 +623,6 @@ export default function ObjectifsContent({
         objectif={editingObjectif}
         compteId={compteId}
       />
-    </main>
+    </Shell>
   );
 }

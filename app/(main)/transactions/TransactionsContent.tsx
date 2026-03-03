@@ -6,6 +6,7 @@ import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import TransactionModal from "./TransactionModal";
+import Shell from "@/components/layout/Shell";
 import FilterBar from "@/components/FilterBar";
 import { deleteTransaction } from "./actions";
 import { formatEur } from "@/lib/format";
@@ -328,7 +329,7 @@ export default function TransactionsContent({
   }
 
   return (
-    <main className="min-h-screen bg-background p-4 sm:p-6 md:p-8">
+    <Shell>
       {/* ── Header ── */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
@@ -356,124 +357,133 @@ export default function TransactionsContent({
         </motion.button>
       </motion.div>
 
-      {/* ── Filters ── */}
-      <FilterBar categories={categories} />
+      {/* ── Desktop 2-column layout (lg+) ── */}
+      <div className="lg:grid lg:grid-cols-[280px_1fr] lg:gap-6">
+        {/* ── Left panel: Filters + Summary (sticky on desktop) ── */}
+        <div className="lg:sticky lg:top-6 lg:self-start">
+          {/* Filters */}
+          <FilterBar categories={categories} />
 
-      {/* ── Solde filtré ── */}
-      {transactions.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex items-center mb-4"
-        >
-          <span className="text-white/40 text-sm mr-2">Solde :</span>
-          <span
-            className={`text-sm font-semibold ${
-              totalFiltre >= 0 ? "text-emerald-400" : "text-red-400"
-            }`}
-          >
-            {totalFiltre >= 0 ? "+" : ""}
-            {formatEur(totalFiltre)}
-          </span>
-        </motion.div>
-      )}
-
-      {/* ── Mobile Cards (hidden on md+) ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, duration: 0.3 }}
-        className="md:hidden bg-white/[0.04] border border-white/[0.07] rounded-2xl overflow-hidden"
-      >
-        <AnimatePresence mode="popLayout">
-          {transactions.length === 0 ? (
-            <motion.p
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="text-center text-white/30 text-sm py-16"
+          {/* Solde filtré */}
+          {transactions.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex items-center mb-4 lg:mt-4 lg:mb-0 lg:bg-white/[0.04] lg:border lg:border-white/[0.07] lg:rounded-2xl lg:p-4"
             >
-              Aucune transaction trouvée
-            </motion.p>
-          ) : (
-            transactions.map((t, i) => (
-              <TransactionCard
-                key={t.id}
-                transaction={t}
-                index={i}
-                confirmingDeleteId={confirmingDeleteId}
-                onEdit={openEditModal}
-                onDeleteRequest={setConfirmingDeleteId}
-                onDeleteConfirm={handleDeleteConfirm}
-                onDeleteCancel={() => setConfirmingDeleteId(null)}
-              />
-            ))
+              <span className="text-white/40 text-sm mr-2">Solde :</span>
+              <span
+                className={`text-sm font-semibold ${
+                  totalFiltre >= 0 ? "text-emerald-400" : "text-red-400"
+                }`}
+              >
+                {totalFiltre >= 0 ? "+" : ""}
+                {formatEur(totalFiltre)}
+              </span>
+            </motion.div>
           )}
-        </AnimatePresence>
-      </motion.div>
-
-      {/* ── Desktop Table (hidden on mobile) ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, duration: 0.3 }}
-        className="hidden md:block bg-white/[0.04] border border-white/[0.07] rounded-2xl overflow-hidden"
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/[0.07]">
-                {["Date", "Description", "Catégorie", "Type", "Montant", ""].map(
-                  (col, i) => (
-                    <th
-                      key={i}
-                      className={`text-white/35 text-xs font-medium px-4 py-3 uppercase tracking-wider ${
-                        col === "Montant" ? "text-right" : "text-left"
-                      } ${col === "" ? "px-4 w-24" : ""}`}
-                    >
-                      {col}
-                    </th>
-                  )
-                )}
-              </tr>
-            </thead>
-
-            <tbody>
-              <AnimatePresence mode="popLayout">
-                {transactions.length === 0 ? (
-                  <motion.tr
-                    key="empty"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <td
-                      colSpan={6}
-                      className="text-center text-white/30 text-sm py-20"
-                    >
-                      Aucune transaction trouvée
-                    </td>
-                  </motion.tr>
-                ) : (
-                  transactions.map((t, i) => (
-                    <TransactionRow
-                      key={t.id}
-                      transaction={t}
-                      index={i}
-                      confirmingDeleteId={confirmingDeleteId}
-                      onEdit={openEditModal}
-                      onDeleteRequest={setConfirmingDeleteId}
-                      onDeleteConfirm={handleDeleteConfirm}
-                      onDeleteCancel={() => setConfirmingDeleteId(null)}
-                    />
-                  ))
-                )}
-              </AnimatePresence>
-            </tbody>
-          </table>
         </div>
-      </motion.div>
+
+        {/* ── Right panel: Transaction list ── */}
+        <div>
+          {/* Mobile Cards (hidden on md+) */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.3 }}
+            className="md:hidden bg-white/[0.04] border border-white/[0.07] rounded-2xl overflow-hidden"
+          >
+            <AnimatePresence mode="popLayout">
+              {transactions.length === 0 ? (
+                <motion.p
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="text-center text-white/30 text-sm py-16"
+                >
+                  Aucune transaction trouvée
+                </motion.p>
+              ) : (
+                transactions.map((t, i) => (
+                  <TransactionCard
+                    key={t.id}
+                    transaction={t}
+                    index={i}
+                    confirmingDeleteId={confirmingDeleteId}
+                    onEdit={openEditModal}
+                    onDeleteRequest={setConfirmingDeleteId}
+                    onDeleteConfirm={handleDeleteConfirm}
+                    onDeleteCancel={() => setConfirmingDeleteId(null)}
+                  />
+                ))
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* Desktop Table (hidden on mobile) */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.3 }}
+            className="hidden md:block bg-white/[0.04] border border-white/[0.07] rounded-2xl overflow-hidden"
+          >
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/[0.07]">
+                    {["Date", "Description", "Catégorie", "Type", "Montant", ""].map(
+                      (col, i) => (
+                        <th
+                          key={i}
+                          className={`text-white/35 text-xs font-medium px-4 py-3 uppercase tracking-wider ${
+                            col === "Montant" ? "text-right" : "text-left"
+                          } ${col === "" ? "px-4 w-24" : ""}`}
+                        >
+                          {col}
+                        </th>
+                      )
+                    )}
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <AnimatePresence mode="popLayout">
+                    {transactions.length === 0 ? (
+                      <motion.tr
+                        key="empty"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <td
+                          colSpan={6}
+                          className="text-center text-white/30 text-sm py-20"
+                        >
+                          Aucune transaction trouvée
+                        </td>
+                      </motion.tr>
+                    ) : (
+                      transactions.map((t, i) => (
+                        <TransactionRow
+                          key={t.id}
+                          transaction={t}
+                          index={i}
+                          confirmingDeleteId={confirmingDeleteId}
+                          onEdit={openEditModal}
+                          onDeleteRequest={setConfirmingDeleteId}
+                          onDeleteConfirm={handleDeleteConfirm}
+                          onDeleteCancel={() => setConfirmingDeleteId(null)}
+                        />
+                      ))
+                    )}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        </div>
+      </div>
 
       {/* ── Modal ── */}
       <TransactionModal
@@ -486,6 +496,6 @@ export default function TransactionsContent({
         transaction={editingTransaction}
         compteId={compteId}
       />
-    </main>
+    </Shell>
   );
 }

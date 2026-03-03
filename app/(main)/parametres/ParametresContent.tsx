@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, Palette } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import Shell from "@/components/layout/Shell";
 import AccountCard from "./AccountCard";
 import CategoryList from "@/components/CategoryList";
 import DeleteAccountDialog from "./DeleteAccountDialog";
@@ -28,7 +29,7 @@ export default function ParametresContent({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white px-4 py-6 lg:px-8 lg:py-8">
+    <Shell>
       {/* ── Header ── */}
       <motion.header
         className="mb-8"
@@ -127,6 +128,6 @@ export default function ParametresContent({
         onOpenChange={setDeleteDialogOpen}
         userEmail={userEmail}
       />
-    </div>
+    </Shell>
   );
 }

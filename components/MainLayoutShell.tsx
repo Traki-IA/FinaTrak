@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { SidebarProvider, useSidebar } from "@/components/SidebarContext";
 import Navbar from "@/components/Navbar";
 import AccountGuard from "@/components/AccountGuard";
@@ -20,7 +21,7 @@ function LayoutContent({
   needsAccountFix,
   children,
 }: IMainLayoutShellProps) {
-  const { collapsed } = useSidebar();
+  const { breakpoint, sidebarWidth } = useSidebar();
 
   return (
     <>
@@ -30,13 +31,13 @@ function LayoutContent({
         navOrder={navOrder}
       />
       {needsAccountFix && <AccountGuard compteId={activeCompteId} />}
-      <div
-        className={`pb-20 md:pb-0 transition-[margin-left] duration-300 ease-in-out ${
-          collapsed ? "md:ml-16" : "md:ml-56"
-        }`}
+      <motion.div
+        className={breakpoint === "mobile" ? "pb-20" : ""}
+        animate={{ marginLeft: sidebarWidth }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         {children}
-      </div>
+      </motion.div>
     </>
   );
 }

@@ -30,6 +30,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
+import Shell from "@/components/layout/Shell";
 import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 import FilterSelect from "@/components/FilterSelect";
 import BudgetDistribution from "./BudgetDistribution";
@@ -527,7 +528,7 @@ export default function BudgetContent({
   }
 
   return (
-    <main className="min-h-screen bg-background p-4 sm:p-6 md:p-8">
+    <Shell>
       {/* ── Header ── */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
@@ -722,6 +723,6 @@ export default function BudgetContent({
         budgetItem={editingItem}
         compteId={compteId}
       />
-    </main>
+    </Shell>
   );
 }
