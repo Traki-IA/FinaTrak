@@ -534,7 +534,7 @@ export default function BudgetContent({
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex items-start justify-between mb-6 sm:mb-8"
+        className="flex items-start justify-between mb-4"
       >
         <div>
           <h1 className="text-2xl font-bold text-white">Budget annuel</h1>
@@ -633,7 +633,7 @@ export default function BudgetContent({
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08, duration: 0.35 }}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-5"
           >
             <KpiCard
               label="Budget mensuel"
@@ -670,7 +670,7 @@ export default function BudgetContent({
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.13, duration: 0.35 }}
-              className="mb-8"
+              className="mb-5"
             >
               <BudgetDistribution items={filteredItems} />
             </motion.div>

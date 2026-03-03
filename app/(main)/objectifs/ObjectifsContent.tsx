@@ -547,7 +547,7 @@ export default function ObjectifsContent({
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex items-start justify-between mb-6 sm:mb-8"
+        className="flex items-start justify-between mb-4"
       >
         <div>
           <h1 className="text-2xl font-bold text-white">Objectifs</h1>
