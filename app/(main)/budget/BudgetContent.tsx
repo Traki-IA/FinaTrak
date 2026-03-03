@@ -32,6 +32,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
 import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 import FilterSelect from "@/components/FilterSelect";
+import BudgetDistribution from "./BudgetDistribution";
 import BudgetModal from "./BudgetModal";
 import {
   toggleBudgetItem,
@@ -661,6 +662,18 @@ export default function BudgetContent({
               color="#14b8a6"
             />
           </motion.div>
+
+          {/* ── Distribution par catégorie ── */}
+          {actifs.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.13, duration: 0.35 }}
+              className="mb-8"
+            >
+              <BudgetDistribution items={filteredItems} />
+            </motion.div>
+          )}
 
           {/* ── Sections ── */}
           <motion.div
