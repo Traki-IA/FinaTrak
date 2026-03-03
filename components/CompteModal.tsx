@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2 } from "lucide-react";
 import { insertCompte, updateCompte } from "@/app/(main)/comptes/actions";
-import { CompteIcon, ICON_MAP } from "@/components/AccountSwitcher";
+import { CompteIcon, ICON_MAP } from "@/components/compte-icons";
 import type { TCompte } from "@/types";
 
 interface ICompteModalProps {

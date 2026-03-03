@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   ArrowLeftRight,
   Receipt,
-  Landmark,
   Target,
   Settings,
   GripVertical,
@@ -45,7 +44,6 @@ const ALL_NAV_ITEMS: TNavItem[] = [
   { key: "dashboard", href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { key: "transactions", href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
   { key: "budget", href: "/budget", label: "Budget", icon: Receipt },
-  { key: "comptes", href: "/comptes", label: "Comptes", icon: Landmark },
   { key: "objectifs", href: "/objectifs", label: "Objectifs", icon: Target },
   { key: "parametres", href: "/parametres", label: "Paramètres", icon: Settings },
 ];
