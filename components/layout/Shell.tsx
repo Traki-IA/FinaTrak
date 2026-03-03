@@ -11,7 +11,7 @@ interface IShellProps {
 export default function Shell({ children, className = "" }: IShellProps) {
   return (
     <motion.main
-      className={`min-h-screen bg-[#0a0a0f] text-white px-4 py-6 md:px-6 md:py-6 lg:px-8 lg:py-8 ${className}`}
+      className={`min-h-screen bg-[#0a0a0f] text-white px-4 py-6 md:px-5 md:py-5 lg:px-6 lg:py-6 ${className}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25 }}

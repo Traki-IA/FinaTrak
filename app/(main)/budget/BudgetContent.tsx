@@ -378,7 +378,7 @@ function Section({
           items={items.map((i) => i.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 lg:grid lg:grid-cols-2 lg:gap-1.5 lg:space-y-0">
             <AnimatePresence>
               {items.map((item) => (
                 <SortableBudgetItemRow

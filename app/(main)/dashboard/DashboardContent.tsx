@@ -198,7 +198,7 @@ function TransactionRow({ tx }: { tx: TTransactionWithCategorie }) {
     <motion.li
       variants={FADE_UP}
       transition={{ duration: 0.3 }}
-      className="flex items-center justify-between py-3 border-b border-white/[0.05] last:border-0"
+      className="flex items-center justify-between py-3 px-0 lg:px-3 border-b border-white/[0.05] last:border-0 odd:lg:border-r"
       whileHover={{ x: 4 }}
     >
       <div className="flex items-center gap-3">
@@ -416,6 +416,7 @@ export default function DashboardContent({
                 variants={STAGGER_CONTAINER}
                 initial="hidden"
                 animate="visible"
+                className="lg:grid lg:grid-cols-2"
               >
                 {transactions.map((tx) => (
                   <TransactionRow key={tx.id} tx={tx} />
