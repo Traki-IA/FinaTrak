@@ -11,6 +11,9 @@ interface IMainLayoutShellProps {
   activeCompteId: string;
   navOrder: string[];
   needsAccountFix: boolean;
+  solde?: number;
+  userName?: string;
+  userEmail?: string;
   children: React.ReactNode;
 }
 
@@ -19,6 +22,9 @@ function LayoutContent({
   activeCompteId,
   navOrder,
   needsAccountFix,
+  solde,
+  userName,
+  userEmail,
   children,
 }: IMainLayoutShellProps) {
   const { breakpoint, sidebarWidth } = useSidebar();
@@ -29,6 +35,9 @@ function LayoutContent({
         comptes={comptes}
         activeCompteId={activeCompteId}
         navOrder={navOrder}
+        solde={solde}
+        userName={userName}
+        userEmail={userEmail}
       />
       {needsAccountFix && <AccountGuard compteId={activeCompteId} />}
       <motion.div

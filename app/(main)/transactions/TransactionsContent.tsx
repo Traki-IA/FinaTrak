@@ -2,27 +2,38 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Pencil, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import TransactionModal from "./TransactionModal";
 import Shell from "@/components/layout/Shell";
 import FilterBar from "@/components/FilterBar";
+import TabBar from "@/components/ui/TabBar";
+import Fab from "@/components/ui/Fab";
 import { deleteTransaction } from "./actions";
 import { formatEur } from "@/lib/format";
+import { useSidebar } from "@/components/SidebarContext";
 import type { TTransactionWithCategorie, TCategorie, TObjectif, TBudgetItem } from "@/types";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("fr-FR");
+  return new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 }
 
-// ── Transaction Card (mobile) ─────────────────────────────────────────────────
+type TTypeFilter = "all" | "revenu" | "depense";
+const TYPE_TABS: { key: TTypeFilter; label: string }[] = [
+  { key: "all", label: "Tout" },
+  { key: "revenu", label: "Revenus" },
+  { key: "depense", label: "Dépenses" },
+];
 
-function TransactionCard({
+// ── Compact TxRow (used in both mobile and desktop grid) ─────────────────────
+
+function TxRow({
   transaction,
   index,
+  compact,
   confirmingDeleteId,
   onEdit,
   onDeleteRequest,
@@ -31,6 +42,7 @@ function TransactionCard({
 }: {
   transaction: TTransactionWithCategorie;
   index: number;
+  compact?: boolean;
   confirmingDeleteId: string | null;
   onEdit: (t: TTransactionWithCategorie) => void;
   onDeleteRequest: (id: string) => void;
@@ -39,11 +51,7 @@ function TransactionCard({
 }) {
   const isRevenu = transaction.type === "revenu";
   const couleur = transaction.categories?.couleur ?? "#94a3b8";
-  const initiale = (
-    transaction.categories?.nom ??
-    transaction.description ??
-    "?"
-  )[0].toUpperCase();
+  const initiale = (transaction.categories?.nom ?? transaction.description ?? "?")[0].toUpperCase();
   const isConfirming = confirmingDeleteId === transaction.id;
 
   return (
@@ -52,54 +60,41 @@ function TransactionCard({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.2, delay: Math.min(index * 0.025, 0.3) }}
-      className="flex items-center gap-2.5 p-3 border-b border-white/[0.04] last:border-0"
+      transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
+      className={`flex items-center justify-between border-b border-white/[0.03] group ${
+        compact ? "py-[7px] px-3" : "py-2.5 px-4"
+      }`}
     >
-      <span
-        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-        style={{ background: `${couleur}18`, color: couleur }}
-      >
-        {initiale}
-      </span>
-
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white truncate">
-          {transaction.description ?? (
-            <span className="text-white/25 italic">—</span>
-          )}
-        </p>
-        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-          <span className="text-xs text-white/35">
-            {formatDate(transaction.date)}
-          </span>
-          {transaction.categories && (
+      <div className="flex items-center gap-2 min-w-0">
+        <span
+          className={`rounded-full flex items-center justify-center font-bold shrink-0 ${
+            compact ? "w-7 h-7 text-[11px]" : "w-8 h-8 text-[12px]"
+          }`}
+          style={{ background: `${couleur}18`, color: couleur }}
+        >
+          {initiale}
+        </span>
+        <div className="min-w-0">
+          <p className={`font-semibold text-white leading-none truncate ${compact ? "text-[11px]" : "text-[12px]"}`}>
+            {transaction.description ?? "—"}
+          </p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className="text-[9px] text-white/28">{formatDate(transaction.date)}</span>
             <span
-              className="text-xs px-1.5 py-0.5 rounded-md font-medium"
-              style={{
-                backgroundColor: `${couleur}20`,
-                color: couleur,
-              }}
+              className="text-[9px] px-1.5 py-0.5 rounded font-bold"
+              style={{ background: `${couleur}20`, color: couleur }}
             >
-              {transaction.categories.nom}
+              {transaction.categories?.nom ?? "—"}
             </span>
-          )}
-          <span
-            className={`text-xs px-1.5 py-0.5 rounded-md font-medium ${
-              isRevenu
-                ? "bg-emerald-500/10 text-emerald-400"
-                : "bg-red-500/10 text-red-400"
-            }`}
-          >
-            {isRevenu ? "Revenu" : "Dépense"}
-          </span>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 shrink-0">
+      <div className="flex items-center gap-1 shrink-0 ml-2">
         <span
-          className={`text-sm font-semibold tabular-nums whitespace-nowrap ${
-            isRevenu ? "text-emerald-400" : "text-red-400"
-          }`}
+          className={`font-extrabold tabular-nums tracking-tight ${
+            compact ? "text-[11px]" : "text-[12px]"
+          } ${isRevenu ? "text-emerald-400" : "text-white/60"}`}
         >
           {isRevenu ? "+" : "−"}
           {formatEur(transaction.montant)}
@@ -109,169 +104,35 @@ function TransactionCard({
           <>
             <button
               onClick={() => onDeleteConfirm(transaction.id)}
-              className="p-1.5 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-colors"
-              title="Confirmer la suppression"
+              className="p-1 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-colors"
             >
-              <Check size={13} />
+              <Check size={12} />
             </button>
             <button
               onClick={onDeleteCancel}
-              className="p-1.5 rounded-lg bg-white/[0.05] text-white/40 hover:text-white hover:bg-white/[0.1] transition-colors"
-              title="Annuler"
+              className="p-1 rounded-lg bg-white/[0.05] text-white/40 hover:text-white transition-colors"
             >
-              <X size={13} />
+              <X size={12} />
             </button>
           </>
         ) : (
-          <>
+          <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => onEdit(transaction)}
-              className="p-1.5 rounded-lg text-white/30 hover:text-white hover:bg-white/[0.07] transition-colors"
-              title="Modifier"
+              className="p-1 rounded-lg text-white/30 hover:text-white hover:bg-white/[0.07] transition-colors"
             >
-              <Pencil size={13} />
+              <Pencil size={12} />
             </button>
             <button
               onClick={() => onDeleteRequest(transaction.id)}
-              className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/[0.08] transition-colors"
-              title="Supprimer"
+              className="p-1 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/[0.08] transition-colors"
             >
-              <Trash2 size={13} />
+              <Trash2 size={12} />
             </button>
-          </>
+          </div>
         )}
       </div>
     </motion.div>
-  );
-}
-
-// ── Transaction Row (desktop table) ───────────────────────────────────────────
-
-function TransactionRow({
-  transaction,
-  index,
-  confirmingDeleteId,
-  onEdit,
-  onDeleteRequest,
-  onDeleteConfirm,
-  onDeleteCancel,
-}: {
-  transaction: TTransactionWithCategorie;
-  index: number;
-  confirmingDeleteId: string | null;
-  onEdit: (t: TTransactionWithCategorie) => void;
-  onDeleteRequest: (id: string) => void;
-  onDeleteConfirm: (id: string) => void;
-  onDeleteCancel: () => void;
-}) {
-  const isRevenu = transaction.type === "revenu";
-  const isConfirming = confirmingDeleteId === transaction.id;
-
-  return (
-    <motion.tr
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.2, delay: Math.min(index * 0.025, 0.3) }}
-      className="border-b border-white/[0.04] hover:bg-white/[0.025] transition-colors group"
-    >
-      {/* Date */}
-      <td className="px-4 py-3 text-white/55 text-sm whitespace-nowrap">
-        {formatDate(transaction.date)}
-      </td>
-
-      {/* Description */}
-      <td className="px-4 py-3 text-white text-sm max-w-[200px] truncate">
-        {transaction.description ?? (
-          <span className="text-white/25 italic">—</span>
-        )}
-      </td>
-
-      {/* Catégorie */}
-      <td className="px-4 py-3">
-        {transaction.categories ? (
-          <span
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
-            style={{
-              backgroundColor: `${transaction.categories.couleur}20`,
-              color: transaction.categories.couleur,
-            }}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-              style={{ backgroundColor: transaction.categories.couleur }}
-            />
-            {transaction.categories.nom}
-          </span>
-        ) : (
-          <span className="text-white/25 text-sm">—</span>
-        )}
-      </td>
-
-      {/* Type */}
-      <td className="px-4 py-3">
-        <span
-          className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium ${
-            isRevenu
-              ? "bg-emerald-500/10 text-emerald-400"
-              : "bg-red-500/10 text-red-400"
-          }`}
-        >
-          {isRevenu ? "Revenu" : "Dépense"}
-        </span>
-      </td>
-
-      {/* Montant */}
-      <td
-        className={`px-4 py-3 text-right text-sm font-semibold whitespace-nowrap ${
-          isRevenu ? "text-emerald-400" : "text-red-400"
-        }`}
-      >
-        {isRevenu ? "+" : "−"}
-        {formatEur(transaction.montant)}
-      </td>
-
-      {/* Actions */}
-      <td className="px-4 py-4 text-right whitespace-nowrap">
-        {isConfirming ? (
-          <div className="flex items-center justify-end gap-1.5">
-            <span className="text-xs text-white/40 mr-1">Supprimer ?</span>
-            <button
-              onClick={() => onDeleteConfirm(transaction.id)}
-              className="p-1.5 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-colors"
-              title="Confirmer"
-            >
-              <Check size={13} />
-            </button>
-            <button
-              onClick={onDeleteCancel}
-              className="p-1.5 rounded-lg bg-white/[0.05] text-white/40 hover:text-white hover:bg-white/[0.1] transition-colors"
-              title="Annuler"
-            >
-              <X size={13} />
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={() => onEdit(transaction)}
-              className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.07] transition-colors"
-              title="Modifier"
-            >
-              <Pencil size={13} />
-            </button>
-            <button
-              onClick={() => onDeleteRequest(transaction.id)}
-              className="p-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/[0.08] transition-colors"
-              title="Supprimer"
-            >
-              <Trash2 size={13} />
-            </button>
-          </div>
-        )}
-      </td>
-    </motion.tr>
   );
 }
 
@@ -294,15 +155,21 @@ export default function TransactionsContent({
 }: ITransactionsContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { breakpoint } = useSidebar();
+  const isDesktop = breakpoint === "desktop";
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] =
     useState<TTransactionWithCategorie | undefined>(undefined);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
-    null
-  );
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState<TTypeFilter>("all");
 
-  // Les transactions sont déjà filtrées côté serveur via searchParams
-  const totalFiltre = transactions.reduce(
+  // Apply local type filter on top of server-side filters
+  const filtered = typeFilter === "all"
+    ? transactions
+    : transactions.filter((t) => t.type === typeFilter);
+
+  const totalFiltre = filtered.reduce(
     (acc, t) => acc + (t.type === "revenu" ? t.montant : -t.montant),
     0
   );
@@ -330,162 +197,84 @@ export default function TransactionsContent({
 
   return (
     <Shell>
-      {/* ── Header ── */}
+      {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: -16 }}
+        initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex items-start justify-between mb-4"
+        className="flex items-center justify-between mb-0"
       >
         <div>
-          <h1 className="text-2xl font-bold text-white">Transactions</h1>
-          <p className="text-white/40 text-sm mt-1">
-            {transactions.length} transaction{transactions.length !== 1 ? "s" : ""}
-            {searchParams.toString() ? " filtrées" : ""}
+          <h1 className="text-[22px] font-black tracking-tight">Transactions</h1>
+          <p className="text-[10px] text-white/28 mt-0.5">
+            {filtered.length} opération{filtered.length !== 1 ? "s" : ""}
+            {searchParams.toString() ? " · filtrées" : ""}
           </p>
         </div>
-
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={openAddModal}
-          className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
+        <span
+          className={`text-[13px] font-extrabold ${
+            totalFiltre >= 0 ? "text-emerald-400" : "text-red-400"
+          }`}
         >
-          <Plus size={16} />
-          <span className="hidden sm:inline">Ajouter</span>
-          <span className="sm:hidden">+</span>
-        </motion.button>
+          {totalFiltre >= 0 ? "+" : ""}
+          {totalFiltre.toFixed(0)} €
+        </span>
       </motion.div>
 
-      {/* ── Desktop 2-column layout (lg+) ── */}
-      <div className="lg:grid lg:grid-cols-[280px_1fr] lg:gap-6">
-        {/* ── Left panel: Filters + Summary (sticky on desktop) ── */}
-        <div className="lg:sticky lg:top-6 lg:self-start">
-          {/* Filters */}
-          <FilterBar categories={categories} />
+      <div className="h-px bg-white/[0.06] mt-3 mb-0" />
 
-          {/* Solde filtré */}
-          {transactions.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center mb-4 lg:mt-4 lg:mb-0 lg:bg-white/[0.04] lg:border lg:border-white/[0.07] lg:rounded-2xl lg:p-4"
-            >
-              <span className="text-white/40 text-sm mr-2">Solde :</span>
-              <span
-                className={`text-sm font-semibold ${
-                  totalFiltre >= 0 ? "text-emerald-400" : "text-red-400"
-                }`}
-              >
-                {totalFiltre >= 0 ? "+" : ""}
-                {formatEur(totalFiltre)}
-              </span>
-            </motion.div>
-          )}
-        </div>
+      {/* Filter tabs */}
+      <TabBar tabs={TYPE_TABS} active={typeFilter} onChange={setTypeFilter} />
 
-        {/* ── Right panel: Transaction list ── */}
-        <div>
-          {/* Mobile Cards (hidden on md+) */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.3 }}
-            className="md:hidden bg-white/[0.04] border border-white/[0.07] rounded-2xl overflow-hidden"
-          >
-            <AnimatePresence mode="popLayout">
-              {transactions.length === 0 ? (
-                <motion.p
-                  key="empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-center text-white/30 text-sm py-16"
-                >
-                  Aucune transaction trouvée
-                </motion.p>
-              ) : (
-                transactions.map((t, i) => (
-                  <TransactionCard
-                    key={t.id}
-                    transaction={t}
-                    index={i}
-                    confirmingDeleteId={confirmingDeleteId}
-                    onEdit={openEditModal}
-                    onDeleteRequest={setConfirmingDeleteId}
-                    onDeleteConfirm={handleDeleteConfirm}
-                    onDeleteCancel={() => setConfirmingDeleteId(null)}
-                  />
-                ))
-              )}
-            </AnimatePresence>
-          </motion.div>
-
-          {/* Desktop Table (hidden on mobile) */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.3 }}
-            className="hidden md:block bg-white/[0.04] border border-white/[0.07] rounded-2xl overflow-hidden"
-          >
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/[0.07]">
-                    {["Date", "Description", "Catégorie", "Type", "Montant", ""].map(
-                      (col, i) => (
-                        <th
-                          key={i}
-                          className={`text-white/35 text-xs font-medium px-4 py-3 uppercase tracking-wider ${
-                            col === "Montant" ? "text-right" : "text-left"
-                          } ${col === "" ? "px-4 w-24" : ""}`}
-                        >
-                          {col}
-                        </th>
-                      )
-                    )}
-                  </tr>
-                </thead>
-
-                <tbody>
-                  <AnimatePresence mode="popLayout">
-                    {transactions.length === 0 ? (
-                      <motion.tr
-                        key="empty"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        <td
-                          colSpan={6}
-                          className="text-center text-white/30 text-sm py-20"
-                        >
-                          Aucune transaction trouvée
-                        </td>
-                      </motion.tr>
-                    ) : (
-                      transactions.map((t, i) => (
-                        <TransactionRow
-                          key={t.id}
-                          transaction={t}
-                          index={i}
-                          confirmingDeleteId={confirmingDeleteId}
-                          onEdit={openEditModal}
-                          onDeleteRequest={setConfirmingDeleteId}
-                          onDeleteConfirm={handleDeleteConfirm}
-                          onDeleteCancel={() => setConfirmingDeleteId(null)}
-                        />
-                      ))
-                    )}
-                  </AnimatePresence>
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-        </div>
+      {/* Advanced filters (collapsed on mobile) */}
+      <div className="mt-3 mb-3">
+        <FilterBar categories={categories} />
       </div>
 
-      {/* ── Modal ── */}
+      <div className="h-px bg-white/[0.06] mb-0" />
+
+      {/* Transaction list — 2-col grid on desktop */}
+      <div
+        className={isDesktop ? "grid grid-cols-2" : ""}
+        style={isDesktop ? { alignContent: "start" } : undefined}
+      >
+        <AnimatePresence mode="popLayout">
+          {filtered.length === 0 ? (
+            <motion.p
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center text-white/30 text-[11px] py-12 col-span-2"
+            >
+              Aucune transaction
+            </motion.p>
+          ) : (
+            filtered.map((t, i) => (
+              <div
+                key={t.id}
+                className={isDesktop && i % 2 === 0 ? "border-r border-white/[0.03]" : ""}
+              >
+                <TxRow
+                  transaction={t}
+                  index={i}
+                  compact={isDesktop}
+                  confirmingDeleteId={confirmingDeleteId}
+                  onEdit={openEditModal}
+                  onDeleteRequest={setConfirmingDeleteId}
+                  onDeleteConfirm={handleDeleteConfirm}
+                  onDeleteCancel={() => setConfirmingDeleteId(null)}
+                />
+              </div>
+            ))
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* FAB */}
+      <Fab label="Transaction" onClick={openAddModal} />
+
+      {/* Modal */}
       <TransactionModal
         key={editingTransaction?.id ?? "new"}
         open={modalOpen}
