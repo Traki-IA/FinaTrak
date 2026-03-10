@@ -1,20 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Wallet,
-  TrendingUp,
-  TrendingDown,
-  PiggyBank,
-  Percent,
-  ArrowRight,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import BalanceChart from "./BalanceChart";
-import CategoryChart from "./CategoryChart";
-import RevenusDepensesChart from "./RevenusDepensesChart";
-import CategorieBar from "./CategorieBar";
+import Shell from "@/components/layout/Shell";
+import Bar from "@/components/ui/Bar";
+import TabBar from "@/components/ui/TabBar";
+import Sparkline from "@/components/charts/Sparkline";
+import MiniDonut from "@/components/charts/MiniDonut";
+import HealthRing from "@/components/charts/HealthRing";
 import PeriodSelector from "./PeriodSelector";
+import { useSidebar } from "@/components/SidebarContext";
 import type {
   TDashboardStats,
   TTransactionWithCategorie,
@@ -37,23 +34,14 @@ interface IDashboardContentProps {
   period: TPeriod;
 }
 
-interface IKpiCard {
-  label: string;
-  valeur: number;
-  positif: boolean;
-  icon: React.ReactNode;
-  subtitle: string;
-  isPercent?: boolean;
-}
-
-// ── Constantes & helpers ─────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 16 },
   visible: { opacity: 1, y: 0 },
 };
 
-const STAGGER_CONTAINER = {
+const STAGGER = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.08 } },
 };
@@ -65,365 +53,415 @@ const PERIOD_LABELS: Record<TPeriod, string> = {
   "1y": "12 derniers mois",
 };
 
-function formatEur(n: number): string {
-  return n.toLocaleString("fr-FR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+function fmt(n: number): string {
+  return n.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
-function buildKpiCards(stats: TDashboardStats, period: TPeriod): IKpiCard[] {
-  const subtitle = PERIOD_LABELS[period];
-  return [
-    {
-      label: "Revenus",
-      valeur: stats.revenus,
-      positif: true,
-      icon: <TrendingUp size={16} />,
-      subtitle,
-    },
-    {
-      label: "Dépenses",
-      valeur: stats.depenses,
-      positif: false,
-      icon: <TrendingDown size={16} />,
-      subtitle,
-    },
-    {
-      label: "Épargne nette",
-      valeur: stats.epargne,
-      positif: stats.epargne >= 0,
-      icon: <PiggyBank size={16} />,
-      subtitle,
-    },
-    {
-      label: "Taux d'épargne",
-      valeur: stats.tauxEpargne,
-      positif: stats.tauxEpargne >= 0,
-      icon: <Percent size={16} />,
-      subtitle,
-      isPercent: true,
-    },
-  ];
-}
+// ── KPI Card ─────────────────────────────────────────────────────────────────
 
-// ── Sous-composants ──────────────────────────────────────────────────────────
-
-function SoldeCard({ stats }: { stats: TDashboardStats }) {
+function KpiCard({
+  label, value, color, pct, trend, trendUp,
+}: {
+  label: string; value: string; color: string; pct: number; trend?: string; trendUp?: boolean;
+}) {
   return (
-    <motion.div variants={FADE_UP} transition={{ duration: 0.35 }}>
-      <motion.div
-        whileHover={{ scale: 1.02, borderColor: "rgba(249,115,22,0.25)" }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      >
-        <Card>
-          <CardContent>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] text-white/40 uppercase tracking-widest">
-                Solde total
-              </p>
-              <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
-                <Wallet size={16} />
+    <motion.div variants={FADE_UP} transition={{ duration: 0.35 }} className="flex-1 min-w-0">
+      <Card>
+        <CardContent>
+          <div className="flex justify-between items-start mb-2">
+            <p className="text-[9px] text-white/40 uppercase tracking-[0.14em] font-semibold">{label}</p>
+            {trend && (
+              <span className={`text-[9px] font-bold ${trendUp ? "text-emerald-400" : "text-red-400"}`}>
+                {trend}
               </span>
-            </div>
-
-            <p className="text-xl sm:text-2xl font-bold tabular-nums leading-none text-white">
-              {formatEur(stats.soldeTotal)}
-              <span className="text-sm text-white/35 font-normal ml-1">€</span>
-            </p>
-
-            <p className="text-xs text-white/35 font-medium mt-2.5">
-              Solde initial : {formatEur(stats.soldeInitial)} €
-            </p>
-          </CardContent>
-        </Card>
-      </motion.div>
+            )}
+          </div>
+          <p className="text-[22px] font-black tabular-nums leading-none tracking-tight">{value}</p>
+          <Bar pct={pct} color={color} className="mt-2" />
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }
 
-function KpiCard({ kpi }: { kpi: IKpiCard }) {
-  return (
-    <motion.div variants={FADE_UP} transition={{ duration: 0.35 }}>
-      <motion.div
-        whileHover={{ scale: 1.02, borderColor: "rgba(249,115,22,0.25)" }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      >
-        <Card>
-          <CardContent>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] text-white/40 uppercase tracking-widest">
-                {kpi.label}
-              </p>
-              <span
-                className={`p-1.5 rounded-lg ${
-                  kpi.positif
-                    ? "bg-emerald-500/10 text-emerald-400"
-                    : "bg-rose-500/10 text-rose-400"
-                }`}
-              >
-                {kpi.icon}
-              </span>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold tabular-nums leading-none text-white">
-              {kpi.isPercent ? (
-                `${kpi.valeur.toFixed(1)} %`
-              ) : (
-                <>
-                  {formatEur(kpi.valeur)}
-                  <span className="text-sm text-white/35 font-normal ml-1">€</span>
-                </>
-              )}
-            </p>
-            <p className="text-xs mt-2.5 font-medium text-white/35">
-              {kpi.subtitle}
-            </p>
-          </CardContent>
-        </Card>
-      </motion.div>
-    </motion.div>
-  );
-}
+// ── Transaction Row ──────────────────────────────────────────────────────────
 
-function TransactionRow({ tx }: { tx: TTransactionWithCategorie }) {
+function TxRow({ tx, compact = false }: { tx: TTransactionWithCategorie; compact?: boolean }) {
   const couleur = tx.categories?.couleur ?? "#94a3b8";
   const initiale = (tx.categories?.nom ?? tx.description ?? "?")[0].toUpperCase();
-  const dateLabel = new Date(tx.date).toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "short",
-  });
+  const dateLabel = new Date(tx.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 
   return (
     <motion.li
       variants={FADE_UP}
       transition={{ duration: 0.3 }}
-      className="flex items-center justify-between py-3 border-b border-white/[0.05] last:border-0"
-      whileHover={{ x: 4 }}
+      className={`flex items-center justify-between border-b border-white/[0.03] last:border-0 ${
+        compact ? "py-[7px] px-3" : "py-2.5 px-4"
+      }`}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 min-w-0">
         <span
-          className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+          className={`rounded-full flex items-center justify-center font-bold shrink-0 ${
+            compact ? "w-7 h-7 text-[11px]" : "w-8 h-8 text-[12px]"
+          }`}
           style={{ background: `${couleur}18`, color: couleur }}
         >
           {initiale}
         </span>
-        <div>
-          <p className="text-sm font-medium text-white leading-tight">
+        <div className="min-w-0">
+          <p className={`font-semibold text-white leading-none truncate ${compact ? "text-[11px]" : "text-[12px]"}`}>
             {tx.description ?? "—"}
           </p>
-          <p className="text-xs text-white/35 mt-0.5">
-            {dateLabel} · {tx.categories?.nom ?? "Sans catégorie"}
-          </p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className="text-[9px] text-white/28">{dateLabel}</span>
+            <span
+              className="text-[9px] px-1.5 py-0.5 rounded font-bold"
+              style={{ background: `${couleur}20`, color: couleur }}
+            >
+              {tx.categories?.nom ?? "—"}
+            </span>
+          </div>
         </div>
       </div>
       <span
-        className={`text-sm font-semibold tabular-nums ${
-          tx.type === "revenu" ? "text-emerald-400" : "text-white/65"
-        }`}
+        className={`font-extrabold tabular-nums tracking-tight shrink-0 ml-2 ${
+          compact ? "text-[11px]" : "text-[12px]"
+        } ${tx.type === "revenu" ? "text-emerald-400" : "text-white/60"}`}
       >
         {tx.type === "revenu" ? "+" : "−"}
-        {formatEur(tx.montant)} €
+        {fmt(tx.montant)} €
       </span>
     </motion.li>
   );
 }
 
-// ── Composant principal ──────────────────────────────────────────────────────
+// ── MOBILE DASHBOARD ─────────────────────────────────────────────────────────
 
-export default function DashboardContent({
-  stats,
-  transactions,
-  categories,
-  history,
-  parMois,
-  categoriesDetailed,
-  period,
+type TMobileTab = "flux" | "bilan" | "categ";
+
+const MOBILE_TABS: { key: TMobileTab; label: string }[] = [
+  { key: "flux", label: "↑↓ Flux" },
+  { key: "bilan", label: "Bilan" },
+  { key: "categ", label: "Catég." },
+];
+
+function MobileDashboard({
+  stats, transactions, categories, history, period,
 }: IDashboardContentProps) {
-  const kpiCards = buildKpiCards(stats, period);
+  const [tab, setTab] = useState<TMobileTab>("flux");
+  const tauxEpargne = stats.revenus > 0
+    ? Math.round(((stats.revenus - stats.depenses) / stats.revenus) * 100)
+    : 0;
+  const epargne = stats.revenus - stats.depenses;
+
+  // Donut data
+  const totalDep = categories.reduce((s, c) => s + c.valeur, 0) || 1;
+  const donut = categories
+    .filter((c) => c.valeur > 0)
+    .map((c) => ({ pct: Math.round((c.valeur / totalDep) * 100), color: c.couleur }));
+
+  const sparkData = history.length > 0 ? history.map((h) => h.solde) : [0, 0];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white px-4 py-6 lg:px-8 lg:py-8">
+    <Shell>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[9px] text-white/28 px-2 py-1 rounded-lg border border-white/[0.06]">
+          {PERIOD_LABELS[period]}
+        </span>
+        <HealthRing score={Math.min(98, Math.max(20, Math.abs(tauxEpargne)))} size={48} />
+      </div>
 
-      {/* ── Header ── */}
+      {/* Hero Solde */}
+      <div className="mb-1">
+        <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">
+          Solde disponible
+        </p>
+        <div className="flex items-baseline gap-1.5 mt-1.5">
+          <span className="text-[36px] font-black tracking-tight leading-none">
+            {fmt(stats.soldeTotal)}
+          </span>
+          <span className="text-[18px] text-white/28 font-light">€</span>
+        </div>
+        <div className="flex items-center gap-1.5 mt-1.5">
+          <span className="text-[10px] text-emerald-400 font-bold">↑ +{Math.abs(tauxEpargne)}%</span>
+          <span className="text-[9px] text-white/20">·</span>
+          <span className="text-[9px] text-white/28">Init. {fmt(stats.soldeInitial)} €</span>
+        </div>
+        <div className="mt-3">
+          <Sparkline data={sparkData} height={36} />
+        </div>
+      </div>
+
+      <div className="h-px bg-white/[0.06]" />
+
+      {/* Tabbed KPIs */}
+      <TabBar tabs={MOBILE_TABS} active={tab} onChange={setTab} />
+
+      <div className="py-3 px-1">
+        {tab === "flux" && (
+          <div className="flex">
+            <div className="flex-1 pr-4">
+              <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Revenus</p>
+              <p className="text-[21px] font-black mt-1.5 mb-2 tracking-tight">{fmt(stats.revenus)}€</p>
+              <Bar pct={Math.min(100, Math.round((stats.revenus / 4000) * 100))} color="#10b981" />
+            </div>
+            <div className="w-px bg-white/[0.06]" />
+            <div className="flex-1 pl-4">
+              <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Dépenses</p>
+              <p className="text-[21px] font-black mt-1.5 mb-2 tracking-tight">{fmt(stats.depenses)}€</p>
+              <Bar pct={Math.min(100, Math.round((stats.depenses / 2000) * 100))} color="#ef4444" />
+            </div>
+          </div>
+        )}
+
+        {tab === "bilan" && (
+          <div className="flex">
+            <div className="flex-1 pr-4">
+              <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Épargne</p>
+              <p className="text-[21px] font-black mt-1.5 mb-2 tracking-tight">{fmt(epargne)}€</p>
+              <Bar pct={Math.min(100, Math.round(Math.abs(epargne) / 2500 * 100))} color="#6366f1" />
+            </div>
+            <div className="w-px bg-white/[0.06]" />
+            <div className="flex-1 pl-4">
+              <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Taux</p>
+              <p className="text-[21px] font-black mt-1.5 mb-2 tracking-tight">{tauxEpargne}%</p>
+              <Bar pct={Math.min(100, Math.abs(tauxEpargne))} color="#14b8a6" />
+            </div>
+          </div>
+        )}
+
+        {tab === "categ" && donut.length > 0 && (
+          <div className="flex items-center gap-3.5">
+            <MiniDonut data={donut} size={68}>
+              <span className="text-[9px] font-extrabold text-white/50">{fmt(stats.depenses)}€</span>
+            </MiniDonut>
+            <div className="flex-1 flex flex-col gap-1.5">
+              {categories.slice(0, 4).map((c) => (
+                <div key={c.nom} className="flex items-center gap-1.5">
+                  <div className="w-[3px] h-2.5 rounded-sm shrink-0" style={{ background: c.couleur }} />
+                  <span className="text-[10px] text-white/50 flex-1">{c.nom}</span>
+                  <span className="text-[10px] font-bold">
+                    {Math.round((c.valeur / (totalDep || 1)) * 100)}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab === "categ" && donut.length === 0 && (
+          <p className="text-[11px] text-white/30 text-center py-3">Aucune donnée</p>
+        )}
+      </div>
+
+      <div className="h-px bg-white/[0.06]" />
+
+      {/* Transactions */}
+      <div className="flex-1 flex flex-col mt-1">
+        <div className="flex justify-between items-center px-1 mb-1">
+          <p className="text-[9px] text-white/40 uppercase tracking-[0.14em] font-semibold">
+            Transactions récentes
+          </p>
+          <a href="/transactions" className="text-[10px] text-orange-500 font-semibold">
+            Voir tout →
+          </a>
+        </div>
+        <ul>
+          {transactions.slice(0, 5).map((tx) => (
+            <TxRow key={tx.id} tx={tx} />
+          ))}
+          {transactions.length === 0 && (
+            <p className="text-[11px] text-white/30 py-4 text-center">Aucune transaction</p>
+          )}
+        </ul>
+      </div>
+    </Shell>
+  );
+}
+
+// ── DESKTOP DASHBOARD ────────────────────────────────────────────────────────
+
+function DesktopDashboard({
+  stats, transactions, categories, history, period,
+}: IDashboardContentProps) {
+  const tauxEpargne = stats.revenus > 0
+    ? Math.round(((stats.revenus - stats.depenses) / stats.revenus) * 100)
+    : 0;
+  const epargne = stats.revenus - stats.depenses;
+
+  const totalDep = categories.reduce((s, c) => s + c.valeur, 0) || 1;
+  const donut = categories
+    .filter((c) => c.valeur > 0)
+    .map((c) => ({ pct: Math.round((c.valeur / totalDep) * 100), color: c.couleur }));
+
+  const sparkData = history.length > 0 ? history.map((h) => h.solde) : [0, 0];
+
+  return (
+    <Shell>
+      {/* Header */}
       <motion.header
-        className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        className="mb-4 flex items-center justify-between"
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
         <div>
-          <p className="text-xs text-white/35 uppercase tracking-widest font-medium mb-1">
-            Vue d&apos;ensemble
+          <h1 className="text-[22px] font-black tracking-tight">Dashboard</h1>
+          <p className="text-[10px] text-white/28 mt-0.5">
+            Vue d&apos;ensemble · {PERIOD_LABELS[period]}
           </p>
-          <h1 className="text-2xl font-bold tracking-tight">Tableau de bord</h1>
         </div>
-        <PeriodSelector current={period} />
+        <div className="flex items-center gap-4">
+          <PeriodSelector current={period} />
+          <HealthRing score={Math.min(98, Math.max(20, Math.abs(tauxEpargne)))} size={44} />
+        </div>
       </motion.header>
 
-      {/* ── KPI Cards ── */}
+      {/* Row 1: 4 KPI cards */}
       <motion.section
-        className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3 mb-3 sm:mb-5"
-        variants={STAGGER_CONTAINER}
+        className="flex gap-3 mb-3.5"
+        variants={STAGGER}
         initial="hidden"
         animate="visible"
       >
-        <SoldeCard stats={stats} />
-        {kpiCards.map((kpi) => (
-          <KpiCard key={kpi.label} kpi={kpi} />
-        ))}
+        <KpiCard label="Solde" value={`${fmt(stats.soldeTotal)} €`} color="#f97316" pct={Math.min(100, Math.round((stats.soldeTotal / 5000) * 100))} trend="ce mois" trendUp />
+        <KpiCard label="Revenus" value={`${fmt(stats.revenus)} €`} color="#10b981" pct={Math.min(100, Math.round((stats.revenus / 4000) * 100))} trend="+8%" trendUp />
+        <KpiCard label="Dépenses" value={`${fmt(stats.depenses)} €`} color="#ef4444" pct={Math.min(100, Math.round((stats.depenses / 2000) * 100))} trend="-3%" trendUp={false} />
+        <KpiCard label="Taux épargne" value={`${tauxEpargne} %`} color="#14b8a6" pct={Math.abs(tauxEpargne)} trend="obj. 50%" trendUp={tauxEpargne >= 50} />
       </motion.section>
 
-      {/* ── Charts row 1: Area + Donut ── */}
+      {/* Row 2: Sparkline (2) + Donut (1) + Bilan (1) */}
       <motion.section
-        className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-5"
+        className="flex gap-3 mb-3.5"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, delay: 0.25 }}
+        transition={{ duration: 0.45, delay: 0.2 }}
+        style={{ alignItems: "stretch" }}
       >
-        {/* Area chart */}
-        <Card className="lg:col-span-2">
+        {/* Sparkline card */}
+        <Card className="flex-[2] min-w-0">
           <CardContent>
-            <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">
-              Évolution du solde
+            <div className="flex justify-between items-start mb-2.5">
+              <div>
+                <p className="text-[9px] text-white/40 uppercase tracking-[0.14em] font-semibold mb-1.5">
+                  Évolution solde
+                </p>
+                <p className="text-[26px] font-black tabular-nums leading-none tracking-tight">
+                  {fmt(stats.soldeTotal)}
+                  <span className="text-[13px] text-white/28 font-light ml-1">€</span>
+                </p>
+              </div>
+              <span className="text-[11px] text-emerald-400 font-bold">↑ +{Math.abs(tauxEpargne)}%</span>
+            </div>
+            <Sparkline data={sparkData} height={60} />
+          </CardContent>
+        </Card>
+
+        {/* Donut card */}
+        <Card className="flex-1 min-w-0">
+          <CardContent>
+            <p className="text-[9px] text-white/40 uppercase tracking-[0.14em] font-semibold mb-2.5">
+              Répartition dépenses
             </p>
-            <p className="text-xl font-bold tabular-nums mb-4">
-              {formatEur(stats.soldeTotal)}
-              <span className="text-sm text-white/35 font-normal ml-1">€</span>
+            <div className="flex items-center gap-3">
+              <MiniDonut data={donut.length > 0 ? donut : [{ pct: 100, color: "rgba(255,255,255,0.06)" }]} size={72}>
+                <span className="text-[9px] font-extrabold text-white/50">{fmt(stats.depenses)}€</span>
+              </MiniDonut>
+              <div className="flex flex-col gap-1.5">
+                {categories.slice(0, 4).map((c) => (
+                  <div key={c.nom} className="flex items-center gap-1.5">
+                    <div className="w-[3px] h-2.5 rounded-sm shrink-0" style={{ background: c.couleur }} />
+                    <span className="text-[10px] text-white/50 flex-1">{c.nom}</span>
+                    <span className="text-[10px] font-bold">{Math.round((c.valeur / totalDep) * 100)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Mini bilan card */}
+        <Card className="flex-1 min-w-0">
+          <CardContent>
+            <p className="text-[9px] text-white/40 uppercase tracking-[0.14em] font-semibold mb-2.5">
+              Bilan {new Date().toLocaleDateString("fr-FR", { month: "long" })}
             </p>
-            <div className="flex gap-4 mb-4">
-              {[
-                { label: "Solde", couleur: "#f97316" },
-                { label: "Dépenses", couleur: "#6366f1" },
-              ].map((l) => (
-                <div
-                  key={l.label}
-                  className="flex items-center gap-1.5 text-xs text-white/40"
-                >
-                  <span
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: l.couleur }}
-                  />
-                  {l.label}
+            <div className="flex flex-col gap-2">
+              {([
+                ["Revenus", "#10b981", stats.revenus],
+                ["Dépenses", "#ef4444", stats.depenses],
+                ["Épargne", "#6366f1", epargne],
+              ] as const).map(([label, color, value]) => (
+                <div key={label}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-[10px] text-white/50">{label}</span>
+                    <span className="text-[10px] font-bold" style={{ color }}>{fmt(value)} €</span>
+                  </div>
+                  <Bar pct={Math.min(100, Math.round(Math.abs(value) / 4000 * 100))} color={color} height={2} />
                 </div>
               ))}
             </div>
-            <BalanceChart data={history} />
-          </CardContent>
-        </Card>
-
-        {/* Donut chart */}
-        <Card>
-          <CardContent>
-            <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">
-              Dépenses par catégorie
-            </p>
-            <p className="text-xl font-bold tabular-nums mb-4">
-              {formatEur(stats.depenses)}
-              <span className="text-sm text-white/35 font-normal ml-1">€</span>
-            </p>
-            <CategoryChart data={categories} />
           </CardContent>
         </Card>
       </motion.section>
 
-      {/* ── Charts row 2: Bar chart revenus vs dépenses ── */}
+      {/* Row 3: Transactions récentes */}
       <motion.section
-        className="mb-3 sm:mb-5"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.3 }}
       >
         <Card>
           <CardContent>
-            <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
-              <div>
-                <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">
-                  Revenus vs Dépenses
-                </p>
-                <p className="text-sm text-white/55">{PERIOD_LABELS[period]}</p>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-white/40">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
-                  Revenus
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-orange-500" />
-                  Dépenses
-                </span>
-              </div>
-            </div>
-            <RevenusDepensesChart data={parMois} />
-          </CardContent>
-        </Card>
-      </motion.section>
-
-      {/* ── Catégories détaillées (barres horizontales) ── */}
-      {categoriesDetailed.length > 0 && (
-        <motion.section
-          className="mb-5"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.35 }}
-        >
-          <Card>
-            <CardContent>
-              <p className="text-[10px] text-white/40 uppercase tracking-widest mb-6">
-                Répartition des dépenses
-              </p>
-              <motion.div
-                variants={STAGGER_CONTAINER}
-                initial="hidden"
-                animate="visible"
-                className="space-y-4"
-              >
-                {categoriesDetailed.map((cat) => (
-                  <CategorieBar key={cat.nom} {...cat} />
-                ))}
-              </motion.div>
-            </CardContent>
-          </Card>
-        </motion.section>
-      )}
-
-      {/* ── Dernières transactions ── */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, delay: 0.4 }}
-      >
-        <Card>
-          <CardContent>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[10px] text-white/40 uppercase tracking-widest">
-                Dernières transactions
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[9px] text-white/40 uppercase tracking-[0.14em] font-semibold">
+                Transactions récentes
               </p>
               <a
                 href="/transactions"
-                className="flex items-center gap-1 text-xs text-white/35 hover:text-white/80 transition-colors"
+                className="flex items-center gap-1 text-[10px] text-orange-500 font-semibold hover:text-orange-400 transition-colors"
               >
-                Voir tout <ArrowRight size={12} />
+                Voir tout <ArrowRight size={10} />
               </a>
             </div>
-
+            <div className="h-px bg-white/[0.06] -mx-3.5" />
             {transactions.length === 0 ? (
-              <p className="text-sm text-white/30 py-4 text-center">
+              <p className="text-[11px] text-white/30 py-4 text-center">
                 Aucune transaction pour le moment
               </p>
             ) : (
               <motion.ul
-                variants={STAGGER_CONTAINER}
+                variants={STAGGER}
                 initial="hidden"
                 animate="visible"
+                className="grid grid-cols-2"
               >
-                {transactions.map((tx) => (
-                  <TransactionRow key={tx.id} tx={tx} />
+                {transactions.slice(0, 8).map((tx, i) => (
+                  <li
+                    key={tx.id}
+                    className={i % 2 === 0 ? "border-r border-white/[0.03]" : ""}
+                  >
+                    <TxRow tx={tx} compact />
+                  </li>
                 ))}
               </motion.ul>
             )}
           </CardContent>
         </Card>
       </motion.section>
-    </div>
+    </Shell>
   );
+}
+
+// ── Composant principal ──────────────────────────────────────────────────────
+
+export default function DashboardContent(props: IDashboardContentProps) {
+  const { breakpoint } = useSidebar();
+
+  if (breakpoint === "mobile") {
+    return <MobileDashboard {...props} />;
+  }
+
+  return <DesktopDashboard {...props} />;
 }

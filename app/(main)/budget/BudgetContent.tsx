@@ -3,15 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Plus,
-  Pencil,
-  Receipt,
-  TrendingDown,
-  CalendarDays,
-  Link2,
-  GripVertical,
-} from "lucide-react";
+import { Pencil, Receipt, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -29,10 +21,11 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Card, CardContent } from "@/components/ui/card";
+import Shell from "@/components/layout/Shell";
 import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
-import FilterSelect from "@/components/FilterSelect";
-import BudgetDistribution from "./BudgetDistribution";
+import TabBar from "@/components/ui/TabBar";
+import Bar from "@/components/ui/Bar";
+import Fab from "@/components/ui/Fab";
 import BudgetModal from "./BudgetModal";
 import {
   toggleBudgetItem,
@@ -40,6 +33,7 @@ import {
   reorderBudgetItems,
 } from "./actions";
 import { formatEur } from "@/lib/format";
+import { useSidebar } from "@/components/SidebarContext";
 import type { TBudgetItemWithRelations, TCategorie, TObjectif } from "@/types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -50,44 +44,6 @@ function annualise(montant: number, frequence: "mensuel" | "annuel"): number {
 
 function mensualise(montant: number, frequence: "mensuel" | "annuel"): number {
   return frequence === "annuel" ? montant / 12 : montant;
-}
-
-// ── KPI Card ──────────────────────────────────────────────────────────────────
-
-function KpiCard({
-  label,
-  value,
-  sub,
-  icon,
-  color,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  icon: React.ReactNode;
-  color: string;
-}) {
-  return (
-    <Card>
-      <CardContent>
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[10px] text-white/40 uppercase tracking-widest">
-            {label}
-          </p>
-          <span
-            className="p-1.5 rounded-lg"
-            style={{ background: `${color}18`, color }}
-          >
-            {icon}
-          </span>
-        </div>
-        <p className="text-2xl font-bold text-white tabular-nums leading-none">
-          {value}
-        </p>
-        <p className="text-xs text-white/35 mt-2">{sub}</p>
-      </CardContent>
-    </Card>
-  );
 }
 
 // ── Toggle switch ─────────────────────────────────────────────────────────────
@@ -105,7 +61,7 @@ function Toggle({
     <button
       type="button"
       disabled={disabled}
-      onClick={() => onChange(!checked)}
+      onClick={(e) => { e.stopPropagation(); onChange(!checked); }}
       className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${
         checked ? "bg-orange-500" : "bg-white/[0.15]"
       } disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -119,24 +75,38 @@ function Toggle({
   );
 }
 
-// ── Sortable Budget Item Row ─────────────────────────────────────────────────
+// ── Section tab type ──────────────────────────────────────────────────────────
 
-function SortableBudgetItemRow({
+type TSectionFilter = "mensuel" | "annuel";
+const SECTION_TABS: { key: TSectionFilter; label: string }[] = [
+  { key: "mensuel", label: "Mensuelles" },
+  { key: "annuel", label: "Annuelles" },
+];
+
+// ── Sortable Budget Item Row (flat, reference-style) ────────────────────────
+
+function SortableBudgetRow({
   item,
+  maxAmount,
+  isDesktop,
   confirmingDeleteId,
   onEdit,
   onDeleteRequest,
   onDeleteConfirm,
   onDeleteCancel,
   dragEnabled,
+  index,
 }: {
   item: TBudgetItemWithRelations;
+  maxAmount: number;
+  isDesktop: boolean;
   confirmingDeleteId: string | null;
   onEdit: (item: TBudgetItemWithRelations) => void;
   onDeleteRequest: (id: string) => void;
   onDeleteConfirm: (id: string) => void;
   onDeleteCancel: () => void;
   dragEnabled: boolean;
+  index: number;
 }) {
   const router = useRouter();
   const [toggling, setToggling] = useState(false);
@@ -181,102 +151,79 @@ function SortableBudgetItemRow({
 
   const couleur = item.categories?.couleur ?? "#94a3b8";
   const isConfirming = confirmingDeleteId === item.id;
+  const barPct = maxAmount > 0 ? Math.round((item.montant / maxAmount) * 100) : 0;
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`border-b border-white/[0.03] ${
+        isDesktop && index % 2 === 0 ? "border-r border-r-white/[0.03]" : ""
+      }`}
+    >
       <motion.div
         layout
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, x: -16 }}
-        transition={{ duration: 0.22 }}
-        className={`flex items-center gap-3 p-3 rounded-2xl border transition-colors ${
-          item.actif
-            ? "bg-white/[0.04] border-white/[0.07] hover:border-white/[0.12]"
-            : "bg-white/[0.01] border-white/[0.04] opacity-50"
-        }`}
+        transition={{ duration: 0.22, delay: Math.min(index * 0.02, 0.3) }}
+        className="group"
+        style={{ padding: isDesktop ? "11px 24px" : "11px 16px", opacity: item.actif ? 1 : 0.45 }}
       >
-        {/* Drag handle */}
-        {dragEnabled && (
-          <button
-            {...attributes}
-            {...listeners}
-            className="text-white/20 hover:text-white/50 cursor-grab active:cursor-grabbing flex-shrink-0 touch-none"
-          >
-            <GripVertical size={14} />
-          </button>
-        )}
-
-        {/* Icône catégorie */}
-        <div
-          className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-bold"
-          style={{ background: `${couleur}18`, color: couleur }}
-        >
-          {item.nom[0]?.toUpperCase()}
-        </div>
-
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <p className="text-sm font-medium text-white truncate">
-              {item.nom}
-            </p>
-            {item.categories && (
-              <span
-                className="text-[10px] px-1.5 py-0.5 rounded-md font-medium flex-shrink-0 hidden sm:inline-block"
-                style={{
-                  background: `${couleur}18`,
-                  color: couleur,
-                }}
+        <div className="flex items-center justify-between" style={{ marginBottom: item.actif ? 7 : 0 }}>
+          <div className="flex items-center gap-2.5 min-w-0">
+            {dragEnabled && (
+              <button
+                {...attributes}
+                {...listeners}
+                className="text-white/20 hover:text-white/50 cursor-grab active:cursor-grabbing flex-shrink-0 touch-none"
               >
-                {item.categories.nom}
-              </span>
+                <GripVertical size={14} />
+              </button>
             )}
-            {item.objectifs && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-orange-500/10 text-orange-400 flex items-center gap-1 flex-shrink-0 hidden sm:inline-flex">
-                <Link2 size={9} />
-                {item.objectifs.nom}
+            <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: couleur }} />
+            <div className="min-w-0">
+              <p className="text-[12px] font-semibold text-white leading-none truncate mb-0.5">{item.nom}</p>
+              <span
+                className="text-[9px] px-1.5 py-0.5 rounded font-bold"
+                style={{ background: `${couleur}20`, color: couleur }}
+              >
+                {item.categories?.nom ?? "—"}
               </span>
-            )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0 ml-2">
+            <span className="text-[13px] font-extrabold tracking-tight">
+              {formatEur(item.montant)}{" "}
+              <span className="text-[10px] text-white/28 font-normal">
+                €/{item.frequence === "mensuel" ? "m" : "an"}
+              </span>
+            </span>
+            <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
+
+            {/* Edit / Delete (hover) */}
+            <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              {!isConfirming && (
+                <button
+                  onClick={() => onEdit(item)}
+                  className="p-1 rounded-lg text-white/30 hover:text-white hover:bg-white/[0.07] transition-colors"
+                >
+                  <Pencil size={12} />
+                </button>
+              )}
+              <ConfirmDeleteButton
+                isConfirming={isConfirming}
+                onDeleteRequest={() => onDeleteRequest(item.id)}
+                onDeleteConfirm={handleDeleteConfirm}
+                onDeleteCancel={onDeleteCancel}
+                size={12}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Montant */}
-        <div className="text-right flex-shrink-0">
-          <p className="text-sm font-semibold text-white tabular-nums whitespace-nowrap">
-            {formatEur(item.montant)}
-            <span className="text-[10px] text-white/35 ml-0.5">
-              /{item.frequence === "mensuel" ? "mois" : "an"}
-            </span>
-          </p>
-        </div>
-
-        {/* Toggle */}
-        <Toggle
-          checked={item.actif}
-          onChange={handleToggle}
-          disabled={toggling}
-        />
-
-        {/* Actions */}
-        <div className="flex items-center gap-0.5 flex-shrink-0">
-          {!isConfirming && (
-            <button
-              onClick={() => onEdit(item)}
-              className="p-1.5 rounded-lg text-white/25 hover:text-white hover:bg-white/[0.07] transition-colors"
-              title="Modifier"
-            >
-              <Pencil size={13} />
-            </button>
-          )}
-          <ConfirmDeleteButton
-            isConfirming={isConfirming}
-            onDeleteRequest={() => onDeleteRequest(item.id)}
-            onDeleteConfirm={handleDeleteConfirm}
-            onDeleteCancel={onDeleteCancel}
-            size={13}
-          />
-        </div>
+        {item.actif && <Bar pct={barPct} color={couleur} height={2} />}
       </motion.div>
     </div>
   );
@@ -302,100 +249,9 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
         onClick={onAdd}
         className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors"
       >
-        <Plus size={16} />
         Ajouter une charge
       </button>
     </motion.div>
-  );
-}
-
-// ── Section with DnD ─────────────────────────────────────────────────────────
-
-function Section({
-  title,
-  icon,
-  items,
-  totalLabel,
-  total,
-  confirmingDeleteId,
-  onEdit,
-  onDeleteRequest,
-  onDeleteConfirm,
-  onDeleteCancel,
-  onReorder,
-  dragEnabled,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  items: TBudgetItemWithRelations[];
-  totalLabel: string;
-  total: number;
-  confirmingDeleteId: string | null;
-  onEdit: (item: TBudgetItemWithRelations) => void;
-  onDeleteRequest: (id: string) => void;
-  onDeleteConfirm: (id: string) => void;
-  onDeleteCancel: () => void;
-  onReorder: (activeId: string, overId: string) => void;
-  dragEnabled: boolean;
-}) {
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor)
-  );
-
-  if (items.length === 0) return null;
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      onReorder(active.id as string, over.id as string);
-    }
-  }
-
-  return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2 text-white/60 text-sm font-medium">
-          {icon}
-          {title}
-          <span className="text-white/25 text-xs font-normal ml-1">
-            ({items.length})
-          </span>
-        </div>
-        <span className="text-xs text-white/40">
-          {totalLabel} :{" "}
-          <span className="text-white/70 font-medium">{formatEur(total)}</span>
-        </span>
-      </div>
-
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={items.map((i) => i.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className="space-y-1.5">
-            <AnimatePresence>
-              {items.map((item) => (
-                <SortableBudgetItemRow
-                  key={item.id}
-                  item={item}
-                  confirmingDeleteId={confirmingDeleteId}
-                  onEdit={onEdit}
-                  onDeleteRequest={onDeleteRequest}
-                  onDeleteConfirm={onDeleteConfirm}
-                  onDeleteCancel={onDeleteCancel}
-                  dragEnabled={dragEnabled}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
-        </SortableContext>
-      </DndContext>
-    </div>
   );
 }
 
@@ -415,23 +271,14 @@ export default function BudgetContent({
   compteId,
 }: IBudgetContentProps) {
   const router = useRouter();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<
-    TBudgetItemWithRelations | undefined
-  >(undefined);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
-    null
-  );
-  const [localItems, setLocalItems] = useState(initialItems);
+  const { breakpoint } = useSidebar();
+  const isDesktop = breakpoint === "desktop";
 
-  // Filters
-  const [filterCategorie, setFilterCategorie] = useState("all");
-  const [filterStatus, setFilterStatus] = useState<
-    "all" | "actif" | "inactif"
-  >("all");
-  const [sortBy, setSortBy] = useState<
-    "sort_order" | "montant_asc" | "montant_desc" | "nom"
-  >("sort_order");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<TBudgetItemWithRelations | undefined>(undefined);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [localItems, setLocalItems] = useState(initialItems);
+  const [section, setSection] = useState<TSectionFilter>("mensuel");
 
   // Sync when server data changes
   const serverKey = initialItems.map((i) => `${i.id}-${i.sort_order}-${i.actif}-${i.montant}`).join("|");
@@ -440,58 +287,20 @@ export default function BudgetContent({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverKey]);
 
-  const dragEnabled = sortBy === "sort_order";
-
-  // Filtered + sorted
-  const filteredItems = useMemo(() => {
-    let result = [...localItems];
-
-    if (filterCategorie !== "all") {
-      result = result.filter((i) => i.categorie_id === filterCategorie);
-    }
-
-    if (filterStatus === "actif") {
-      result = result.filter((i) => i.actif);
-    } else if (filterStatus === "inactif") {
-      result = result.filter((i) => !i.actif);
-    }
-
-    if (sortBy === "montant_desc") {
-      result.sort((a, b) => b.montant - a.montant);
-    } else if (sortBy === "montant_asc") {
-      result.sort((a, b) => a.montant - b.montant);
-    } else if (sortBy === "nom") {
-      result.sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
-    }
-
-    return result;
-  }, [localItems, filterCategorie, filterStatus, sortBy]);
-
-  const isFiltered = filterCategorie !== "all" || filterStatus !== "all";
-
-  const actifs = filteredItems.filter((i) => i.actif);
-  const mensuels = filteredItems.filter((i) => i.frequence === "mensuel");
-  const annuels = filteredItems.filter((i) => i.frequence === "annuel");
-
-  const budgetMensuel = actifs.reduce(
-    (sum, i) => sum + mensualise(i.montant, i.frequence),
-    0
-  );
-  const budgetAnnuel = actifs.reduce(
-    (sum, i) => sum + annualise(i.montant, i.frequence),
-    0
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor)
   );
 
-  const totalMensuels = mensuels
-    .filter((i) => i.actif)
-    .reduce((s, i) => s + i.montant, 0);
-  const totalAnnuels = annuels
-    .filter((i) => i.actif)
-    .reduce((s, i) => s + i.montant, 0);
+  // Totals (across all items)
+  const actifs = localItems.filter((i) => i.actif);
+  const totalMensuel = actifs.reduce((sum, i) => sum + mensualise(i.montant, i.frequence), 0);
+  const totalAnnuel = actifs.reduce((sum, i) => sum + annualise(i.montant, i.frequence), 0);
+  const inactifCount = localItems.filter((i) => !i.actif).length;
 
-  const linkedObjectifs = new Set(
-    filteredItems.filter((i) => i.objectif_id).map((i) => i.objectif_id)
-  ).size;
+  // Items for current section tab
+  const sectionItems = localItems.filter((i) => i.frequence === section);
+  const maxAmount = Math.max(...sectionItems.map((i) => i.montant), 1);
 
   function openAddModal() {
     setEditingItem(undefined);
@@ -508,10 +317,13 @@ export default function BudgetContent({
     setLocalItems((prev) => prev.filter((i) => i.id !== id));
   }
 
-  function handleReorder(activeId: string, overId: string) {
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
     setLocalItems((prev) => {
-      const oldIndex = prev.findIndex((i) => i.id === activeId);
-      const newIndex = prev.findIndex((i) => i.id === overId);
+      const oldIndex = prev.findIndex((i) => i.id === active.id);
+      const newIndex = prev.findIndex((i) => i.id === over.id);
       if (oldIndex === -1 || newIndex === -1) return prev;
       const reordered = arrayMove(prev, oldIndex, newIndex);
 
@@ -527,192 +339,112 @@ export default function BudgetContent({
   }
 
   return (
-    <main className="min-h-screen bg-background p-4 sm:p-6 md:p-8">
+    <Shell>
       {/* ── Header ── */}
       <motion.div
-        initial={{ opacity: 0, y: -16 }}
+        initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex items-start justify-between mb-6 sm:mb-8"
+        className="flex items-center justify-between mb-0"
       >
         <div>
-          <h1 className="text-2xl font-bold text-white">Budget annuel</h1>
-          <p className="text-white/40 text-sm mt-1">
-            {filteredItems.length} charge
-            {filteredItems.length !== 1 ? "s" : ""}
-            {isFiltered ? " filtrées" : " planifiées"}
-            {actifs.length !== filteredItems.length && (
-              <span className="text-white/25 ml-1">
-                · {actifs.length} active{actifs.length !== 1 ? "s" : ""}
-              </span>
-            )}
-          </p>
+          <h1 className="text-[22px] font-black tracking-tight">Budget</h1>
+          <p className="text-[10px] text-white/28 mt-0.5">Charges récurrentes</p>
         </div>
-
-        {localItems.length > 0 && (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={openAddModal}
-            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
-          >
-            <Plus size={16} />
-            <span className="hidden sm:inline">Ajouter</span>
-          </motion.button>
-        )}
       </motion.div>
 
       {localItems.length === 0 ? (
         <EmptyState onAdd={openAddModal} />
       ) : (
         <>
-          {/* ── Filters ── */}
+          {/* ── KPIs ── */}
+          <div className="h-px bg-white/[0.06] mt-3 mb-0" />
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05, duration: 0.3 }}
-            className="flex flex-wrap gap-2 sm:gap-3 mb-5"
+            className="py-3 px-1"
           >
-            <FilterSelect
-              value={filterCategorie}
-              onChange={setFilterCategorie}
-            >
-              <option value="all" className="bg-[#0f0f1a]">
-                Toutes les catégories
-              </option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id} className="bg-[#0f0f1a]">
-                  {cat.nom}
-                </option>
-              ))}
-            </FilterSelect>
-
-            <FilterSelect
-              value={filterStatus}
-              onChange={(v) =>
-                setFilterStatus(v as "all" | "actif" | "inactif")
-              }
-            >
-              <option value="all" className="bg-[#0f0f1a]">
-                Toutes
-              </option>
-              <option value="actif" className="bg-[#0f0f1a]">
-                Actives
-              </option>
-              <option value="inactif" className="bg-[#0f0f1a]">
-                Inactives
-              </option>
-            </FilterSelect>
-
-            <FilterSelect
-              value={sortBy}
-              onChange={(v) =>
-                setSortBy(
-                  v as "sort_order" | "montant_asc" | "montant_desc" | "nom"
-                )
-              }
-            >
-              <option value="sort_order" className="bg-[#0f0f1a]">
-                Ordre personnalisé
-              </option>
-              <option value="montant_desc" className="bg-[#0f0f1a]">
-                Montant ↓
-              </option>
-              <option value="montant_asc" className="bg-[#0f0f1a]">
-                Montant ↑
-              </option>
-              <option value="nom" className="bg-[#0f0f1a]">
-                Nom (A-Z)
-              </option>
-            </FilterSelect>
+            {isDesktop ? (
+              <div className="flex gap-3">
+                <KpiCardRef label="Charges / mois" value={`${formatEur(totalMensuel)} €`} color="#f97316" pct={Math.min(100, Math.round(totalMensuel / 2000 * 100))} />
+                <KpiCardRef label="Projection annuelle" value={`${formatEur(totalAnnuel)} €`} color="#6366f1" pct={Math.min(100, Math.round(totalAnnuel / 20000 * 100))} />
+                <KpiCardRef label="Charges inactives" value={`${inactifCount} postes`} color="#94a3b8" pct={localItems.length > 0 ? Math.round(inactifCount / localItems.length * 100) : 0} />
+              </div>
+            ) : (
+              <div className="flex">
+                <div className="flex-1 pr-[18px]">
+                  <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Charges / mois</p>
+                  <p className="text-[22px] font-[900] tracking-tight mt-1 mb-1 leading-none text-orange-500">{formatEur(totalMensuel)} €</p>
+                  <Bar pct={Math.min(100, Math.round(totalMensuel / 2000 * 100))} color="#f97316" />
+                </div>
+                <div className="flex-1 pl-[18px] border-l border-white/[0.06]">
+                  <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Projection ann.</p>
+                  <p className="text-[22px] font-[900] tracking-tight mt-1 mb-1 leading-none text-indigo-400">{formatEur(totalAnnuel)} €</p>
+                  <Bar pct={Math.min(100, Math.round(totalAnnuel / 20000 * 100))} color="#6366f1" />
+                </div>
+              </div>
+            )}
           </motion.div>
 
-          {/* ── KPIs ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.08, duration: 0.35 }}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8"
-          >
-            <KpiCard
-              label="Budget mensuel"
-              value={formatEur(budgetMensuel)}
-              sub={
-                isFiltered
-                  ? "Charges filtrées / mois"
-                  : "Charges fixes / mois"
-              }
-              icon={<TrendingDown size={16} />}
-              color="#f97316"
-            />
-            <KpiCard
-              label="Budget annuel"
-              value={formatEur(budgetAnnuel)}
-              sub={
-                isFiltered ? "Projection filtrée" : "Projection sur 12 mois"
-              }
-              icon={<CalendarDays size={16} />}
-              color="#6366f1"
-            />
-            <KpiCard
-              label="Objectifs liés"
-              value={String(linkedObjectifs)}
-              sub={`sur ${filteredItems.length} charge${filteredItems.length !== 1 ? "s" : ""}`}
-              icon={<Link2 size={16} />}
-              color="#14b8a6"
-            />
-          </motion.div>
+          <div className="h-px bg-white/[0.06] mb-0" />
 
-          {/* ── Distribution par catégorie ── */}
-          {actifs.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.13, duration: 0.35 }}
-              className="mb-8"
+          {/* ── Section toggle ── */}
+          <TabBar tabs={SECTION_TABS} active={section} onChange={setSection} />
+
+          {/* ── Item list ── */}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={sectionItems.map((i) => i.id)}
+              strategy={verticalListSortingStrategy}
             >
-              <BudgetDistribution items={filteredItems} />
-            </motion.div>
-          )}
-
-          {/* ── Sections ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.18, duration: 0.35 }}
-          >
-            <Section
-              title="Charges mensuelles"
-              icon={<CalendarDays size={15} />}
-              items={mensuels}
-              totalLabel="Total actif / mois"
-              total={totalMensuels}
-              confirmingDeleteId={confirmingDeleteId}
-              onEdit={openEditModal}
-              onDeleteRequest={setConfirmingDeleteId}
-              onDeleteConfirm={handleDeleteConfirm}
-              onDeleteCancel={() => setConfirmingDeleteId(null)}
-              onReorder={handleReorder}
-              dragEnabled={dragEnabled}
-            />
-            <Section
-              title="Charges annuelles"
-              icon={<Receipt size={15} />}
-              items={annuels}
-              totalLabel="Total actif / an"
-              total={totalAnnuels}
-              confirmingDeleteId={confirmingDeleteId}
-              onEdit={openEditModal}
-              onDeleteRequest={setConfirmingDeleteId}
-              onDeleteConfirm={handleDeleteConfirm}
-              onDeleteCancel={() => setConfirmingDeleteId(null)}
-              onReorder={handleReorder}
-              dragEnabled={dragEnabled}
-            />
-          </motion.div>
+              <div
+                className={isDesktop ? "grid grid-cols-2" : ""}
+                style={isDesktop ? { alignContent: "start" } : undefined}
+              >
+                <AnimatePresence mode="popLayout">
+                  {sectionItems.length === 0 ? (
+                    <motion.p
+                      key="empty"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="text-center text-white/30 text-[11px] py-12 col-span-2"
+                    >
+                      Aucune charge {section === "mensuel" ? "mensuelle" : "annuelle"}
+                    </motion.p>
+                  ) : (
+                    sectionItems.map((item, i) => (
+                      <SortableBudgetRow
+                        key={item.id}
+                        item={item}
+                        maxAmount={maxAmount}
+                        isDesktop={isDesktop}
+                        confirmingDeleteId={confirmingDeleteId}
+                        onEdit={openEditModal}
+                        onDeleteRequest={setConfirmingDeleteId}
+                        onDeleteConfirm={handleDeleteConfirm}
+                        onDeleteCancel={() => setConfirmingDeleteId(null)}
+                        dragEnabled={true}
+                        index={i}
+                      />
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
+            </SortableContext>
+          </DndContext>
         </>
       )}
 
+      {/* FAB */}
+      <Fab label="Charge" onClick={openAddModal} />
+
+      {/* Modal */}
       <BudgetModal
         key={editingItem?.id ?? "new"}
         open={modalOpen}
@@ -722,6 +454,28 @@ export default function BudgetContent({
         budgetItem={editingItem}
         compteId={compteId}
       />
-    </main>
+    </Shell>
+  );
+}
+
+// ── Desktop KPI Card (reference style) ────────────────────────────────────────
+
+function KpiCardRef({
+  label,
+  value,
+  color,
+  pct,
+}: {
+  label: string;
+  value: string;
+  color: string;
+  pct: number;
+}) {
+  return (
+    <div className="flex-1 bg-[#0d0d1a] border border-white/[0.06] rounded-xl p-3">
+      <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">{label}</p>
+      <p className="text-[18px] font-[900] tracking-tight mt-1 mb-2 leading-none">{value}</p>
+      <Bar pct={pct} color={color} height={3} />
+    </div>
   );
 }

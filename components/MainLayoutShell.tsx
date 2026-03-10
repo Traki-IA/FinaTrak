@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { SidebarProvider, useSidebar } from "@/components/SidebarContext";
 import Navbar from "@/components/Navbar";
 import AccountGuard from "@/components/AccountGuard";
@@ -10,6 +11,9 @@ interface IMainLayoutShellProps {
   activeCompteId: string;
   navOrder: string[];
   needsAccountFix: boolean;
+  solde?: number;
+  userName?: string;
+  userEmail?: string;
   children: React.ReactNode;
 }
 
@@ -18,9 +22,12 @@ function LayoutContent({
   activeCompteId,
   navOrder,
   needsAccountFix,
+  solde,
+  userName,
+  userEmail,
   children,
 }: IMainLayoutShellProps) {
-  const { collapsed } = useSidebar();
+  const { breakpoint, sidebarWidth } = useSidebar();
 
   return (
     <>
@@ -28,15 +35,18 @@ function LayoutContent({
         comptes={comptes}
         activeCompteId={activeCompteId}
         navOrder={navOrder}
+        solde={solde}
+        userName={userName}
+        userEmail={userEmail}
       />
       {needsAccountFix && <AccountGuard compteId={activeCompteId} />}
-      <div
-        className={`pb-20 md:pb-0 transition-[margin-left] duration-300 ease-in-out ${
-          collapsed ? "md:ml-16" : "md:ml-56"
-        }`}
+      <motion.div
+        className={breakpoint === "mobile" ? "pb-20" : ""}
+        animate={{ marginLeft: sidebarWidth }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         {children}
-      </div>
+      </motion.div>
     </>
   );
 }

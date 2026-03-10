@@ -10,6 +10,7 @@ import {
   ArrowLeftRight,
   Receipt,
   Target,
+  BarChart3,
   Settings,
   GripVertical,
 } from "lucide-react";
@@ -45,6 +46,7 @@ const ALL_NAV_ITEMS: TNavItem[] = [
   { key: "transactions", href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
   { key: "budget", href: "/budget", label: "Budget", icon: Receipt },
   { key: "objectifs", href: "/objectifs", label: "Objectifs", icon: Target },
+  { key: "bilan", href: "/bilan", label: "Bilan", icon: BarChart3 },
   { key: "parametres", href: "/parametres", label: "Paramètres", icon: Settings },
 ];
 

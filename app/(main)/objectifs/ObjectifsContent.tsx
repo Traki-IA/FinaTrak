@@ -3,16 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Plus,
-  Pencil,
-  Loader2,
-  Target,
-  Calendar,
-  GripVertical,
-  ChevronDown,
-  TrendingUp,
-} from "lucide-react";
+import { Pencil, Loader2, Target, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -25,13 +16,15 @@ import {
 import type { DragEndEvent } from "@dnd-kit/core";
 import {
   SortableContext,
-  rectSortingStrategy,
+  verticalListSortingStrategy,
   useSortable,
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
-import CategoryFilter from "@/components/CategoryFilter";
+import Shell from "@/components/layout/Shell";
+import Bar from "@/components/ui/Bar";
+import Fab from "@/components/ui/Fab";
 import ObjectifModal from "./ObjectifModal";
 import {
   deleteObjectif,
@@ -39,6 +32,7 @@ import {
   reorderObjectifs,
 } from "./actions";
 import { formatEur } from "@/lib/format";
+import { useSidebar } from "@/components/SidebarContext";
 import type { TObjectifWithBudgetLines, TCategorie } from "@/types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -51,36 +45,12 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function joursRestants(dateFin: string): number {
-  const diff = new Date(dateFin).getTime() - Date.now();
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
-}
+// ── Sortable Objectif Row (reference-style) ───────────────────────────────────
 
-function moisRestants(dateFin: string): number {
-  const now = new Date();
-  const fin = new Date(dateFin);
-  const mois =
-    (fin.getFullYear() - now.getFullYear()) * 12 +
-    (fin.getMonth() - now.getMonth());
-  return Math.max(1, mois);
-}
-
-const PERIODE_COLORS: Record<string, string> = {
-  mensuel: "bg-blue-500/15 text-blue-400",
-  annuel: "bg-violet-500/15 text-violet-400",
-  ponctuel: "bg-teal-500/15 text-teal-400",
-};
-
-const PERIODE_LABELS: Record<string, string> = {
-  mensuel: "Mensuel",
-  annuel: "Annuel",
-  ponctuel: "Ponctuel",
-};
-
-// ── Sortable Objectif Card ──────────────────────────────────────────────────
-
-function SortableObjectifCard({
+function SortableObjectifRow({
   objectif,
+  isDesktop,
+  index,
   confirmingDeleteId,
   onEdit,
   onDeleteRequest,
@@ -88,6 +58,8 @@ function SortableObjectifCard({
   onDeleteCancel,
 }: {
   objectif: TObjectifWithBudgetLines;
+  isDesktop: boolean;
+  index: number;
   confirmingDeleteId: string | null;
   onEdit: (o: TObjectifWithBudgetLines) => void;
   onDeleteRequest: (id: string) => void;
@@ -97,10 +69,8 @@ function SortableObjectifCard({
   const router = useRouter();
   const [isUpdating, setIsUpdating] = useState(false);
   const [showInput, setShowInput] = useState(false);
-  const [inputValue, setInputValue] = useState(
-    objectif.montant_actuel.toString()
-  );
-  const [budgetLinesOpen, setBudgetLinesOpen] = useState(false);
+  const [inputValue, setInputValue] = useState(objectif.montant_actuel.toString());
+  const [expanded, setExpanded] = useState(false);
 
   const {
     attributes,
@@ -118,19 +88,12 @@ function SortableObjectifCard({
     opacity: isDragging ? 0.5 : undefined,
   };
 
-  const pct = Math.min(
-    (objectif.montant_actuel / objectif.montant_cible) * 100,
-    100
-  );
+  const pct = Math.min(Math.round((objectif.montant_actuel / objectif.montant_cible) * 100), 100);
   const atteint = objectif.montant_actuel >= objectif.montant_cible;
   const restant = Math.max(0, objectif.montant_cible - objectif.montant_actuel);
+  const effortMensuel = Math.ceil(restant / 6);
   const isConfirming = confirmingDeleteId === objectif.id;
-
-  const jours = objectif.date_fin ? joursRestants(objectif.date_fin) : null;
-  const objectifMensuel =
-    !atteint && objectif.date_fin && jours !== null && jours > 0
-      ? restant / moisRestants(objectif.date_fin)
-      : null;
+  const couleur = atteint ? "#22c55e" : pct >= 66 ? "#14b8a6" : pct >= 33 ? "#f97316" : "#ef4444";
 
   async function handleDeleteConfirm() {
     onDeleteConfirm(objectif.id);
@@ -152,7 +115,6 @@ function SortableObjectifCard({
     setIsUpdating(true);
     const result = await updateObjectifMontant(objectif.id, montant);
     setIsUpdating(false);
-
     if ("error" in result) {
       toast.error(result.error);
       return;
@@ -162,274 +124,169 @@ function SortableObjectifCard({
     router.refresh();
   }
 
-  const barColor = atteint
-    ? "#22c55e"
-    : pct >= 66
-    ? "#14b8a6"
-    : pct >= 33
-    ? "#f97316"
-    : "#ef4444";
-
   return (
-    <div ref={setNodeRef} style={style}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`border-b border-white/[0.03] ${
+        isDesktop && index % 2 === 0 ? "border-r border-r-white/[0.03]" : ""
+      }`}
+    >
       <motion.div
         layout
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.25 }}
-        className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-5 flex flex-col gap-4 hover:border-white/[0.12] transition-colors"
+        transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.3) }}
+        className="group"
+        style={{ padding: isDesktop ? "12px 24px" : "12px 16px", cursor: "pointer" }}
+        onClick={() => setExpanded(!expanded)}
       >
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5">
-              {/* Drag handle */}
-              <button
-                {...attributes}
-                {...listeners}
-                className="text-white/20 hover:text-white/50 cursor-grab active:cursor-grabbing flex-shrink-0 touch-none"
-              >
-                <GripVertical size={14} />
-              </button>
-              {atteint && (
-                <span className="text-xs bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full font-medium">
-                  ✓ Atteint
+        {/* Row: color bar + info + pct */}
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            {/* Drag handle */}
+            <button
+              {...attributes}
+              {...listeners}
+              onClick={(e) => e.stopPropagation()}
+              className="text-white/20 hover:text-white/50 cursor-grab active:cursor-grabbing flex-shrink-0 touch-none"
+            >
+              <GripVertical size={14} />
+            </button>
+
+            {/* Color bar */}
+            <div className="w-[3px] self-stretch rounded-full flex-shrink-0" style={{ background: couleur, minHeight: 36 }} />
+
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <p className="text-[13px] font-bold leading-none text-white">{objectif.nom}</p>
+                {atteint && (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-emerald-500/15 text-emerald-400">
+                    ✓ Atteint
+                  </span>
+                )}
+              </div>
+              {objectif.date_fin && (
+                <span className="text-[9px] text-white/28 mt-1 block">
+                  → {formatDate(objectif.date_fin)}
                 </span>
               )}
             </div>
-            <h3 className="text-white font-semibold text-base truncate">
-              {objectif.nom}
-            </h3>
-            <span
-              className={`inline-flex text-xs px-2.5 py-0.5 rounded-full font-medium mt-1 ${
-                PERIODE_COLORS[objectif.periode]
-              }`}
+          </div>
+
+          <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+            <div className="text-right">
+              <p className="text-[14px] font-[900] leading-none" style={{ color: couleur }}>{pct}%</p>
+              <p className="text-[9px] text-white/28 mt-0.5 whitespace-nowrap">
+                {objectif.montant_actuel.toLocaleString("fr")} / {objectif.montant_cible.toLocaleString("fr")} €
+              </p>
+            </div>
+
+            {/* Edit / Delete */}
+            <div
+              className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => e.stopPropagation()}
             >
-              {PERIODE_LABELS[objectif.periode]}
-            </span>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-0.5 flex-shrink-0">
-            {!isConfirming && (
-              <button
-                onClick={() => onEdit(objectif)}
-                className="p-1.5 rounded-lg text-white/25 hover:text-white hover:bg-white/[0.07] transition-colors"
-                title="Modifier"
-              >
-                <Pencil size={13} />
-              </button>
-            )}
-            <ConfirmDeleteButton
-              isConfirming={isConfirming}
-              onDeleteRequest={() => onDeleteRequest(objectif.id)}
-              onDeleteConfirm={handleDeleteConfirm}
-              onDeleteCancel={onDeleteCancel}
-              size={13}
-            />
-          </div>
-        </div>
-
-        {/* Progress — Refactorisé */}
-        <div>
-          <div className="flex items-center justify-between mb-2 text-xs">
-            <span className="text-white/50">
-              {formatEur(objectif.montant_actuel)} sur{" "}
-              {formatEur(objectif.montant_cible)}
-            </span>
-            <span className="text-white/70 font-medium">
-              {pct.toFixed(0)} %
-            </span>
-          </div>
-          <div className="h-2 bg-white/[0.07] rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-              className="h-full rounded-full"
-              style={{ background: barColor }}
-            />
-          </div>
-          <div className="mt-2 text-xs">
-            {atteint ? (
-              <span className="text-emerald-400 font-medium">
-                ✓ Objectif atteint !
-              </span>
-            ) : (
-              <span className="text-white/40">
-                Il reste {formatEur(restant)} à couvrir
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Date fin */}
-        {objectif.date_fin && (
-          <div
-            className={`flex items-center gap-1.5 text-xs ${
-              jours !== null && jours < 0
-                ? "text-red-400"
-                : jours !== null && jours <= 30
-                ? "text-orange-400"
-                : "text-white/35"
-            }`}
-          >
-            <Calendar size={12} />
-            {jours !== null && jours < 0
-              ? `Échéance dépassée (${formatDate(objectif.date_fin)})`
-              : `Échéance : ${formatDate(objectif.date_fin)}${
-                  jours !== null ? ` · ${jours} j` : ""
-                }`}
-          </div>
-        )}
-
-        {/* Objectif mensuel */}
-        {objectifMensuel !== null && (
-          <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5">
-            <TrendingUp size={14} className="text-orange-400 flex-shrink-0" />
-            <div className="text-xs">
-              <span className="text-orange-300/70">Objectif mensuel : </span>
-              <span className="text-orange-300 font-semibold">
-                {formatEur(objectifMensuel)}
-              </span>
-              <span className="text-orange-300/50"> / mois</span>
+              {!isConfirming && (
+                <button
+                  onClick={() => onEdit(objectif)}
+                  className="p-1 rounded-lg text-white/30 hover:text-white hover:bg-white/[0.07] transition-colors"
+                >
+                  <Pencil size={12} />
+                </button>
+              )}
+              <ConfirmDeleteButton
+                isConfirming={isConfirming}
+                onDeleteRequest={() => onDeleteRequest(objectif.id)}
+                onDeleteConfirm={handleDeleteConfirm}
+                onDeleteCancel={onDeleteCancel}
+                size={12}
+              />
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Accordéon lignes de budget */}
-        {objectif.budget_lines.length > 0 && (
-          <div>
-            <button
-              onClick={() => setBudgetLinesOpen(!budgetLinesOpen)}
-              className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors w-full"
-            >
-              <ChevronDown
-                size={13}
-                className={`transition-transform duration-200 ${
-                  budgetLinesOpen ? "rotate-180" : ""
-                }`}
-              />
-              Voir les lignes de budget ({objectif.budget_lines.length})
-            </button>
+        {/* Progress bar */}
+        <Bar pct={pct} color={couleur} height={3} />
 
-            <AnimatePresence>
-              {budgetLinesOpen && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-2.5 space-y-2">
-                    {objectif.budget_lines.map((line) => {
-                      const linePct = Math.min(
-                        (line.consomme / line.montant) * 100,
-                        100
-                      );
-                      const lineColor =
-                        linePct >= 100
-                          ? "#22c55e"
-                          : linePct >= 50
-                          ? "#f97316"
-                          : "#ef4444";
-
-                      return (
-                        <div
-                          key={line.id}
-                          className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-3 py-2.5"
-                        >
-                          <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs text-white/60 font-medium truncate">
-                              {line.nom}
-                            </span>
-                            <span className="text-xs text-white/40 flex-shrink-0 ml-2">
-                              {formatEur(line.consomme)} /{" "}
-                              {formatEur(line.montant)}
-                            </span>
-                          </div>
-                          <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${linePct}%` }}
-                              transition={{
-                                duration: 0.6,
-                                ease: "easeOut",
-                              }}
-                              className="h-full rounded-full"
-                              style={{ background: lineColor }}
-                            />
-                          </div>
-                          <div className="flex items-center justify-between mt-1 text-[10px]">
-                            <span className="text-white/30">
-                              {line.frequence === "mensuel"
-                                ? "Mensuel"
-                                : "Annuel"}
-                            </span>
-                            <span className="text-white/40 font-medium">
-                              {linePct.toFixed(0)} %
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
-
-        {/* Mise à jour progression */}
-        <AnimatePresence mode="wait">
-          {showInput ? (
+        {/* Expandable detail */}
+        <AnimatePresence>
+          {expanded && !atteint && (
             <motion.div
-              key="input"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="flex gap-2"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
             >
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                autoFocus
-                className="flex-1 bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors"
-              />
-              <button
-                onClick={handleUpdate}
-                disabled={isUpdating}
-                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-60 flex items-center gap-1.5"
+              <div
+                className="mt-2.5 px-3 py-2.5 rounded-[10px]"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
               >
-                {isUpdating && <Loader2 size={13} className="animate-spin" />}
-                OK
-              </button>
-              <button
-                onClick={() => setShowInput(false)}
-                className="px-3 py-2 bg-white/[0.05] text-white/50 hover:text-white rounded-xl text-sm transition-colors"
-              >
-                ✕
-              </button>
+                <div className="flex justify-between mb-1">
+                  <span className="text-[10px] text-white/28">Restant</span>
+                  <span className="text-[11px] font-bold" style={{ color: couleur }}>{formatEur(restant)} €</span>
+                </div>
+                <div className="flex justify-between mb-2.5">
+                  <span className="text-[10px] text-white/28">Effort mensuel (6m)</span>
+                  <span className="text-[11px] font-bold text-white">~{formatEur(effortMensuel)} €</span>
+                </div>
+
+                {/* Update progression inline */}
+                <AnimatePresence mode="wait">
+                  {showInput ? (
+                    <motion.div
+                      key="input"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex gap-2"
+                    >
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        autoFocus
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex-1 bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-3 py-1.5 text-xs outline-none focus:border-orange-500/60 transition-colors"
+                      />
+                      <button
+                        onClick={handleUpdate}
+                        disabled={isUpdating}
+                        className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-medium transition-colors disabled:opacity-60 flex items-center gap-1"
+                      >
+                        {isUpdating && <Loader2 size={11} className="animate-spin" />}
+                        OK
+                      </button>
+                      <button
+                        onClick={() => setShowInput(false)}
+                        className="px-2 py-1.5 bg-white/[0.05] text-white/50 hover:text-white rounded-xl text-xs transition-colors"
+                      >
+                        ✕
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <motion.button
+                      key="btn"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => {
+                        setInputValue(objectif.montant_actuel.toString());
+                        setShowInput(true);
+                      }}
+                      className="w-full py-1.5 rounded-lg text-[11px] text-white/40 hover:text-white bg-white/[0.03] hover:bg-white/[0.07] transition-all"
+                    >
+                      Mettre à jour la progression
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
             </motion.div>
-          ) : (
-            <motion.button
-              key="btn"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => {
-                setInputValue(objectif.montant_actuel.toString());
-                setShowInput(true);
-              }}
-              className="w-full py-2 rounded-xl text-sm text-white/45 hover:text-white bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] transition-all"
-            >
-              Mettre à jour la progression
-            </motion.button>
           )}
         </AnimatePresence>
       </motion.div>
@@ -453,13 +310,6 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       <p className="text-white/40 text-sm mb-6">
         Créez votre premier objectif d&apos;épargne
       </p>
-      <button
-        onClick={onAdd}
-        className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors"
-      >
-        <Plus size={16} />
-        Créer un objectif
-      </button>
     </motion.div>
   );
 }
@@ -468,7 +318,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 
 export default function ObjectifsContent({
   objectifs: initialObjectifs,
-  categories,
+  categories: _categories,
   compteId,
 }: {
   objectifs: TObjectifWithBudgetLines[];
@@ -476,16 +326,15 @@ export default function ObjectifsContent({
   compteId: string;
 }) {
   const router = useRouter();
+  const { breakpoint } = useSidebar();
+  const isDesktop = breakpoint === "desktop";
+
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingObjectif, setEditingObjectif] = useState<
-    TObjectifWithBudgetLines | undefined
-  >(undefined);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
-    null
-  );
+  const [editingObjectif, setEditingObjectif] = useState<TObjectifWithBudgetLines | undefined>(undefined);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [localObjectifs, setLocalObjectifs] = useState(initialObjectifs);
 
-  // Sync when server data changes (including field edits)
+  // Sync when server data changes
   const serverKey = initialObjectifs
     .map((o) => `${o.id}-${o.sort_order}-${o.nom}-${o.montant_cible}-${o.montant_actuel}-${o.date_fin}-${o.periode}`)
     .join("|");
@@ -499,9 +348,11 @@ export default function ObjectifsContent({
     useSensor(KeyboardSensor)
   );
 
-  const atteints = localObjectifs.filter(
-    (o) => o.montant_actuel >= o.montant_cible
-  ).length;
+  const totalEpargne = localObjectifs.reduce((s, o) => s + o.montant_actuel, 0);
+  const done = localObjectifs.filter((o) => o.montant_actuel >= o.montant_cible).length;
+  const globalPct = localObjectifs.length
+    ? Math.round(localObjectifs.reduce((s, o) => s + Math.min(o.montant_actuel / o.montant_cible, 1), 0) / localObjectifs.length * 100)
+    : 0;
 
   function openAddModal() {
     setEditingObjectif(undefined);
@@ -540,42 +391,42 @@ export default function ObjectifsContent({
   }
 
   return (
-    <main className="min-h-screen bg-background p-4 sm:p-6 md:p-8">
+    <Shell>
       {/* ── Header ── */}
       <motion.div
-        initial={{ opacity: 0, y: -16 }}
+        initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex items-start justify-between mb-6 sm:mb-8"
+        className="flex items-start justify-between mb-0"
       >
         <div>
-          <h1 className="text-2xl font-bold text-white">Objectifs</h1>
-          <p className="text-white/40 text-sm mt-1">
-            {localObjectifs.length} objectif
-            {localObjectifs.length !== 1 ? "s" : ""}
-            {atteints > 0 && (
-              <span className="text-emerald-400 ml-1">
-                · {atteints} atteint{atteints > 1 ? "s" : ""}
-              </span>
-            )}
-          </p>
+          <h1 className="text-[22px] font-black tracking-tight">Objectifs</h1>
         </div>
-
-        <div className="flex items-center gap-2 sm:gap-3">
-          {categories.length > 0 && <CategoryFilter categories={categories} />}
-          {localObjectifs.length > 0 && (
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={openAddModal}
-              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
-            >
-              <Plus size={16} />
-              <span className="hidden sm:inline">Ajouter</span>
-            </motion.button>
-          )}
-        </div>
+        {localObjectifs.length > 0 && (
+          <div className="text-right">
+            <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Total épargné</p>
+            <p className="text-[16px] font-[900] mt-1 text-emerald-400">{formatEur(totalEpargne)} €</p>
+          </div>
+        )}
       </motion.div>
+
+      {/* ── Global progress bar ── */}
+      {localObjectifs.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.05 }}
+          className="mt-3 pb-3 border-b border-white/[0.06]"
+        >
+          <div className="flex justify-between items-center mb-1.5">
+            <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Progression globale</p>
+            <span className="text-[10px] font-bold text-emerald-400">{done} / {localObjectifs.length} atteints</span>
+          </div>
+          <Bar pct={globalPct} color="#22c55e" height={4} />
+        </motion.div>
+      )}
+
+      <div className="h-px bg-white/[0.06] mb-0" />
 
       {/* ── Content ── */}
       {localObjectifs.length === 0 ? (
@@ -588,19 +439,19 @@ export default function ObjectifsContent({
         >
           <SortableContext
             items={localObjectifs.map((o) => o.id)}
-            strategy={rectSortingStrategy}
+            strategy={verticalListSortingStrategy}
           >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+            <div
+              className={isDesktop ? "grid grid-cols-2" : ""}
+              style={isDesktop ? { alignContent: "start" } : undefined}
             >
               <AnimatePresence>
-                {localObjectifs.map((o) => (
-                  <SortableObjectifCard
+                {localObjectifs.map((o, i) => (
+                  <SortableObjectifRow
                     key={o.id}
                     objectif={o}
+                    isDesktop={isDesktop}
+                    index={i}
                     confirmingDeleteId={confirmingDeleteId}
                     onEdit={openEditModal}
                     onDeleteRequest={setConfirmingDeleteId}
@@ -609,12 +460,15 @@ export default function ObjectifsContent({
                   />
                 ))}
               </AnimatePresence>
-            </motion.div>
+            </div>
           </SortableContext>
         </DndContext>
       )}
 
-      {/* ── Modal ── */}
+      {/* FAB */}
+      <Fab label="Objectif" onClick={openAddModal} />
+
+      {/* Modal */}
       <ObjectifModal
         key={editingObjectif?.id ?? "new"}
         open={modalOpen}
@@ -622,6 +476,6 @@ export default function ObjectifsContent({
         objectif={editingObjectif}
         compteId={compteId}
       />
-    </main>
+    </Shell>
   );
 }
