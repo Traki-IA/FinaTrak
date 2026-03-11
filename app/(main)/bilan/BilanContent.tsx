@@ -224,18 +224,18 @@ function MobileBilan({ parMois }: IBilanContentProps) {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}>
         <div className="flex mb-4">
           <div className="flex-1 px-3 py-2 first:pl-0">
-            <p className="text-[9px] text-white/55 uppercase tracking-[0.12em] font-semibold">Revenus</p>
-            <p className="text-[15px] font-[800] tracking-tight mt-1 leading-none text-emerald-400">{formatEur(totR)} €</p>
+            <p className="text-[11px] text-white/55 uppercase tracking-[0.12em] font-semibold">Revenus</p>
+            <p className="text-[16px] font-[800] tracking-tight mt-1 leading-none text-emerald-400">{formatEur(totR)} €</p>
           </div>
           <div className="border-r border-white/[0.05]" />
           <div className="flex-1 px-3 py-2">
-            <p className="text-[9px] text-white/55 uppercase tracking-[0.12em] font-semibold">Dépenses</p>
-            <p className="text-[15px] font-[800] tracking-tight mt-1 leading-none text-red-400">{formatEur(totD)} €</p>
+            <p className="text-[11px] text-white/55 uppercase tracking-[0.12em] font-semibold">Dépenses</p>
+            <p className="text-[16px] font-[800] tracking-tight mt-1 leading-none text-red-400">{formatEur(totD)} €</p>
           </div>
           <div className="border-r border-white/[0.05]" />
           <div className="flex-1 px-3 py-2 last:pr-0">
-            <p className="text-[9px] text-white/55 uppercase tracking-[0.12em] font-semibold">Épargne</p>
-            <p className="text-[15px] font-[800] tracking-tight mt-1 leading-none text-orange-400">{formatEur(totEp)} €</p>
+            <p className="text-[11px] text-white/55 uppercase tracking-[0.12em] font-semibold">Épargne</p>
+            <p className="text-[16px] font-[800] tracking-tight mt-1 leading-none text-orange-400">{formatEur(totEp)} €</p>
           </div>
         </div>
       </motion.div>
@@ -243,7 +243,7 @@ function MobileBilan({ parMois }: IBilanContentProps) {
       {/* Bar Chart */}
       {bars.length > 0 ? (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-4">
-          <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold mb-3">Revenus vs Dépenses</p>
+          <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold mb-3">Revenus vs Dépenses</p>
           <ResponsiveContainer width="100%" height={110}>
             <BarChart data={bars} barGap={3} barCategoryGap="30%">
               <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.04)" />
@@ -256,13 +256,13 @@ function MobileBilan({ parMois }: IBilanContentProps) {
           </ResponsiveContainer>
         </motion.div>
       ) : (
-        <div className="text-center py-10 text-white/50 text-[10px]">Aucune donnée pour cette période</div>
+        <div className="text-center py-10 text-white/50 text-[12px]">Aucune donnée pour cette période</div>
       )}
 
       {/* Taux d'épargne par mois — Pulse Flat */}
       {bars.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-          <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold mb-2">
+          <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold mb-2">
             Taux d&apos;épargne par mois
           </p>
           <div className="space-y-0">
@@ -278,13 +278,13 @@ function MobileBilan({ parMois }: IBilanContentProps) {
                   className="border-b border-white/[0.05] py-2.5"
                 >
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[13px] font-[600] text-white capitalize">{b.mois}</span>
-                    <span className="text-[15px] font-[800]" style={{ color }}>{taux}%</span>
+                    <span className="text-[14px] font-[600] text-white capitalize">{b.mois}</span>
+                    <span className="text-[16px] font-[800]" style={{ color }}>{taux}%</span>
                   </div>
                   <BarComp pct={Math.max(0, taux)} color={color} height={2} className="opacity-60" />
                   <div className="flex justify-between mt-1.5">
-                    <span className="text-[10px] text-white/50">{formatEur(b.revenus)} € rev.</span>
-                    <span className="text-[10px]" style={{ color: b.epargne >= 0 ? "#22c55e" : "#ef4444" }}>
+                    <span className="text-[12px] text-white/50">{formatEur(b.revenus)} € rev.</span>
+                    <span className="text-[12px]" style={{ color: b.epargne >= 0 ? "#22c55e" : "#ef4444" }}>
                       {b.epargne >= 0 ? "+" : ""}{formatEur(b.epargne)} €
                     </span>
                   </div>
@@ -296,8 +296,8 @@ function MobileBilan({ parMois }: IBilanContentProps) {
           {/* Taux moyen période */}
           <div className="mt-4 py-2.5 border-t border-white/[0.05]">
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Taux moyen période</p>
-              <span className="text-[15px] font-[800]" style={{ color: savingsColor(tauxMoy) }}>{tauxMoy}%</span>
+              <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Taux moyen période</p>
+              <span className="text-[16px] font-[800]" style={{ color: savingsColor(tauxMoy) }}>{tauxMoy}%</span>
             </div>
             <BarComp pct={Math.max(0, tauxMoy)} color={savingsColor(tauxMoy)} height={2} className="opacity-60" />
           </div>

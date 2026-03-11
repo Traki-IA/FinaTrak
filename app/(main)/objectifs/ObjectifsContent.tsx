@@ -278,16 +278,16 @@ function MobileSortableObjectifRow({
             <div className="w-2 h-2 rounded-full flex-shrink-0 mt-0.5" style={{ background: couleur }} />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <p className="text-[13px] font-[600] leading-none text-white">{objectif.nom}</p>
-                {atteint && <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-emerald-500/15 text-emerald-400">✓ Atteint</span>}
+                <p className="text-[14px] font-[600] leading-none text-white">{objectif.nom}</p>
+                {atteint && <span className="text-[11px] px-1.5 py-0.5 rounded font-bold bg-emerald-500/15 text-emerald-400">✓ Atteint</span>}
               </div>
-              {objectif.date_fin && <span className="text-[10px] text-white/50 mt-0.5 block">→ {formatDate(objectif.date_fin)}</span>}
+              {objectif.date_fin && <span className="text-[12px] text-white/50 mt-0.5 block">→ {formatDate(objectif.date_fin)}</span>}
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0 ml-2">
             <div className="text-right">
-              <p className="text-[15px] font-[800] leading-none" style={{ color: couleur }}>{pct}%</p>
-              <p className="text-[10px] text-white/50 mt-0.5 whitespace-nowrap">
+              <p className="text-[16px] font-[800] leading-none" style={{ color: couleur }}>{pct}%</p>
+              <p className="text-[12px] text-white/50 mt-0.5 whitespace-nowrap">
                 {objectif.montant_actuel.toLocaleString("fr")} / {objectif.montant_cible.toLocaleString("fr")} €
               </p>
             </div>
@@ -312,12 +312,12 @@ function MobileSortableObjectifRow({
             >
               <div className="mt-2.5 px-3 py-2.5 rounded-[10px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
                 <div className="flex justify-between mb-1">
-                  <span className="text-[10px] text-white/50">Restant</span>
-                  <span className="text-[10px] font-[800]" style={{ color: couleur }}>{formatEur(restant)} €</span>
+                  <span className="text-[12px] text-white/50">Restant</span>
+                  <span className="text-[12px] font-[800]" style={{ color: couleur }}>{formatEur(restant)} €</span>
                 </div>
                 <div className="flex justify-between mb-2.5">
-                  <span className="text-[10px] text-white/50">Effort mensuel (6m)</span>
-                  <span className="text-[10px] font-[800] text-white">~{formatEur(effortMensuel)} €</span>
+                  <span className="text-[12px] text-white/50">Effort mensuel (6m)</span>
+                  <span className="text-[12px] font-[800] text-white">~{formatEur(effortMensuel)} €</span>
                 </div>
                 <AnimatePresence mode="wait">
                   {showInput ? (
@@ -329,7 +329,7 @@ function MobileSortableObjectifRow({
                       <button onClick={() => setShowInput(false)} className="px-2 py-1.5 bg-white/[0.05] text-white/50 rounded-xl text-xs">✕</button>
                     </motion.div>
                   ) : (
-                    <motion.button key="btn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setInputValue(objectif.montant_actuel.toString()); setShowInput(true); }} className="w-full py-1.5 rounded-lg text-[10px] text-white/50 bg-white/[0.03] hover:bg-white/[0.07] transition-all">
+                    <motion.button key="btn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setInputValue(objectif.montant_actuel.toString()); setShowInput(true); }} className="w-full py-1.5 rounded-lg text-[12px] text-white/50 bg-white/[0.03] hover:bg-white/[0.07] transition-all">
                       Mettre à jour la progression
                     </motion.button>
                   )}
@@ -485,8 +485,8 @@ function MobileObjectifs({
         <h1 className="text-[22px] font-black tracking-tight">Objectifs</h1>
         {localObjectifs.length > 0 && (
           <div className="text-right">
-            <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Total épargné</p>
-            <p className="text-[15px] font-[800] mt-1 text-emerald-400">{formatEur(totalEpargne)} €</p>
+            <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Total épargné</p>
+            <p className="text-[16px] font-[800] mt-1 text-emerald-400">{formatEur(totalEpargne)} €</p>
           </div>
         )}
       </div>
@@ -495,8 +495,8 @@ function MobileObjectifs({
       {localObjectifs.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }} className="mt-3 pb-3 border-b border-white/[0.05]">
           <div className="flex justify-between items-center mb-1.5">
-            <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Progression globale</p>
-            <span className="text-[10px] font-bold text-emerald-400">{done} / {localObjectifs.length} atteints</span>
+            <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Progression globale</p>
+            <span className="text-[12px] font-bold text-emerald-400">{done} / {localObjectifs.length} atteints</span>
           </div>
           <Bar pct={globalPct} color="#22c55e" height={2} className="opacity-60" />
         </motion.div>
