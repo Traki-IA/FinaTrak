@@ -41,6 +41,13 @@ export default function RootLayout({
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased bg-background`}
       >
         {children}
+
+        {/* Overlay paysage — bloque l'affichage sur téléphones en landscape */}
+        <div className="landscape-lock" aria-hidden="true">
+          <div className="landscape-lock-icon" />
+          <p>Tournez votre appareil en portrait</p>
+        </div>
+
         <Toaster
           position="bottom-right"
           toastOptions={{
