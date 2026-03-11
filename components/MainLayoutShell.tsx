@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { SidebarProvider, useSidebar } from "@/components/SidebarContext";
 import Navbar from "@/components/Navbar";
@@ -29,6 +30,15 @@ function LayoutContent({
 }: IMainLayoutShellProps) {
   const { breakpoint, sidebarWidth } = useSidebar();
 
+  // Snap instantané sur changement de breakpoint (rotation écran)
+  // Animation spring uniquement sur toggle sidebar (action utilisateur)
+  const prevBreakpointRef = useRef(breakpoint);
+  const isBreakpointChange = prevBreakpointRef.current !== breakpoint;
+
+  useEffect(() => {
+    prevBreakpointRef.current = breakpoint;
+  }, [breakpoint]);
+
   return (
     <>
       <Navbar
@@ -43,7 +53,11 @@ function LayoutContent({
       <motion.div
         className={breakpoint === "mobile" ? "pb-20" : ""}
         animate={{ marginLeft: sidebarWidth }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        transition={
+          isBreakpointChange
+            ? { duration: 0 }
+            : { type: "spring", stiffness: 300, damping: 30 }
+        }
       >
         {children}
       </motion.div>
