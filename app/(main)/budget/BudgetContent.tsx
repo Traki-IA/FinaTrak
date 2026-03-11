@@ -33,7 +33,6 @@ import {
   reorderBudgetItems,
 } from "./actions";
 import { formatEur } from "@/lib/format";
-import { useSidebar } from "@/components/SidebarContext";
 import type { TBudgetItemWithRelations, TCategorie, TObjectif } from "@/types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -83,42 +82,56 @@ const SECTION_TABS: { key: TSectionFilter; label: string }[] = [
   { key: "annuel", label: "Annuelles" },
 ];
 
-// ── Sortable Budget Item Row (flat, reference-style) ────────────────────────
+// ── Desktop KPI Card ──────────────────────────────────────────────────────────
 
-function SortableBudgetRow({
+function KpiCardRef({
+  label,
+  value,
+  color,
+  pct,
+}: {
+  label: string;
+  value: string;
+  color: string;
+  pct: number;
+}) {
+  return (
+    <div className="flex-1 bg-[#0d0d1a] border border-white/[0.06] rounded-xl p-3">
+      <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">{label}</p>
+      <p className="text-[18px] font-[900] tracking-tight mt-1 mb-2 leading-none">{value}</p>
+      <Bar pct={pct} color={color} height={3} />
+    </div>
+  );
+}
+
+// ── Desktop Sortable Budget Row ───────────────────────────────────────────────
+
+function DesktopSortableBudgetRow({
   item,
   maxAmount,
-  isDesktop,
+  index,
   confirmingDeleteId,
   onEdit,
   onDeleteRequest,
   onDeleteConfirm,
   onDeleteCancel,
   dragEnabled,
-  index,
 }: {
   item: TBudgetItemWithRelations;
   maxAmount: number;
-  isDesktop: boolean;
+  index: number;
   confirmingDeleteId: string | null;
   onEdit: (item: TBudgetItemWithRelations) => void;
   onDeleteRequest: (id: string) => void;
   onDeleteConfirm: (id: string) => void;
   onDeleteCancel: () => void;
   dragEnabled: boolean;
-  index: number;
 }) {
   const router = useRouter();
   const [toggling, setToggling] = useState(false);
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id, disabled: !dragEnabled });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: item.id, disabled: !dragEnabled });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -131,20 +144,14 @@ function SortableBudgetRow({
     setToggling(true);
     const result = await toggleBudgetItem(item.id, actif);
     setToggling(false);
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
-    }
+    if ("error" in result) { toast.error(result.error); return; }
     router.refresh();
   }
 
   async function handleDeleteConfirm() {
     onDeleteConfirm(item.id);
     const result = await deleteBudgetItem(item.id);
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
-    }
+    if ("error" in result) { toast.error(result.error); return; }
     toast.success("Charge supprimée");
     router.refresh();
   }
@@ -157,9 +164,7 @@ function SortableBudgetRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`border-b border-white/[0.03] ${
-        isDesktop && index % 2 === 0 ? "border-r border-r-white/[0.03]" : ""
-      }`}
+      className={`border-b border-white/[0.03] ${index % 2 === 0 ? "border-r border-r-white/[0.03]" : ""}`}
     >
       <motion.div
         layout
@@ -168,7 +173,7 @@ function SortableBudgetRow({
         exit={{ opacity: 0, x: -16 }}
         transition={{ duration: 0.22, delay: Math.min(index * 0.02, 0.3) }}
         className="group"
-        style={{ padding: isDesktop ? "11px 24px" : "11px 16px", opacity: item.actif ? 1 : 0.45 }}
+        style={{ padding: "11px 24px", opacity: item.actif ? 1 : 0.45 }}
       >
         <div className="flex items-center justify-between" style={{ marginBottom: item.actif ? 7 : 0 }}>
           <div className="flex items-center gap-2.5 min-w-0">
@@ -184,15 +189,11 @@ function SortableBudgetRow({
             <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: couleur }} />
             <div className="min-w-0">
               <p className="text-[12px] font-semibold text-white leading-none truncate mb-0.5">{item.nom}</p>
-              <span
-                className="text-[9px] px-1.5 py-0.5 rounded font-bold"
-                style={{ background: `${couleur}20`, color: couleur }}
-              >
+              <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ background: `${couleur}20`, color: couleur }}>
                 {item.categories?.nom ?? "—"}
               </span>
             </div>
           </div>
-
           <div className="flex items-center gap-3 shrink-0 ml-2">
             <span className="text-[13px] font-extrabold tracking-tight">
               {formatEur(item.montant)}{" "}
@@ -201,14 +202,9 @@ function SortableBudgetRow({
               </span>
             </span>
             <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
-
-            {/* Edit / Delete (hover) */}
             <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
               {!isConfirming && (
-                <button
-                  onClick={() => onEdit(item)}
-                  className="p-1 rounded-lg text-white/30 hover:text-white hover:bg-white/[0.07] transition-colors"
-                >
+                <button onClick={() => onEdit(item)} className="p-1 rounded-lg text-white/30 hover:text-white hover:bg-white/[0.07] transition-colors">
                   <Pencil size={12} />
                 </button>
               )}
@@ -222,8 +218,117 @@ function SortableBudgetRow({
             </div>
           </div>
         </div>
-
         {item.actif && <Bar pct={barPct} color={couleur} height={2} />}
+      </motion.div>
+    </div>
+  );
+}
+
+// ── Mobile Sortable Budget Row (Pulse Flat) ───────────────────────────────────
+
+function MobileSortableBudgetRow({
+  item,
+  maxAmount,
+  index,
+  confirmingDeleteId,
+  onEdit,
+  onDeleteRequest,
+  onDeleteConfirm,
+  onDeleteCancel,
+  dragEnabled,
+}: {
+  item: TBudgetItemWithRelations;
+  maxAmount: number;
+  index: number;
+  confirmingDeleteId: string | null;
+  onEdit: (item: TBudgetItemWithRelations) => void;
+  onDeleteRequest: (id: string) => void;
+  onDeleteConfirm: (id: string) => void;
+  onDeleteCancel: () => void;
+  dragEnabled: boolean;
+}) {
+  const router = useRouter();
+  const [toggling, setToggling] = useState(false);
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: item.id, disabled: !dragEnabled });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.5 : undefined,
+  };
+
+  async function handleToggle(actif: boolean) {
+    setToggling(true);
+    const result = await toggleBudgetItem(item.id, actif);
+    setToggling(false);
+    if ("error" in result) { toast.error(result.error); return; }
+    router.refresh();
+  }
+
+  async function handleDeleteConfirm() {
+    onDeleteConfirm(item.id);
+    const result = await deleteBudgetItem(item.id);
+    if ("error" in result) { toast.error(result.error); return; }
+    toast.success("Charge supprimée");
+    router.refresh();
+  }
+
+  const couleur = item.categories?.couleur ?? "#94a3b8";
+  const isConfirming = confirmingDeleteId === item.id;
+  const barPct = maxAmount > 0 ? Math.round((item.montant / maxAmount) * 100) : 0;
+
+  return (
+    <div ref={setNodeRef} style={style} className="border-b border-white/[0.05]">
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, x: -16 }}
+        transition={{ duration: 0.22, delay: Math.min(index * 0.02, 0.3) }}
+        className="group py-2.5"
+        style={{ opacity: item.actif ? 1 : 0.45 }}
+      >
+        <div className="flex items-center justify-between" style={{ marginBottom: item.actif ? 6 : 0 }}>
+          <div className="flex items-center gap-2.5 min-w-0">
+            {dragEnabled && (
+              <button {...attributes} {...listeners} className="text-white/20 cursor-grab flex-shrink-0 touch-none">
+                <GripVertical size={13} />
+              </button>
+            )}
+            <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: couleur }} />
+            <div className="min-w-0">
+              <p className="text-[13px] font-[600] text-white leading-none truncate">{item.nom}</p>
+              <span className="text-[10px] text-white/50 mt-0.5 block">{item.categories?.nom ?? "—"}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 ml-2">
+            <span className="text-[15px] font-[800] tracking-tight">
+              {formatEur(item.montant)}{" "}
+              <span className="text-[10px] text-white/50 font-normal">
+                €/{item.frequence === "mensuel" ? "m" : "an"}
+              </span>
+            </span>
+            <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
+            <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              {!isConfirming && (
+                <button onClick={() => onEdit(item)} className="p-1 text-white/30 hover:text-white">
+                  <Pencil size={12} />
+                </button>
+              )}
+              <ConfirmDeleteButton
+                isConfirming={isConfirming}
+                onDeleteRequest={() => onDeleteRequest(item.id)}
+                onDeleteConfirm={handleDeleteConfirm}
+                onDeleteCancel={onDeleteCancel}
+                size={12}
+              />
+            </div>
+          </div>
+        </div>
+        {item.actif && <Bar pct={barPct} color={couleur} height={2} className="opacity-60" />}
       </motion.div>
     </div>
   );
@@ -255,6 +360,218 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
   );
 }
 
+// ── Shared props ──────────────────────────────────────────────────────────────
+
+interface ISharedBudgetProps {
+  localItems: TBudgetItemWithRelations[];
+  sectionItems: TBudgetItemWithRelations[];
+  section: TSectionFilter;
+  setSection: (s: TSectionFilter) => void;
+  totalMensuel: number;
+  totalAnnuel: number;
+  inactifCount: number;
+  maxAmount: number;
+  confirmingDeleteId: string | null;
+  onEdit: (item: TBudgetItemWithRelations) => void;
+  onDeleteRequest: (id: string) => void;
+  onDeleteConfirm: (id: string) => void;
+  onDeleteCancel: () => void;
+  onDragEnd: (event: DragEndEvent) => void;
+  onAdd: () => void;
+}
+
+// ── Desktop Budget ────────────────────────────────────────────────────────────
+
+function DesktopBudget({
+  localItems,
+  sectionItems,
+  section,
+  setSection,
+  totalMensuel,
+  totalAnnuel,
+  inactifCount,
+  maxAmount,
+  confirmingDeleteId,
+  onEdit,
+  onDeleteRequest,
+  onDeleteConfirm,
+  onDeleteCancel,
+  onDragEnd,
+  onAdd,
+}: ISharedBudgetProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor)
+  );
+
+  return (
+    <Shell>
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex items-center justify-between mb-0"
+      >
+        <div>
+          <h1 className="text-[22px] font-black tracking-tight">Budget</h1>
+          <p className="text-[10px] text-white/28 mt-0.5">Charges récurrentes</p>
+        </div>
+      </motion.div>
+
+      {localItems.length === 0 ? (
+        <EmptyState onAdd={onAdd} />
+      ) : (
+        <>
+          <div className="h-px bg-white/[0.06] mt-3 mb-0" />
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.05, duration: 0.3 }}
+            className="py-3 px-1"
+          >
+            <div className="flex gap-3">
+              <KpiCardRef label="Charges / mois" value={`${formatEur(totalMensuel)} €`} color="#f97316" pct={Math.min(100, Math.round(totalMensuel / 2000 * 100))} />
+              <KpiCardRef label="Projection annuelle" value={`${formatEur(totalAnnuel)} €`} color="#6366f1" pct={Math.min(100, Math.round(totalAnnuel / 20000 * 100))} />
+              <KpiCardRef label="Charges inactives" value={`${inactifCount} postes`} color="#94a3b8" pct={localItems.length > 0 ? Math.round(inactifCount / localItems.length * 100) : 0} />
+            </div>
+          </motion.div>
+
+          <div className="h-px bg-white/[0.06] mb-0" />
+          <TabBar tabs={SECTION_TABS} active={section} onChange={setSection} />
+
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+            <SortableContext items={sectionItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+              <div className="grid grid-cols-2" style={{ alignContent: "start" }}>
+                <AnimatePresence mode="popLayout">
+                  {sectionItems.length === 0 ? (
+                    <motion.p key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center text-white/30 text-[11px] py-12 col-span-2">
+                      Aucune charge {section === "mensuel" ? "mensuelle" : "annuelle"}
+                    </motion.p>
+                  ) : (
+                    sectionItems.map((item, i) => (
+                      <DesktopSortableBudgetRow
+                        key={item.id}
+                        item={item}
+                        maxAmount={maxAmount}
+                        index={i}
+                        confirmingDeleteId={confirmingDeleteId}
+                        onEdit={onEdit}
+                        onDeleteRequest={onDeleteRequest}
+                        onDeleteConfirm={onDeleteConfirm}
+                        onDeleteCancel={onDeleteCancel}
+                        dragEnabled={true}
+                      />
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
+            </SortableContext>
+          </DndContext>
+        </>
+      )}
+    </Shell>
+  );
+}
+
+// ── Mobile Budget (Pulse Flat) ────────────────────────────────────────────────
+
+function MobileBudget({
+  localItems,
+  sectionItems,
+  section,
+  setSection,
+  totalMensuel,
+  totalAnnuel,
+  maxAmount,
+  confirmingDeleteId,
+  onEdit,
+  onDeleteRequest,
+  onDeleteConfirm,
+  onDeleteCancel,
+  onDragEnd,
+  onAdd,
+}: ISharedBudgetProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor)
+  );
+
+  return (
+    <Shell>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-0">
+        <div>
+          <h1 className="text-[22px] font-black tracking-tight">Budget</h1>
+          <p className="text-[10px] text-white/50 mt-0.5">Charges récurrentes</p>
+        </div>
+      </div>
+
+      {localItems.length === 0 ? (
+        <EmptyState onAdd={onAdd} />
+      ) : (
+        <>
+          {/* KPIs — 2 colonnes Pulse Flat */}
+          <div className="border-b border-white/[0.05] mt-3 mb-0" />
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.05, duration: 0.3 }}
+            className="py-3"
+          >
+            <div className="flex">
+              <div className="flex-1 pr-[18px]">
+                <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Charges / mois</p>
+                <p className="text-[17px] font-[900] tracking-tight mt-1 mb-1.5 leading-none text-orange-500">
+                  {formatEur(totalMensuel)} €
+                </p>
+                <Bar pct={Math.min(100, Math.round(totalMensuel / 2000 * 100))} color="#f97316" height={2} className="opacity-60" />
+              </div>
+              <div className="border-r border-white/[0.05]" />
+              <div className="flex-1 pl-[18px]">
+                <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Projection ann.</p>
+                <p className="text-[17px] font-[900] tracking-tight mt-1 mb-1.5 leading-none text-indigo-400">
+                  {formatEur(totalAnnuel)} €
+                </p>
+                <Bar pct={Math.min(100, Math.round(totalAnnuel / 20000 * 100))} color="#6366f1" height={2} className="opacity-60" />
+              </div>
+            </div>
+          </motion.div>
+
+          <div className="border-b border-white/[0.05] mb-0" />
+          <TabBar tabs={SECTION_TABS} active={section} onChange={setSection} />
+
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+            <SortableContext items={sectionItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+              <AnimatePresence mode="popLayout">
+                {sectionItems.length === 0 ? (
+                  <motion.p key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center text-white/50 text-[10px] py-12">
+                    Aucune charge {section === "mensuel" ? "mensuelle" : "annuelle"}
+                  </motion.p>
+                ) : (
+                  sectionItems.map((item, i) => (
+                    <MobileSortableBudgetRow
+                      key={item.id}
+                      item={item}
+                      maxAmount={maxAmount}
+                      index={i}
+                      confirmingDeleteId={confirmingDeleteId}
+                      onEdit={onEdit}
+                      onDeleteRequest={onDeleteRequest}
+                      onDeleteConfirm={onDeleteConfirm}
+                      onDeleteCancel={onDeleteCancel}
+                      dragEnabled={true}
+                    />
+                  ))
+                )}
+              </AnimatePresence>
+            </SortableContext>
+          </DndContext>
+        </>
+      )}
+    </Shell>
+  );
+}
+
 // ── Composant principal ───────────────────────────────────────────────────────
 
 interface IBudgetContentProps {
@@ -271,8 +588,6 @@ export default function BudgetContent({
   compteId,
 }: IBudgetContentProps) {
   const router = useRouter();
-  const { breakpoint } = useSidebar();
-  const isDesktop = breakpoint === "desktop";
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<TBudgetItemWithRelations | undefined>(undefined);
@@ -280,25 +595,16 @@ export default function BudgetContent({
   const [localItems, setLocalItems] = useState(initialItems);
   const [section, setSection] = useState<TSectionFilter>("mensuel");
 
-  // Sync when server data changes
   const serverKey = initialItems.map((i) => `${i.id}-${i.sort_order}-${i.actif}-${i.montant}`).join("|");
   useMemo(() => {
     setLocalItems(initialItems);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverKey]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor)
-  );
-
-  // Totals (across all items)
   const actifs = localItems.filter((i) => i.actif);
   const totalMensuel = actifs.reduce((sum, i) => sum + mensualise(i.montant, i.frequence), 0);
   const totalAnnuel = actifs.reduce((sum, i) => sum + annualise(i.montant, i.frequence), 0);
   const inactifCount = localItems.filter((i) => !i.actif).length;
-
-  // Items for current section tab
   const sectionItems = localItems.filter((i) => i.frequence === section);
   const maxAmount = Math.max(...sectionItems.map((i) => i.montant), 1);
 
@@ -338,113 +644,37 @@ export default function BudgetContent({
     });
   }
 
+  const sharedProps: ISharedBudgetProps = {
+    localItems,
+    sectionItems,
+    section,
+    setSection,
+    totalMensuel,
+    totalAnnuel,
+    inactifCount,
+    maxAmount,
+    confirmingDeleteId,
+    onEdit: openEditModal,
+    onDeleteRequest: setConfirmingDeleteId,
+    onDeleteConfirm: handleDeleteConfirm,
+    onDeleteCancel: () => setConfirmingDeleteId(null),
+    onDragEnd: handleDragEnd,
+    onAdd: openAddModal,
+  };
+
   return (
-    <Shell>
-      {/* ── Header ── */}
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="flex items-center justify-between mb-0"
-      >
-        <div>
-          <h1 className="text-[22px] font-black tracking-tight">Budget</h1>
-          <p className="text-[10px] text-white/28 mt-0.5">Charges récurrentes</p>
-        </div>
-      </motion.div>
+    <>
+      <div className="md:hidden">
+        <MobileBudget {...sharedProps} />
+      </div>
+      <div className="hidden md:block">
+        <DesktopBudget {...sharedProps} />
+      </div>
 
-      {localItems.length === 0 ? (
-        <EmptyState onAdd={openAddModal} />
-      ) : (
-        <>
-          {/* ── KPIs ── */}
-          <div className="h-px bg-white/[0.06] mt-3 mb-0" />
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.05, duration: 0.3 }}
-            className="py-3 px-1"
-          >
-            {isDesktop ? (
-              <div className="flex gap-3">
-                <KpiCardRef label="Charges / mois" value={`${formatEur(totalMensuel)} €`} color="#f97316" pct={Math.min(100, Math.round(totalMensuel / 2000 * 100))} />
-                <KpiCardRef label="Projection annuelle" value={`${formatEur(totalAnnuel)} €`} color="#6366f1" pct={Math.min(100, Math.round(totalAnnuel / 20000 * 100))} />
-                <KpiCardRef label="Charges inactives" value={`${inactifCount} postes`} color="#94a3b8" pct={localItems.length > 0 ? Math.round(inactifCount / localItems.length * 100) : 0} />
-              </div>
-            ) : (
-              <div className="flex">
-                <div className="flex-1 pr-[18px]">
-                  <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Charges / mois</p>
-                  <p className="text-[22px] font-[900] tracking-tight mt-1 mb-1 leading-none text-orange-500">{formatEur(totalMensuel)} €</p>
-                  <Bar pct={Math.min(100, Math.round(totalMensuel / 2000 * 100))} color="#f97316" />
-                </div>
-                <div className="flex-1 pl-[18px] border-l border-white/[0.06]">
-                  <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Projection ann.</p>
-                  <p className="text-[22px] font-[900] tracking-tight mt-1 mb-1 leading-none text-indigo-400">{formatEur(totalAnnuel)} €</p>
-                  <Bar pct={Math.min(100, Math.round(totalAnnuel / 20000 * 100))} color="#6366f1" />
-                </div>
-              </div>
-            )}
-          </motion.div>
-
-          <div className="h-px bg-white/[0.06] mb-0" />
-
-          {/* ── Section toggle ── */}
-          <TabBar tabs={SECTION_TABS} active={section} onChange={setSection} />
-
-          {/* ── Item list ── */}
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={sectionItems.map((i) => i.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div
-                className={isDesktop ? "grid grid-cols-2" : ""}
-                style={isDesktop ? { alignContent: "start" } : undefined}
-              >
-                <AnimatePresence mode="popLayout">
-                  {sectionItems.length === 0 ? (
-                    <motion.p
-                      key="empty"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="text-center text-white/30 text-[11px] py-12 col-span-2"
-                    >
-                      Aucune charge {section === "mensuel" ? "mensuelle" : "annuelle"}
-                    </motion.p>
-                  ) : (
-                    sectionItems.map((item, i) => (
-                      <SortableBudgetRow
-                        key={item.id}
-                        item={item}
-                        maxAmount={maxAmount}
-                        isDesktop={isDesktop}
-                        confirmingDeleteId={confirmingDeleteId}
-                        onEdit={openEditModal}
-                        onDeleteRequest={setConfirmingDeleteId}
-                        onDeleteConfirm={handleDeleteConfirm}
-                        onDeleteCancel={() => setConfirmingDeleteId(null)}
-                        dragEnabled={true}
-                        index={i}
-                      />
-                    ))
-                  )}
-                </AnimatePresence>
-              </div>
-            </SortableContext>
-          </DndContext>
-        </>
-      )}
-
-      {/* FAB */}
+      {/* FAB — rendered once */}
       <Fab label="Charge" onClick={openAddModal} />
 
-      {/* Modal */}
+      {/* Modal — rendered once */}
       <BudgetModal
         key={editingItem?.id ?? "new"}
         open={modalOpen}
@@ -454,28 +684,6 @@ export default function BudgetContent({
         budgetItem={editingItem}
         compteId={compteId}
       />
-    </Shell>
-  );
-}
-
-// ── Desktop KPI Card (reference style) ────────────────────────────────────────
-
-function KpiCardRef({
-  label,
-  value,
-  color,
-  pct,
-}: {
-  label: string;
-  value: string;
-  color: string;
-  pct: number;
-}) {
-  return (
-    <div className="flex-1 bg-[#0d0d1a] border border-white/[0.06] rounded-xl p-3">
-      <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">{label}</p>
-      <p className="text-[18px] font-[900] tracking-tight mt-1 mb-2 leading-none">{value}</p>
-      <Bar pct={pct} color={color} height={3} />
-    </div>
+    </>
   );
 }
