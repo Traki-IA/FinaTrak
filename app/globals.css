@@ -17,3 +17,49 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+
+/* ── Landscape lock overlay (phones only) ──────────────────────────── */
+/* max-height: 550px = phones in landscape (portrait width ≈ 375-430)  */
+/* iPads/desktops have landscape height > 550px → not affected          */
+
+.landscape-lock {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0a0a0f;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+@media (orientation: landscape) and (max-height: 550px) {
+  .landscape-lock {
+    display: flex;
+  }
+}
+
+.landscape-lock-icon {
+  width: 56px;
+  height: 56px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: rotate-hint 2s ease-in-out infinite;
+}
+
+@keyframes rotate-hint {
+  0%, 100% { transform: rotate(90deg); }
+  40%, 60% { transform: rotate(0deg); }
+}
+
+.landscape-lock p {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
