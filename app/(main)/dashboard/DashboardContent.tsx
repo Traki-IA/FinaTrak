@@ -237,10 +237,7 @@ function MobileDashboard({
               Fina<span className="text-orange-500">Trak</span>
             </span>
           </div>
-          <div className="flex flex-col items-center gap-0.5">
-            <HealthRing score={Math.min(98, Math.max(20, Math.abs(tauxEpargne)))} size={40} />
-            <span className="text-[8px] font-bold text-white/30 uppercase tracking-widest">SANTÉ</span>
-          </div>
+          <HealthRing score={Math.min(98, Math.max(20, Math.abs(tauxEpargne)))} size={40} />
         </div>
       </div>
 
