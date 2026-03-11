@@ -86,20 +86,18 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
   const couleur = tx.categories?.couleur ?? "#94a3b8";
 
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-white/[0.05] last:border-0">
-      <div className="flex items-center gap-2.5 min-w-0">
-        <div className="w-2 h-2 rounded-full shrink-0" style={{ background: couleur }} />
-        <div className="min-w-0">
-          <p className="text-[13px] font-[600] text-white leading-none truncate">
-            {tx.description ?? "—"}
-          </p>
-          <span className="text-[11px] text-white/50 mt-0.5 block">
-            {tx.categories?.nom ?? "—"}
-          </span>
-        </div>
+    <div className="flex items-center justify-between py-1.5 border-b border-white/[0.05] last:border-0">
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: couleur }} />
+        <p className="text-[13px] font-[600] text-white leading-none truncate min-w-0">
+          {tx.description ?? "—"}
+        </p>
+        <span className="text-[11px] text-white/30 shrink-0">
+          {tx.categories?.nom ?? "—"}
+        </span>
       </div>
       <span
-        className={`text-[13px] font-[800] tabular-nums tracking-tight shrink-0 ml-2 ${
+        className={`text-[13px] font-[800] tabular-nums tracking-tight shrink-0 ml-3 ${
           tx.type === "revenu" ? "text-emerald-400" : "text-red-400"
         }`}
       >
@@ -228,7 +226,7 @@ function MobileDashboard({
     <>
       {/* Sticky header — mobile uniquement (tablet+ = sidebar) */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-[#080810] border-b border-white/[0.05] pt-[calc(0px+env(safe-area-inset-top))] md:hidden">
-        <div className="h-14 flex items-center justify-between pl-[calc(1.25rem+env(safe-area-inset-left))] pr-[calc(1.25rem+env(safe-area-inset-right))]">
+        <div className="h-14 flex items-center pl-[calc(1.25rem+env(safe-area-inset-left))] pr-[calc(1.25rem+env(safe-area-inset-right))]">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-[9px] bg-orange-500 flex items-center justify-center font-black text-[15px] text-white">
               F
@@ -237,7 +235,6 @@ function MobileDashboard({
               Fina<span className="text-orange-500">Trak</span>
             </span>
           </div>
-          <HealthRing score={Math.min(98, Math.max(20, Math.abs(tauxEpargne)))} size={40} />
         </div>
       </div>
 
@@ -261,8 +258,8 @@ function MobileDashboard({
           <span className="text-[10px] text-white/20">·</span>
           <span className="text-[12px] text-white/50">Init. {fmt(stats.soldeInitial)} €</span>
         </div>
-        <div className="mt-3">
-          <Sparkline data={sparkData} height={48} />
+        <div className="mt-4 -mx-1">
+          <Sparkline data={sparkData} height={72} />
         </div>
       </div>
 
@@ -271,19 +268,19 @@ function MobileDashboard({
       {/* Tabbed KPIs */}
       <TabBar tabs={MOBILE_TABS} active={tab} onChange={setTab} />
 
-      <div className="py-3">
+      <div className="py-4">
         {tab === "flux" && (
           <div className="flex">
             <div className="flex-1 pr-4 flex flex-col items-center">
               <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Revenus</p>
-              <p className="text-[24px] font-[800] mt-1.5 mb-2 tracking-tight text-emerald-400">{fmt(stats.revenus)} €</p>
-              <Bar pct={Math.min(100, Math.round((stats.revenus / 4000) * 100))} color="#10b981" height={2} className="opacity-60 w-full" />
+              <p className="text-[28px] font-[900] mt-2 mb-2.5 tracking-tight text-emerald-400">{fmt(stats.revenus)} €</p>
+              <Bar pct={Math.min(100, Math.round((stats.revenus / 4000) * 100))} color="#10b981" height={3} className="opacity-60 w-full" />
             </div>
             <div className="border-r border-white/[0.05]" />
             <div className="flex-1 pl-4 flex flex-col items-center">
               <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Dépenses</p>
-              <p className="text-[24px] font-[800] mt-1.5 mb-2 tracking-tight text-red-400">{fmt(stats.depenses)} €</p>
-              <Bar pct={Math.min(100, Math.round((stats.depenses / 2000) * 100))} color="#ef4444" height={2} className="opacity-60 w-full" />
+              <p className="text-[28px] font-[900] mt-2 mb-2.5 tracking-tight text-red-400">{fmt(stats.depenses)} €</p>
+              <Bar pct={Math.min(100, Math.round((stats.depenses / 2000) * 100))} color="#ef4444" height={3} className="opacity-60 w-full" />
             </div>
           </div>
         )}
@@ -292,14 +289,14 @@ function MobileDashboard({
           <div className="flex">
             <div className="flex-1 pr-4 flex flex-col items-center">
               <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Épargne</p>
-              <p className="text-[24px] font-[800] mt-1.5 mb-2 tracking-tight text-emerald-400">{fmt(epargne)} €</p>
-              <Bar pct={Math.min(100, Math.round(Math.abs(epargne) / 2500 * 100))} color="#6366f1" height={2} className="opacity-60 w-full" />
+              <p className="text-[28px] font-[900] mt-2 mb-2.5 tracking-tight text-emerald-400">{fmt(epargne)} €</p>
+              <Bar pct={Math.min(100, Math.round(Math.abs(epargne) / 2500 * 100))} color="#6366f1" height={3} className="opacity-60 w-full" />
             </div>
             <div className="border-r border-white/[0.05]" />
             <div className="flex-1 pl-4 flex flex-col items-center">
               <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Taux</p>
-              <p className="text-[24px] font-[800] mt-1.5 mb-2 tracking-tight">{tauxEpargne}%</p>
-              <Bar pct={Math.min(100, Math.abs(tauxEpargne))} color="#14b8a6" height={2} className="opacity-60 w-full" />
+              <p className="text-[28px] font-[900] mt-2 mb-2.5 tracking-tight">{tauxEpargne}%</p>
+              <Bar pct={Math.min(100, Math.abs(tauxEpargne))} color="#14b8a6" height={3} className="opacity-60 w-full" />
             </div>
           </div>
         )}
