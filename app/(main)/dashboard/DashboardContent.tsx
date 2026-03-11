@@ -226,9 +226,9 @@ function MobileDashboard({
 
   return (
     <>
-      {/* Sticky header — fixed, hors flux scrollable */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-[#080810] border-b border-white/[0.05] pt-[calc(0px+env(safe-area-inset-top))]">
-        <div className="h-14 flex items-center justify-between px-5">
+      {/* Sticky header — mobile uniquement (tablet+ = sidebar) */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-[#080810] border-b border-white/[0.05] pt-[calc(0px+env(safe-area-inset-top))] md:hidden">
+        <div className="h-14 flex items-center justify-between pl-[calc(1.25rem+env(safe-area-inset-left))] pr-[calc(1.25rem+env(safe-area-inset-right))]">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-[9px] bg-orange-500 flex items-center justify-center font-black text-[15px] text-white">
               F
@@ -242,8 +242,8 @@ function MobileDashboard({
       </div>
 
       <Shell>
-        {/* Spacer = header_height - Shell_pt = (56px+SAT) - (16px+SAT) = 40px */}
-        <div className="h-10" />
+        {/* Spacer pour le header sticky (mobile uniquement) */}
+        <div className="h-10 md:h-0" />
 
         {/* Hero Solde */}
       <div className="mb-2">
@@ -538,10 +538,10 @@ function DesktopDashboard({
 export default function DashboardContent(props: IDashboardContentProps) {
   return (
     <>
-      <div className="md:hidden">
+      <div className="lg:hidden">
         <MobileDashboard {...props} />
       </div>
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <DesktopDashboard {...props} />
       </div>
     </>

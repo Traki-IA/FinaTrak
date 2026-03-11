@@ -5,7 +5,7 @@ type ICardProps = HTMLAttributes<HTMLDivElement>;
 export function Card({ className = "", children, ...props }: ICardProps) {
   return (
     <div
-      className={`bg-white/[0.04] border border-white/[0.07] rounded-xl ${className}`}
+      className={`bg-white/[0.04] border border-white/[0.07] rounded-xl overflow-hidden ${className}`}
       {...props}
     >
       {children}
