@@ -11,7 +11,6 @@ import Sparkline from "@/components/charts/Sparkline";
 import MiniDonut from "@/components/charts/MiniDonut";
 import HealthRing from "@/components/charts/HealthRing";
 import PeriodSelector from "./PeriodSelector";
-import { useSidebar } from "@/components/SidebarContext";
 import type {
   TDashboardStats,
   TTransactionWithCategorie,
@@ -55,6 +54,59 @@ const PERIOD_LABELS: Record<TPeriod, string> = {
 
 function fmt(n: number): string {
   return n.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function groupByDate(transactions: TTransactionWithCategorie[]): { label: string; items: TTransactionWithCategorie[] }[] {
+  const now = new Date();
+  const today = now.toDateString();
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).toDateString();
+  const weekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).getTime();
+
+  const groups: Record<string, TTransactionWithCategorie[]> = {};
+  const order = ["Aujourd\u2019hui", "Hier", "Cette semaine", "Plus ancien"];
+
+  for (const tx of transactions) {
+    const d = new Date(tx.date);
+    let label: string;
+    if (d.toDateString() === today) label = "Aujourd\u2019hui";
+    else if (d.toDateString() === yesterday) label = "Hier";
+    else if (d.getTime() >= weekAgo) label = "Cette semaine";
+    else label = "Plus ancien";
+
+    if (!groups[label]) groups[label] = [];
+    groups[label].push(tx);
+  }
+
+  return order.filter((l) => groups[l]?.length).map((l) => ({ label: l, items: groups[l] }));
+}
+
+// ── Mobile Transaction Row (Pulse Flat) ─────────────────────────────────────
+
+function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
+  const couleur = tx.categories?.couleur ?? "#94a3b8";
+
+  return (
+    <div className="flex items-center justify-between py-2.5 border-b border-white/[0.05] last:border-0">
+      <div className="flex items-center gap-2.5 min-w-0">
+        <div className="w-2 h-2 rounded-full shrink-0" style={{ background: couleur }} />
+        <div className="min-w-0">
+          <p className="text-[13px] font-[600] text-white leading-none truncate">
+            {tx.description ?? "\u2014"}
+          </p>
+          <span className="text-[10px] text-white/50 mt-0.5 block">
+            {tx.categories?.nom ?? "\u2014"}
+          </span>
+        </div>
+      </div>
+      <span
+        className={`text-[15px] font-[800] tabular-nums tracking-tight shrink-0 ml-2 ${
+          tx.type === "revenu" ? "text-emerald-400" : "text-red-400"
+        }`}
+      >
+        {tx.type === "revenu" ? "+" : "\u2212"}{fmt(tx.montant)} \u20ac
+      </span>
+    </div>
+  );
 }
 
 // ── KPI Card ─────────────────────────────────────────────────────────────────
@@ -154,31 +206,34 @@ function MobileDashboard({
     : 0;
   const epargne = stats.revenus - stats.depenses;
 
-  // Donut data
   const totalDep = categories.reduce((s, c) => s + c.valeur, 0) || 1;
   const donut = categories
     .filter((c) => c.valeur > 0)
     .map((c) => ({ pct: Math.round((c.valeur / totalDep) * 100), color: c.couleur }));
 
   const sparkData = history.length > 0 ? history.map((h) => h.solde) : [0, 0];
+  const grouped = groupByDate(transactions);
 
   return (
     <Shell>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-[9px] text-white/28 px-2 py-1 rounded-lg border border-white/[0.06]">
-          {PERIOD_LABELS[period]}
-        </span>
-        <HealthRing score={Math.min(98, Math.max(20, Math.abs(tauxEpargne)))} size={48} />
+      {/* Logo header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center">
+            <span className="text-[11px] font-black text-white">F</span>
+          </div>
+          <span className="text-[13px] font-[700] text-white tracking-tight">FinaTrak</span>
+        </div>
+        <HealthRing score={Math.min(98, Math.max(20, Math.abs(tauxEpargne)))} size={36} />
       </div>
 
       {/* Hero Solde */}
-      <div className="mb-1">
-        <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">
+      <div className="mb-2">
+        <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">
           Solde disponible
         </p>
         <div className="flex items-baseline gap-1.5 mt-1.5">
-          <span className="text-[36px] font-black tracking-tight leading-none">
+          <span className="text-[42px] font-[900] tracking-tight leading-none">
             {fmt(stats.soldeTotal)}
           </span>
           <span className="text-[18px] text-white/28 font-light">€</span>
@@ -186,31 +241,31 @@ function MobileDashboard({
         <div className="flex items-center gap-1.5 mt-1.5">
           <span className="text-[10px] text-emerald-400 font-bold">↑ +{Math.abs(tauxEpargne)}%</span>
           <span className="text-[9px] text-white/20">·</span>
-          <span className="text-[9px] text-white/28">Init. {fmt(stats.soldeInitial)} €</span>
+          <span className="text-[10px] text-white/50">Init. {fmt(stats.soldeInitial)} €</span>
         </div>
         <div className="mt-3">
-          <Sparkline data={sparkData} height={36} />
+          <Sparkline data={sparkData} height={48} />
         </div>
       </div>
 
-      <div className="h-px bg-white/[0.06]" />
+      <div className="border-b border-white/[0.05]" />
 
       {/* Tabbed KPIs */}
       <TabBar tabs={MOBILE_TABS} active={tab} onChange={setTab} />
 
-      <div className="py-3 px-1">
+      <div className="py-3">
         {tab === "flux" && (
           <div className="flex">
             <div className="flex-1 pr-4">
-              <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Revenus</p>
-              <p className="text-[21px] font-black mt-1.5 mb-2 tracking-tight">{fmt(stats.revenus)}€</p>
-              <Bar pct={Math.min(100, Math.round((stats.revenus / 4000) * 100))} color="#10b981" />
+              <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Revenus</p>
+              <p className="text-[15px] font-[800] mt-1.5 mb-2 tracking-tight text-emerald-400">{fmt(stats.revenus)} €</p>
+              <Bar pct={Math.min(100, Math.round((stats.revenus / 4000) * 100))} color="#10b981" height={2} className="opacity-60" />
             </div>
-            <div className="w-px bg-white/[0.06]" />
+            <div className="border-r border-white/[0.05]" />
             <div className="flex-1 pl-4">
-              <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Dépenses</p>
-              <p className="text-[21px] font-black mt-1.5 mb-2 tracking-tight">{fmt(stats.depenses)}€</p>
-              <Bar pct={Math.min(100, Math.round((stats.depenses / 2000) * 100))} color="#ef4444" />
+              <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Dépenses</p>
+              <p className="text-[15px] font-[800] mt-1.5 mb-2 tracking-tight text-red-400">{fmt(stats.depenses)} €</p>
+              <Bar pct={Math.min(100, Math.round((stats.depenses / 2000) * 100))} color="#ef4444" height={2} className="opacity-60" />
             </div>
           </div>
         )}
@@ -218,15 +273,15 @@ function MobileDashboard({
         {tab === "bilan" && (
           <div className="flex">
             <div className="flex-1 pr-4">
-              <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Épargne</p>
-              <p className="text-[21px] font-black mt-1.5 mb-2 tracking-tight">{fmt(epargne)}€</p>
-              <Bar pct={Math.min(100, Math.round(Math.abs(epargne) / 2500 * 100))} color="#6366f1" />
+              <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Épargne</p>
+              <p className="text-[15px] font-[800] mt-1.5 mb-2 tracking-tight text-emerald-400">{fmt(epargne)} €</p>
+              <Bar pct={Math.min(100, Math.round(Math.abs(epargne) / 2500 * 100))} color="#6366f1" height={2} className="opacity-60" />
             </div>
-            <div className="w-px bg-white/[0.06]" />
+            <div className="border-r border-white/[0.05]" />
             <div className="flex-1 pl-4">
-              <p className="text-[9px] text-white/28 uppercase tracking-[0.14em] font-semibold">Taux</p>
-              <p className="text-[21px] font-black mt-1.5 mb-2 tracking-tight">{tauxEpargne}%</p>
-              <Bar pct={Math.min(100, Math.abs(tauxEpargne))} color="#14b8a6" />
+              <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Taux</p>
+              <p className="text-[15px] font-[800] mt-1.5 mb-2 tracking-tight">{tauxEpargne}%</p>
+              <Bar pct={Math.min(100, Math.abs(tauxEpargne))} color="#14b8a6" height={2} className="opacity-60" />
             </div>
           </div>
         )}
@@ -239,7 +294,7 @@ function MobileDashboard({
             <div className="flex-1 flex flex-col gap-1.5">
               {categories.slice(0, 4).map((c) => (
                 <div key={c.nom} className="flex items-center gap-1.5">
-                  <div className="w-[3px] h-2.5 rounded-sm shrink-0" style={{ background: c.couleur }} />
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: c.couleur }} />
                   <span className="text-[10px] text-white/50 flex-1">{c.nom}</span>
                   <span className="text-[10px] font-bold">
                     {Math.round((c.valeur / (totalDep || 1)) * 100)}%
@@ -251,30 +306,35 @@ function MobileDashboard({
         )}
 
         {tab === "categ" && donut.length === 0 && (
-          <p className="text-[11px] text-white/30 text-center py-3">Aucune donnée</p>
+          <p className="text-[10px] text-white/50 text-center py-3">Aucune donnée</p>
         )}
       </div>
 
-      <div className="h-px bg-white/[0.06]" />
+      <div className="border-b border-white/[0.05]" />
 
-      {/* Transactions */}
-      <div className="flex-1 flex flex-col mt-1">
-        <div className="flex justify-between items-center px-1 mb-1">
-          <p className="text-[9px] text-white/40 uppercase tracking-[0.14em] font-semibold">
+      {/* Transactions grouped by date */}
+      <div className="mt-2">
+        <div className="flex justify-between items-center mb-2">
+          <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">
             Transactions récentes
           </p>
           <a href="/transactions" className="text-[10px] text-orange-500 font-semibold">
             Voir tout →
           </a>
         </div>
-        <ul>
-          {transactions.slice(0, 5).map((tx) => (
-            <TxRow key={tx.id} tx={tx} />
-          ))}
-          {transactions.length === 0 && (
-            <p className="text-[11px] text-white/30 py-4 text-center">Aucune transaction</p>
-          )}
-        </ul>
+
+        {grouped.length === 0 ? (
+          <p className="text-[10px] text-white/50 py-4 text-center">Aucune transaction</p>
+        ) : (
+          grouped.map((group) => (
+            <div key={group.label}>
+              <p className="text-[10px] text-white/50 uppercase tracking-wider mt-2 mb-1">{group.label}</p>
+              {group.items.slice(0, 5).map((tx) => (
+                <MobileTxRow key={tx.id} tx={tx} />
+              ))}
+            </div>
+          ))
+        )}
       </div>
     </Shell>
   );
@@ -457,11 +517,14 @@ function DesktopDashboard({
 // ── Composant principal ──────────────────────────────────────────────────────
 
 export default function DashboardContent(props: IDashboardContentProps) {
-  const { breakpoint } = useSidebar();
-
-  if (breakpoint === "mobile") {
-    return <MobileDashboard {...props} />;
-  }
-
-  return <DesktopDashboard {...props} />;
+  return (
+    <>
+      <div className="md:hidden">
+        <MobileDashboard {...props} />
+      </div>
+      <div className="hidden md:block">
+        <DesktopDashboard {...props} />
+      </div>
+    </>
+  );
 }
