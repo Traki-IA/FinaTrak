@@ -34,12 +34,12 @@ function groupByDate(transactions: TTransactionWithCategorie[]): { label: string
   const weekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).getTime();
 
   const groups: Record<string, TTransactionWithCategorie[]> = {};
-  const order = ["Aujourd\u2019hui", "Hier", "Cette semaine", "Plus ancien"];
+  const order = ["Aujourd'hui", "Hier", "Cette semaine", "Plus ancien"];
 
   for (const tx of transactions) {
     const d = new Date(tx.date);
     let label: string;
-    if (d.toDateString() === today) label = "Aujourd\u2019hui";
+    if (d.toDateString() === today) label = "Aujourd'hui";
     else if (d.toDateString() === yesterday) label = "Hier";
     else if (d.getTime() >= weekAgo) label = "Cette semaine";
     else label = "Plus ancien";

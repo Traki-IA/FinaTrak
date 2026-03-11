@@ -151,7 +151,7 @@ export default function Navbar({
       </motion.aside>
 
       {/* ── Bottom bar mobile ── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#07070f]/95 backdrop-blur border-t border-white/[0.07] flex z-30 pb-safe">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#07070f]/95 backdrop-blur border-t border-white/[0.07] flex z-30 px-1 pb-[max(8px,env(safe-area-inset-bottom))]">
         {ALL_NAV_ITEMS.map(({ key, href, label, icon: Icon }) => {
           const isActive = pathname === href;
           return (
