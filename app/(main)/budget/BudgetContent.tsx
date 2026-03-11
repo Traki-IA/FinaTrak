@@ -300,14 +300,14 @@ function MobileSortableBudgetRow({
             )}
             <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: couleur }} />
             <div className="min-w-0">
-              <p className="text-[13px] font-[600] text-white leading-none truncate">{item.nom}</p>
-              <span className="text-[10px] text-white/50 mt-0.5 block">{item.categories?.nom ?? "—"}</span>
+              <p className="text-[14px] font-[600] text-white leading-none truncate">{item.nom}</p>
+              <span className="text-[12px] text-white/50 mt-0.5 block">{item.categories?.nom ?? "—"}</span>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0 ml-2">
-            <span className="text-[15px] font-[800] tracking-tight">
+            <span className="text-[16px] font-[800] tracking-tight">
               {formatEur(item.montant)}{" "}
-              <span className="text-[10px] text-white/50 font-normal">
+              <span className="text-[12px] text-white/50 font-normal">
                 €/{item.frequence === "mensuel" ? "m" : "an"}
               </span>
             </span>
@@ -520,16 +520,16 @@ function MobileBudget({
           >
             <div className="flex">
               <div className="flex-1 pr-[18px]">
-                <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Charges / mois</p>
-                <p className="text-[17px] font-[900] tracking-tight mt-1 mb-1.5 leading-none text-orange-500">
+                <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Charges / mois</p>
+                <p className="text-[18px] font-[900] tracking-tight mt-1 mb-1.5 leading-none text-orange-500">
                   {formatEur(totalMensuel)} €
                 </p>
                 <Bar pct={Math.min(100, Math.round(totalMensuel / 2000 * 100))} color="#f97316" height={2} className="opacity-60" />
               </div>
               <div className="border-r border-white/[0.05]" />
               <div className="flex-1 pl-[18px]">
-                <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Projection ann.</p>
-                <p className="text-[17px] font-[900] tracking-tight mt-1 mb-1.5 leading-none text-indigo-400">
+                <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Projection ann.</p>
+                <p className="text-[18px] font-[900] tracking-tight mt-1 mb-1.5 leading-none text-indigo-400">
                   {formatEur(totalAnnuel)} €
                 </p>
                 <Bar pct={Math.min(100, Math.round(totalAnnuel / 20000 * 100))} color="#6366f1" height={2} className="opacity-60" />
@@ -544,7 +544,7 @@ function MobileBudget({
             <SortableContext items={sectionItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
               <AnimatePresence mode="popLayout">
                 {sectionItems.length === 0 ? (
-                  <motion.p key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center text-white/50 text-[10px] py-12">
+                  <motion.p key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center text-white/50 text-[12px] py-12">
                     Aucune charge {section === "mensuel" ? "mensuelle" : "annuelle"}
                   </motion.p>
                 ) : (

@@ -90,16 +90,16 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
       <div className="flex items-center gap-2.5 min-w-0">
         <div className="w-2 h-2 rounded-full shrink-0" style={{ background: couleur }} />
         <div className="min-w-0">
-          <p className="text-[13px] font-[600] text-white leading-none truncate">
+          <p className="text-[14px] font-[600] text-white leading-none truncate">
             {tx.description ?? "—"}
           </p>
-          <span className="text-[10px] text-white/50 mt-0.5 block">
+          <span className="text-[12px] text-white/50 mt-0.5 block">
             {tx.categories?.nom ?? "—"}
           </span>
         </div>
       </div>
       <span
-        className={`text-[15px] font-[800] tabular-nums tracking-tight shrink-0 ml-2 ${
+        className={`text-[16px] font-[800] tabular-nums tracking-tight shrink-0 ml-2 ${
           tx.type === "revenu" ? "text-emerald-400" : "text-red-400"
         }`}
       >
@@ -229,7 +229,7 @@ function MobileDashboard({
 
       {/* Hero Solde */}
       <div className="mb-2">
-        <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">
+        <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">
           Solde disponible
         </p>
         <div className="flex items-baseline gap-1.5 mt-1.5">
@@ -239,9 +239,9 @@ function MobileDashboard({
           <span className="text-[18px] text-white/28 font-light">€</span>
         </div>
         <div className="flex items-center gap-1.5 mt-1.5">
-          <span className="text-[10px] text-emerald-400 font-bold">↑ +{Math.abs(tauxEpargne)}%</span>
-          <span className="text-[9px] text-white/20">·</span>
-          <span className="text-[10px] text-white/50">Init. {fmt(stats.soldeInitial)} €</span>
+          <span className="text-[12px] text-emerald-400 font-bold">↑ +{Math.abs(tauxEpargne)}%</span>
+          <span className="text-[10px] text-white/20">·</span>
+          <span className="text-[12px] text-white/50">Init. {fmt(stats.soldeInitial)} €</span>
         </div>
         <div className="mt-3">
           <Sparkline data={sparkData} height={48} />
@@ -257,14 +257,14 @@ function MobileDashboard({
         {tab === "flux" && (
           <div className="flex">
             <div className="flex-1 pr-4">
-              <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Revenus</p>
-              <p className="text-[15px] font-[800] mt-1.5 mb-2 tracking-tight text-emerald-400">{fmt(stats.revenus)} €</p>
+              <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Revenus</p>
+              <p className="text-[16px] font-[800] mt-1.5 mb-2 tracking-tight text-emerald-400">{fmt(stats.revenus)} €</p>
               <Bar pct={Math.min(100, Math.round((stats.revenus / 4000) * 100))} color="#10b981" height={2} className="opacity-60" />
             </div>
             <div className="border-r border-white/[0.05]" />
             <div className="flex-1 pl-4">
-              <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Dépenses</p>
-              <p className="text-[15px] font-[800] mt-1.5 mb-2 tracking-tight text-red-400">{fmt(stats.depenses)} €</p>
+              <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Dépenses</p>
+              <p className="text-[16px] font-[800] mt-1.5 mb-2 tracking-tight text-red-400">{fmt(stats.depenses)} €</p>
               <Bar pct={Math.min(100, Math.round((stats.depenses / 2000) * 100))} color="#ef4444" height={2} className="opacity-60" />
             </div>
           </div>
@@ -273,14 +273,14 @@ function MobileDashboard({
         {tab === "bilan" && (
           <div className="flex">
             <div className="flex-1 pr-4">
-              <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Épargne</p>
-              <p className="text-[15px] font-[800] mt-1.5 mb-2 tracking-tight text-emerald-400">{fmt(epargne)} €</p>
+              <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Épargne</p>
+              <p className="text-[16px] font-[800] mt-1.5 mb-2 tracking-tight text-emerald-400">{fmt(epargne)} €</p>
               <Bar pct={Math.min(100, Math.round(Math.abs(epargne) / 2500 * 100))} color="#6366f1" height={2} className="opacity-60" />
             </div>
             <div className="border-r border-white/[0.05]" />
             <div className="flex-1 pl-4">
-              <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Taux</p>
-              <p className="text-[15px] font-[800] mt-1.5 mb-2 tracking-tight">{tauxEpargne}%</p>
+              <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Taux</p>
+              <p className="text-[16px] font-[800] mt-1.5 mb-2 tracking-tight">{tauxEpargne}%</p>
               <Bar pct={Math.min(100, Math.abs(tauxEpargne))} color="#14b8a6" height={2} className="opacity-60" />
             </div>
           </div>
@@ -289,14 +289,14 @@ function MobileDashboard({
         {tab === "categ" && donut.length > 0 && (
           <div className="flex items-center gap-3.5">
             <MiniDonut data={donut} size={68}>
-              <span className="text-[9px] font-extrabold text-white/50">{fmt(stats.depenses)}€</span>
+              <span className="text-[11px] font-extrabold text-white/50">{fmt(stats.depenses)}€</span>
             </MiniDonut>
             <div className="flex-1 flex flex-col gap-1.5">
               {categories.slice(0, 4).map((c) => (
                 <div key={c.nom} className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full shrink-0" style={{ background: c.couleur }} />
-                  <span className="text-[10px] text-white/50 flex-1">{c.nom}</span>
-                  <span className="text-[10px] font-bold">
+                  <span className="text-[12px] text-white/50 flex-1">{c.nom}</span>
+                  <span className="text-[12px] font-bold">
                     {Math.round((c.valeur / (totalDep || 1)) * 100)}%
                   </span>
                 </div>
@@ -306,7 +306,7 @@ function MobileDashboard({
         )}
 
         {tab === "categ" && donut.length === 0 && (
-          <p className="text-[10px] text-white/50 text-center py-3">Aucune donnée</p>
+          <p className="text-[12px] text-white/50 text-center py-3">Aucune donnée</p>
         )}
       </div>
 
@@ -315,20 +315,20 @@ function MobileDashboard({
       {/* Transactions grouped by date */}
       <div className="mt-2">
         <div className="flex justify-between items-center mb-2">
-          <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">
+          <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">
             Transactions récentes
           </p>
-          <a href="/transactions" className="text-[10px] text-orange-500 font-semibold">
+          <a href="/transactions" className="text-[12px] text-orange-500 font-semibold">
             Voir tout →
           </a>
         </div>
 
         {grouped.length === 0 ? (
-          <p className="text-[10px] text-white/50 py-4 text-center">Aucune transaction</p>
+          <p className="text-[12px] text-white/50 py-4 text-center">Aucune transaction</p>
         ) : (
           grouped.map((group) => (
             <div key={group.label}>
-              <p className="text-[10px] text-white/50 uppercase tracking-wider mt-2 mb-1">{group.label}</p>
+              <p className="text-[11px] text-white/50 uppercase tracking-wider mt-2 mb-1">{group.label}</p>
               {group.items.slice(0, 5).map((tx) => (
                 <MobileTxRow key={tx.id} tx={tx} />
               ))}

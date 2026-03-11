@@ -194,10 +194,10 @@ function MobileTxRow({
       <div className="flex items-center gap-2.5 min-w-0">
         <div className="w-2 h-2 rounded-full shrink-0" style={{ background: couleur }} />
         <div className="min-w-0">
-          <p className="text-[13px] font-[600] text-white leading-none truncate">
+          <p className="text-[14px] font-[600] text-white leading-none truncate">
             {transaction.description ?? "—"}
           </p>
-          <span className="text-[10px] text-white/50 mt-0.5 block">
+          <span className="text-[12px] text-white/50 mt-0.5 block">
             {transaction.categories?.nom ?? "—"}
           </span>
         </div>
@@ -205,7 +205,7 @@ function MobileTxRow({
 
       <div className="flex items-center gap-1 shrink-0 ml-2">
         <span
-          className={`text-[15px] font-[800] tabular-nums tracking-tight ${
+          className={`text-[16px] font-[800] tabular-nums tracking-tight ${
             isRevenu ? "text-emerald-400" : "text-red-400"
           }`}
         >
@@ -371,15 +371,15 @@ function MobileTransactions({
       {/* Header */}
       <div className="flex items-center justify-between mb-0">
         <div>
-          <p className="text-[9px] text-white/55 uppercase tracking-[0.14em] font-semibold">Transactions</p>
-          <p className="text-[10px] text-white/50 mt-0.5">
+          <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Transactions</p>
+          <p className="text-[12px] text-white/50 mt-0.5">
             {filtered.length} opération{filtered.length !== 1 ? "s" : ""}
             {searchParams.toString() ? " · filtrées" : ""}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span
-            className={`text-[15px] font-[800] ${
+            className={`text-[16px] font-[800] ${
               totalFiltre >= 0 ? "text-emerald-400" : "text-red-400"
             }`}
           >
@@ -431,14 +431,14 @@ function MobileTransactions({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="text-center text-white/50 text-[10px] py-12"
+              className="text-center text-white/50 text-[12px] py-12"
             >
               Aucune transaction
             </motion.p>
           ) : (
             grouped.map((group) => (
               <div key={group.label}>
-                <p className="text-[10px] text-white/50 uppercase tracking-wider mt-3 mb-1">
+                <p className="text-[11px] text-white/50 uppercase tracking-wider mt-3 mb-1">
                   {group.label}
                 </p>
                 {group.items.map((t) => {
