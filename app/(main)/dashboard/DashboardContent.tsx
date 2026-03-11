@@ -227,10 +227,7 @@ function MobileDashboard({
   return (
     <>
       {/* Sticky header — fixed, hors flux scrollable */}
-      <div
-        className="fixed top-0 left-0 right-0 z-50 bg-[#080810] border-b border-white/[0.05]"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
+      <div className="fixed top-0 left-0 right-0 z-50 bg-[#080810] border-b border-white/[0.05] pt-[calc(0px+env(safe-area-inset-top))]">
         <div className="h-14 flex items-center justify-between px-5">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-[9px] bg-orange-500 flex items-center justify-center font-black text-[15px] text-white">
@@ -248,8 +245,8 @@ function MobileDashboard({
       </div>
 
       <Shell>
-        {/* Spacer pour compenser le header fixé (h-14 = 56px) */}
-        <div className="h-14" />
+        {/* Spacer = header_height - Shell_pt = (56px+SAT) - (16px+SAT) = 40px */}
+        <div className="h-10" />
 
         {/* Hero Solde */}
       <div className="mb-2">
