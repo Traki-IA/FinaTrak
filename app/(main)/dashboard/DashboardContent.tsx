@@ -63,12 +63,12 @@ function groupByDate(transactions: TTransactionWithCategorie[]): { label: string
   const weekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).getTime();
 
   const groups: Record<string, TTransactionWithCategorie[]> = {};
-  const order = ["Aujourd\u2019hui", "Hier", "Cette semaine", "Plus ancien"];
+  const order = ["Aujourd'hui", "Hier", "Cette semaine", "Plus ancien"];
 
   for (const tx of transactions) {
     const d = new Date(tx.date);
     let label: string;
-    if (d.toDateString() === today) label = "Aujourd\u2019hui";
+    if (d.toDateString() === today) label = "Aujourd'hui";
     else if (d.toDateString() === yesterday) label = "Hier";
     else if (d.getTime() >= weekAgo) label = "Cette semaine";
     else label = "Plus ancien";
@@ -91,10 +91,10 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
         <div className="w-2 h-2 rounded-full shrink-0" style={{ background: couleur }} />
         <div className="min-w-0">
           <p className="text-[13px] font-[600] text-white leading-none truncate">
-            {tx.description ?? "\u2014"}
+            {tx.description ?? "—"}
           </p>
           <span className="text-[10px] text-white/50 mt-0.5 block">
-            {tx.categories?.nom ?? "\u2014"}
+            {tx.categories?.nom ?? "—"}
           </span>
         </div>
       </div>
@@ -103,7 +103,7 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
           tx.type === "revenu" ? "text-emerald-400" : "text-red-400"
         }`}
       >
-        {tx.type === "revenu" ? "+" : "\u2212"}{fmt(tx.montant)} \u20ac
+        {tx.type === "revenu" ? "+" : "−"}{fmt(tx.montant)} €
       </span>
     </div>
   );
@@ -211,7 +211,7 @@ function MobileDashboard({
     .filter((c) => c.valeur > 0)
     .map((c) => ({ pct: Math.round((c.valeur / totalDep) * 100), color: c.couleur }));
 
-  const sparkData = history.length > 0 ? history.map((h) => h.solde) : [0, 0];
+  const sparkData = history.length > 1 ? history.map((h) => h.solde) : [0, 1];
   const grouped = groupByDate(transactions);
 
   return (
