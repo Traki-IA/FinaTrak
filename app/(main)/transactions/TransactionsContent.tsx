@@ -51,115 +51,7 @@ function groupByDate(transactions: TTransactionWithCategorie[]): { label: string
   return order.filter((l) => groups[l]?.length).map((l) => ({ label: l, items: groups[l] }));
 }
 
-// ── Desktop TxRow ─────────────────────────────────────────────────────────────
-
-function TxRow({
-  transaction,
-  index,
-  compact,
-  confirmingDeleteId,
-  onEdit,
-  onDeleteRequest,
-  onDeleteConfirm,
-  onDeleteCancel,
-}: {
-  transaction: TTransactionWithCategorie;
-  index: number;
-  compact?: boolean;
-  confirmingDeleteId: string | null;
-  onEdit: (t: TTransactionWithCategorie) => void;
-  onDeleteRequest: (id: string) => void;
-  onDeleteConfirm: (id: string) => void;
-  onDeleteCancel: () => void;
-}) {
-  const isRevenu = transaction.type === "revenu";
-  const couleur = transaction.categories?.couleur ?? "#94a3b8";
-  const initiale = (transaction.categories?.nom ?? transaction.description ?? "?")[0].toUpperCase();
-  const isConfirming = confirmingDeleteId === transaction.id;
-
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
-      className={`flex items-center justify-between border-b border-white/[0.03] group ${
-        compact ? "py-[7px] px-3" : "py-4 px-4"
-      }`}
-    >
-      <div className="flex items-center gap-2 min-w-0">
-        <span
-          className={`rounded-full flex items-center justify-center font-bold shrink-0 ${
-            compact ? "w-7 h-7 text-[11px]" : "w-10 h-10 text-[14px]"
-          }`}
-          style={{ background: `${couleur}18`, color: couleur }}
-        >
-          {initiale}
-        </span>
-        <div className="min-w-0">
-          <p className={`text-white leading-none truncate ${compact ? "text-[11px] font-semibold" : "text-[15px] font-bold"}`}>
-            {transaction.description ?? "—"}
-          </p>
-          <div className={`flex mt-0.5 ${compact ? "items-center gap-1.5" : "flex-col items-center gap-0.5 mt-1"}`}>
-            <span className={`${compact ? "text-[9px]" : "text-[11px]"} text-white/28`}>{formatDate(transaction.date)}</span>
-            <span
-              className={`${compact ? "text-[9px]" : "text-[11px]"} px-1.5 py-0.5 rounded font-bold`}
-              style={{ background: `${couleur}20`, color: couleur }}
-            >
-              {transaction.categories?.nom ?? "—"}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-1 shrink-0 ml-2">
-        <span
-          className={`font-extrabold tabular-nums tracking-tight ${
-            compact ? "text-[11px]" : "text-[15px]"
-          } ${isRevenu ? "text-emerald-400" : "text-white/60"}`}
-        >
-          {isRevenu ? "+" : "−"}
-          {formatEur(transaction.montant)}
-        </span>
-
-        {isConfirming ? (
-          <>
-            <button
-              onClick={() => onDeleteConfirm(transaction.id)}
-              className="p-1 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-colors"
-            >
-              <Check size={12} />
-            </button>
-            <button
-              onClick={onDeleteCancel}
-              className="p-1 rounded-lg bg-white/[0.05] text-white/40 hover:text-white transition-colors"
-            >
-              <X size={12} />
-            </button>
-          </>
-        ) : (
-          <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={() => onEdit(transaction)}
-              className="p-1 rounded-lg text-white/30 hover:text-white hover:bg-white/[0.07] transition-colors"
-            >
-              <Pencil size={12} />
-            </button>
-            <button
-              onClick={() => onDeleteRequest(transaction.id)}
-              className="p-1 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/[0.08] transition-colors"
-            >
-              <Trash2 size={12} />
-            </button>
-          </div>
-        )}
-      </div>
-    </motion.div>
-  );
-}
-
-// ── Mobile TxRow (Pulse Flat) ─────────────────────────────────────────────────
+// ── Transaction Row (Pulse Flat) ──────────────────────────────────────────────
 
 function MobileTxRow({
   transaction,
@@ -262,92 +154,9 @@ interface ISharedProps {
   searchParams: ReturnType<typeof useSearchParams>;
 }
 
-// ── Desktop Transactions ──────────────────────────────────────────────────────
+// ── Transactions ───────────────────────────────────────────────────────────────
 
-function DesktopTransactions({
-  filtered,
-  categories,
-  typeFilter,
-  setTypeFilter,
-  totalFiltre,
-  confirmingDeleteId,
-  onEdit,
-  onDeleteRequest,
-  onDeleteConfirm,
-  onDeleteCancel,
-  searchParams,
-}: ISharedProps) {
-  return (
-    <Shell>
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="flex items-center justify-between mb-0"
-      >
-        <div>
-          <h1 className="text-[22px] font-black tracking-tight">Transactions</h1>
-          <p className="text-[10px] text-white/28 mt-0.5">
-            {filtered.length} opération{filtered.length !== 1 ? "s" : ""}
-            {searchParams.toString() ? " · filtrées" : ""}
-          </p>
-        </div>
-        <span
-          className={`text-[13px] font-extrabold ${
-            totalFiltre >= 0 ? "text-emerald-400" : "text-red-400"
-          }`}
-        >
-          {totalFiltre >= 0 ? "+" : ""}
-          {totalFiltre.toFixed(0)} €
-        </span>
-      </motion.div>
-
-      <div className="h-px bg-white/[0.06] mt-3 mb-0" />
-      <TabBar tabs={TYPE_TABS} active={typeFilter} onChange={setTypeFilter} />
-
-      <div className="mt-3 mb-3">
-        <FilterBar categories={categories} />
-      </div>
-
-      <div className="h-px bg-white/[0.06] mb-0" />
-
-      <div className="grid grid-cols-2" style={{ alignContent: "start" }}>
-        <AnimatePresence mode="popLayout">
-          {filtered.length === 0 ? (
-            <motion.p
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="text-center text-white/30 text-[11px] py-12 col-span-2"
-            >
-              Aucune transaction
-            </motion.p>
-          ) : (
-            filtered.map((t, i) => (
-              <div key={t.id} className={i % 2 === 0 ? "border-r border-white/[0.03]" : ""}>
-                <TxRow
-                  transaction={t}
-                  index={i}
-                  compact
-                  confirmingDeleteId={confirmingDeleteId}
-                  onEdit={onEdit}
-                  onDeleteRequest={onDeleteRequest}
-                  onDeleteConfirm={onDeleteConfirm}
-                  onDeleteCancel={onDeleteCancel}
-                />
-              </div>
-            ))
-          )}
-        </AnimatePresence>
-      </div>
-    </Shell>
-  );
-}
-
-// ── Mobile Transactions ───────────────────────────────────────────────────────
-
-function MobileTransactions({
+function Transactions({
   filtered,
   categories,
   typeFilter,
@@ -535,12 +344,7 @@ export default function TransactionsContent({
 
   return (
     <>
-      <div className="lg:hidden">
-        <MobileTransactions {...sharedProps} />
-      </div>
-      <div className="hidden lg:block">
-        <DesktopTransactions {...sharedProps} />
-      </div>
+      <Transactions {...sharedProps} />
 
       {/* FAB — rendered once */}
       <Fab label="Transaction" onClick={openAddModal} />

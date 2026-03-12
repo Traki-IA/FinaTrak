@@ -1,8 +1,5 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import { motion } from "framer-motion";
-import { SidebarProvider, useSidebar } from "@/components/SidebarContext";
 import Navbar from "@/components/Navbar";
 import AccountGuard from "@/components/AccountGuard";
 import type { TCompte } from "@/types";
@@ -18,57 +15,16 @@ interface IMainLayoutShellProps {
   children: React.ReactNode;
 }
 
-function LayoutContent({
-  comptes,
+export default function MainLayoutShell({
   activeCompteId,
-  navOrder,
   needsAccountFix,
-  solde,
-  userName,
-  userEmail,
   children,
 }: IMainLayoutShellProps) {
-  const { breakpoint, sidebarWidth } = useSidebar();
-
-  // Snap instantané sur changement de breakpoint (rotation écran)
-  // Animation spring uniquement sur toggle sidebar (action utilisateur)
-  const prevBreakpointRef = useRef(breakpoint);
-  const isBreakpointChange = prevBreakpointRef.current !== breakpoint;
-
-  useEffect(() => {
-    prevBreakpointRef.current = breakpoint;
-  }, [breakpoint]);
-
   return (
     <>
-      <Navbar
-        comptes={comptes}
-        activeCompteId={activeCompteId}
-        navOrder={navOrder}
-        solde={solde}
-        userName={userName}
-        userEmail={userEmail}
-      />
+      <Navbar />
       {needsAccountFix && <AccountGuard compteId={activeCompteId} />}
-      <motion.div
-        className={breakpoint === "mobile" ? "pb-20" : ""}
-        animate={{ marginLeft: sidebarWidth }}
-        transition={
-          isBreakpointChange
-            ? { duration: 0 }
-            : { type: "spring", stiffness: 300, damping: 30 }
-        }
-      >
-        {children}
-      </motion.div>
+      <div className="pb-20">{children}</div>
     </>
-  );
-}
-
-export default function MainLayoutShell(props: IMainLayoutShellProps) {
-  return (
-    <SidebarProvider>
-      <LayoutContent {...props} />
-    </SidebarProvider>
   );
 }
