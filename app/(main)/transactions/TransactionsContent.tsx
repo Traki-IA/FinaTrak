@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Trash2, Check, X, SlidersHorizontal } from "lucide-react";
+import { Pencil, Check, X, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import TransactionModal from "./TransactionModal";
@@ -94,11 +94,10 @@ function MobileTxRow({
           <p className="text-[17px] font-[600] text-white leading-tight truncate">
             {transaction.description ?? "—"}
           </p>
-          <p className="text-[13px] mt-0.5 leading-none flex items-center gap-1">
-            <span style={{ color: couleur }}>{transaction.categories?.nom ?? "—"}</span>
-            <span className="text-white/25">·</span>
-            <span className="text-white/40">{formatDate(transaction.date)}</span>
-          </p>
+          <div className="flex items-center justify-between mt-0.5">
+            <span className="text-[13px]" style={{ color: couleur }}>{transaction.categories?.nom ?? "—"}</span>
+            <span className="text-[12px] text-white/40">{formatDate(transaction.date)}</span>
+          </div>
         </div>
 
         {/* Droite */}
@@ -138,7 +137,7 @@ function MobileTxRow({
                 onClick={() => onDeleteRequest(transaction.id)}
                 className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors"
               >
-                <Trash2 size={14} />
+                <X size={14} />
               </button>
             </div>
           )}

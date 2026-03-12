@@ -80,11 +80,10 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
           <p className="text-[17px] font-[600] text-white leading-tight truncate">
             {tx.description ?? "—"}
           </p>
-          <p className="text-[13px] mt-0.5 leading-none flex items-center gap-1">
-            <span style={{ color: couleur }}>{tx.categories?.nom ?? "—"}</span>
-            <span className="text-white/25">·</span>
-            <span className="text-white/40">{formatDate(tx.date)}</span>
-          </p>
+          <div className="flex items-center justify-between mt-0.5">
+            <span className="text-[13px]" style={{ color: couleur }}>{tx.categories?.nom ?? "—"}</span>
+            <span className="text-[12px] text-white/40">{formatDate(tx.date)}</span>
+          </div>
         </div>
 
         {/* Droite */}
