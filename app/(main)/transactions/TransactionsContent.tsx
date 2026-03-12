@@ -94,14 +94,13 @@ function MobileTxRow({
           <p className="text-[17px] font-[600] text-white leading-tight truncate">
             {transaction.description ?? "—"}
           </p>
-          <div className="flex items-center justify-between mt-0.5">
-            <span className="text-[13px]" style={{ color: couleur }}>{transaction.categories?.nom ?? "—"}</span>
-            <span className="text-[12px] text-white/40">{formatDate(transaction.date)}</span>
-          </div>
+          <span className="text-[13px] mt-0.5 block leading-none" style={{ color: couleur }}>
+            {transaction.categories?.nom ?? "—"}
+          </span>
         </div>
 
         {/* Droite */}
-        <div className="shrink-0 flex flex-col items-end">
+        <div className="shrink-0 flex flex-col items-end gap-0.5">
           <span
             className={`text-[17px] font-[800] tabular-nums tracking-tight ${
               isRevenu ? "text-emerald-400" : "text-red-400"
@@ -109,35 +108,36 @@ function MobileTxRow({
           >
             {isRevenu ? "+" : "−"}{formatEur(transaction.montant)}
           </span>
+          <span className="text-[12px] text-white/40 leading-none">{formatDate(transaction.date)}</span>
 
           {isConfirming ? (
-            <div className="flex gap-1 mt-1.5">
+            <div className="flex gap-1 mt-1">
               <button
                 onClick={() => onDeleteConfirm(transaction.id)}
                 className="p-1 rounded-lg bg-red-500/15 text-red-400"
               >
-                <Check size={13} />
+                <Check size={13} strokeWidth={2.5} />
               </button>
               <button
                 onClick={onDeleteCancel}
                 className="p-1 rounded-lg bg-white/[0.05] text-white/40"
               >
-                <X size={13} />
+                <X size={13} strokeWidth={2.5} />
               </button>
             </div>
           ) : (
-            <div className="flex gap-2 mt-1.5">
+            <div className="flex gap-2 mt-1">
               <button
                 onClick={() => onEdit(transaction)}
                 className="p-1.5 rounded-lg text-orange-400 hover:text-orange-300 hover:bg-orange-400/10 transition-colors"
               >
-                <Pencil size={14} />
+                <Pencil size={14} strokeWidth={2} />
               </button>
               <button
                 onClick={() => onDeleteRequest(transaction.id)}
                 className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors"
               >
-                <X size={14} />
+                <X size={14} strokeWidth={2.5} />
               </button>
             </div>
           )}

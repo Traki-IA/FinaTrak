@@ -18,6 +18,17 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
+/* ── Hide scrollbar everywhere ─────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE / Edge */
+}
+*::-webkit-scrollbar {
+  display: none;               /* Chrome / Safari / WebKit */
+}
+
 /* ── Landscape lock overlay (phones only) ──────────────────────────── */
 /* max-height: 550px = phones in landscape (portrait width ≈ 375-430)  */
 /* iPads/desktops have landscape height > 550px → not affected          */
