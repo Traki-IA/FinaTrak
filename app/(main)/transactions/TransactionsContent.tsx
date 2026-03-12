@@ -17,7 +17,7 @@ import type { TTransactionWithCategorie, TCategorie, TObjectif, TBudgetItem } fr
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  return new Date(dateStr).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
 type TTypeFilter = "all" | "revenu" | "depense";
