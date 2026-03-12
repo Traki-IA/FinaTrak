@@ -207,7 +207,7 @@ function MobileTxRow({
             isRevenu ? "text-emerald-400" : "text-red-400"
           }`}
         >
-          {isRevenu ? "+" : "−"}{formatEur(transaction.montant)} €
+          {isRevenu ? "+" : "−"}{formatEur(transaction.montant)}
         </span>
 
         {isConfirming ? (
