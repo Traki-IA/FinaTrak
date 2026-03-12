@@ -189,11 +189,11 @@ function MobileTxRow({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
-      className="flex items-center justify-between py-1.5 border-b border-white/[0.05] last:border-0 group"
+      className="flex items-center justify-between py-4 border-b border-white/[0.05] last:border-0 group"
     >
       <div className="flex items-center gap-2 min-w-0">
-        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: couleur }} />
-        <p className="text-[13px] font-[600] text-white leading-none truncate min-w-0">
+        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: couleur }} />
+        <p className="text-[15px] font-[600] text-white leading-none truncate min-w-0">
           {transaction.description ?? "—"}
         </p>
         <span className="text-[11px] text-white/30 shrink-0">
@@ -203,7 +203,7 @@ function MobileTxRow({
 
       <div className="flex items-center gap-1 shrink-0 ml-3">
         <span
-          className={`text-[13px] font-[800] tabular-nums tracking-tight ${
+          className={`text-[15px] font-[800] tabular-nums tracking-tight ${
             isRevenu ? "text-emerald-400" : "text-red-400"
           }`}
         >
