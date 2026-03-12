@@ -86,10 +86,10 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
   const couleur = tx.categories?.couleur ?? "#94a3b8";
 
   return (
-    <div className="flex items-center justify-between py-1.5 border-b border-white/[0.05] last:border-0">
+    <div className="flex items-center justify-between py-3.5 border-b border-white/[0.05] last:border-0">
       <div className="flex items-center gap-2 min-w-0">
-        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: couleur }} />
-        <p className="text-[13px] font-[600] text-white leading-none truncate min-w-0">
+        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: couleur }} />
+        <p className="text-[14px] font-[600] text-white leading-none truncate min-w-0">
           {tx.description ?? "—"}
         </p>
         <span className="text-[11px] text-white/30 shrink-0">
@@ -97,7 +97,7 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
         </span>
       </div>
       <span
-        className={`text-[13px] font-[800] tabular-nums tracking-tight shrink-0 ml-3 ${
+        className={`text-[14px] font-[800] tabular-nums tracking-tight shrink-0 ml-3 ${
           tx.type === "revenu" ? "text-emerald-400" : "text-red-400"
         }`}
       >
@@ -146,26 +146,26 @@ function TxRow({ tx, compact = false }: { tx: TTransactionWithCategorie; compact
       variants={FADE_UP}
       transition={{ duration: 0.3 }}
       className={`flex items-center justify-between border-b border-white/[0.03] last:border-0 ${
-        compact ? "py-[7px] px-3" : "py-2.5 px-4"
+        compact ? "py-3.5 px-4" : "py-2.5 px-4"
       }`}
     >
       <div className="flex items-center gap-2 min-w-0">
         <span
           className={`rounded-full flex items-center justify-center font-bold shrink-0 ${
-            compact ? "w-7 h-7 text-[11px]" : "w-8 h-8 text-[12px]"
+            compact ? "w-7 h-7 text-[14px]" : "w-8 h-8 text-[12px]"
           }`}
           style={{ background: `${couleur}18`, color: couleur }}
         >
           {initiale}
         </span>
         <div className="min-w-0">
-          <p className={`font-semibold text-white leading-none truncate ${compact ? "text-[11px]" : "text-[12px]"}`}>
+          <p className={`font-semibold text-white leading-none truncate ${compact ? "text-[14px]" : "text-[12px]"}`}>
             {tx.description ?? "—"}
           </p>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-[9px] text-white/28">{dateLabel}</span>
+          <div className={`flex mt-0.5 ${compact ? "flex-col items-start gap-0.5 mt-1" : "items-center gap-1.5"}`}>
+            <span className={`${compact ? "text-[11px]" : "text-[9px]"} text-white/28`}>{dateLabel}</span>
             <span
-              className="text-[9px] px-1.5 py-0.5 rounded font-bold"
+              className={`${compact ? "text-[11px]" : "text-[9px]"} px-1.5 py-0.5 rounded font-bold`}
               style={{ background: `${couleur}20`, color: couleur }}
             >
               {tx.categories?.nom ?? "—"}
@@ -175,7 +175,7 @@ function TxRow({ tx, compact = false }: { tx: TTransactionWithCategorie; compact
       </div>
       <span
         className={`font-extrabold tabular-nums tracking-tight shrink-0 ml-2 ${
-          compact ? "text-[11px]" : "text-[12px]"
+          compact ? "text-[14px]" : "text-[12px]"
         } ${tx.type === "revenu" ? "text-emerald-400" : "text-white/60"}`}
       >
         {tx.type === "revenu" ? "+" : "−"}
@@ -511,13 +511,9 @@ function DesktopDashboard({
                 variants={STAGGER}
                 initial="hidden"
                 animate="visible"
-                className="grid grid-cols-2"
               >
-                {transactions.slice(0, 8).map((tx, i) => (
-                  <li
-                    key={tx.id}
-                    className={i % 2 === 0 ? "border-r border-white/[0.03]" : ""}
-                  >
+                {transactions.slice(0, 8).map((tx) => (
+                  <li key={tx.id}>
                     <TxRow tx={tx} compact />
                   </li>
                 ))}
