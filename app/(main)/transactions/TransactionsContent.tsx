@@ -81,7 +81,7 @@ function MobileTxRow({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
-      className="flex gap-3 py-3 border-b border-white/[0.05] last:border-0 group"
+      className="flex gap-3 py-3 border-b border-white/[0.05] last:border-0"
     >
       {/* Dot coloré */}
       <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-[6px]" style={{ background: couleur }} />
@@ -94,8 +94,10 @@ function MobileTxRow({
           <p className="text-[17px] font-[600] text-white leading-tight truncate">
             {transaction.description ?? "—"}
           </p>
-          <p className="text-[13px] text-white/40 mt-0.5 leading-none">
-            {transaction.categories?.nom ?? "—"} · {formatDate(transaction.date)}
+          <p className="text-[13px] mt-0.5 leading-none flex items-center gap-1">
+            <span style={{ color: couleur }}>{transaction.categories?.nom ?? "—"}</span>
+            <span className="text-white/25">·</span>
+            <span className="text-white/40">{formatDate(transaction.date)}</span>
           </p>
         </div>
 
@@ -125,18 +127,18 @@ function MobileTxRow({
               </button>
             </div>
           ) : (
-            <div className="flex gap-0.5 mt-1.5 opacity-[0.18] group-hover:opacity-100 transition-opacity">
+            <div className="flex gap-2 mt-1.5">
               <button
                 onClick={() => onEdit(transaction)}
-                className="p-1 rounded-lg text-white/50 hover:text-white"
+                className="p-1.5 rounded-lg text-orange-400 hover:text-orange-300 hover:bg-orange-400/10 transition-colors"
               >
-                <Pencil size={12} />
+                <Pencil size={14} />
               </button>
               <button
                 onClick={() => onDeleteRequest(transaction.id)}
-                className="p-1 rounded-lg text-white/50 hover:text-red-400"
+                className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors"
               >
-                <Trash2 size={12} />
+                <Trash2 size={14} />
               </button>
             </div>
           )}
@@ -186,15 +188,15 @@ function Transactions({
       {/* Header */}
       <div className="flex items-center justify-between mb-0">
         <div>
-          <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Transactions</p>
-          <p className="text-[12px] text-white/50 mt-0.5">
+          <p className="text-[13px] text-white/55 uppercase tracking-[0.14em] font-semibold">Transactions</p>
+          <p className="text-[14px] text-white/50 mt-0.5">
             {filtered.length} opération{filtered.length !== 1 ? "s" : ""}
             {searchParams.toString() ? " · filtrées" : ""}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span
-            className={`text-[16px] font-[800] ${
+            className={`text-[18px] font-[800] ${
               totalFiltre >= 0 ? "text-emerald-400" : "text-red-400"
             }`}
           >

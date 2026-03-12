@@ -34,6 +34,10 @@ function fmt(n: number): string {
   return n.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+}
+
 function groupByDate(transactions: TTransactionWithCategorie[]): { label: string; items: TTransactionWithCategorie[] }[] {
   const now = new Date();
   const today = now.toDateString();
@@ -61,26 +65,37 @@ function groupByDate(transactions: TTransactionWithCategorie[]): { label: string
 // ── Transaction Row (Pulse Flat) ─────────────────────────────────────────────
 
 function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
+  const isRevenu = tx.type === "revenu";
   const couleur = tx.categories?.couleur ?? "#94a3b8";
 
   return (
-    <div className="flex items-center justify-between py-3.5 border-b border-white/[0.05] last:border-0">
-      <div className="flex items-center gap-2 min-w-0">
-        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: couleur }} />
-        <p className="text-[14px] font-[600] text-white leading-none truncate min-w-0">
-          {tx.description ?? "—"}
-        </p>
-        <span className="text-[11px] text-white/30 shrink-0">
-          {tx.categories?.nom ?? "—"}
+    <div className="flex gap-3 py-3 border-b border-white/[0.05] last:border-0">
+      {/* Dot coloré */}
+      <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-[6px]" style={{ background: couleur }} />
+
+      {/* Contenu : gauche (nom + catégorie) | droite (montant) */}
+      <div className="flex-1 min-w-0 flex items-start justify-between gap-3">
+        {/* Gauche */}
+        <div className="min-w-0 flex-1">
+          <p className="text-[17px] font-[600] text-white leading-tight truncate">
+            {tx.description ?? "—"}
+          </p>
+          <p className="text-[13px] mt-0.5 leading-none flex items-center gap-1">
+            <span style={{ color: couleur }}>{tx.categories?.nom ?? "—"}</span>
+            <span className="text-white/25">·</span>
+            <span className="text-white/40">{formatDate(tx.date)}</span>
+          </p>
+        </div>
+
+        {/* Droite */}
+        <span
+          className={`text-[17px] font-[800] tabular-nums tracking-tight shrink-0 ${
+            isRevenu ? "text-emerald-400" : "text-red-400"
+          }`}
+        >
+          {isRevenu ? "+" : "−"}{fmt(tx.montant)} €
         </span>
       </div>
-      <span
-        className={`text-[14px] font-[800] tabular-nums tracking-tight shrink-0 ml-3 ${
-          tx.type === "revenu" ? "text-emerald-400" : "text-red-400"
-        }`}
-      >
-        {tx.type === "revenu" ? "+" : "−"}{fmt(tx.montant)} €
-      </span>
     </div>
   );
 }
