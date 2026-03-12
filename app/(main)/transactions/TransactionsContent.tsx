@@ -85,26 +85,26 @@ function TxRow({
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
       className={`flex items-center justify-between border-b border-white/[0.03] group ${
-        compact ? "py-[7px] px-3" : "py-2.5 px-4"
+        compact ? "py-[7px] px-3" : "py-4 px-4"
       }`}
     >
       <div className="flex items-center gap-2 min-w-0">
         <span
           className={`rounded-full flex items-center justify-center font-bold shrink-0 ${
-            compact ? "w-7 h-7 text-[11px]" : "w-8 h-8 text-[12px]"
+            compact ? "w-7 h-7 text-[11px]" : "w-10 h-10 text-[14px]"
           }`}
           style={{ background: `${couleur}18`, color: couleur }}
         >
           {initiale}
         </span>
         <div className="min-w-0">
-          <p className={`font-semibold text-white leading-none truncate ${compact ? "text-[11px]" : "text-[12px]"}`}>
+          <p className={`text-white leading-none truncate ${compact ? "text-[11px] font-semibold" : "text-[15px] font-bold"}`}>
             {transaction.description ?? "—"}
           </p>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-[9px] text-white/28">{formatDate(transaction.date)}</span>
+          <div className={`flex mt-0.5 ${compact ? "items-center gap-1.5" : "flex-col items-center gap-0.5 mt-1"}`}>
+            <span className={`${compact ? "text-[9px]" : "text-[11px]"} text-white/28`}>{formatDate(transaction.date)}</span>
             <span
-              className="text-[9px] px-1.5 py-0.5 rounded font-bold"
+              className={`${compact ? "text-[9px]" : "text-[11px]"} px-1.5 py-0.5 rounded font-bold`}
               style={{ background: `${couleur}20`, color: couleur }}
             >
               {transaction.categories?.nom ?? "—"}
@@ -116,7 +116,7 @@ function TxRow({
       <div className="flex items-center gap-1 shrink-0 ml-2">
         <span
           className={`font-extrabold tabular-nums tracking-tight ${
-            compact ? "text-[11px]" : "text-[12px]"
+            compact ? "text-[11px]" : "text-[15px]"
           } ${isRevenu ? "text-emerald-400" : "text-white/60"}`}
         >
           {isRevenu ? "+" : "−"}
