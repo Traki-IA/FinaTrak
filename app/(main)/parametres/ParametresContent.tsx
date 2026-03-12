@@ -191,7 +191,7 @@ export default function ParametresContent({
 
   return (
     <>
-      <div className="md:hidden">
+      <div className="lg:hidden">
         <MobileParametres
           userEmail={userEmail}
           userDisplayName={userDisplayName}
@@ -199,7 +199,7 @@ export default function ParametresContent({
           onDeleteOpen={() => setDeleteDialogOpen(true)}
         />
       </div>
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <DesktopParametres
           userEmail={userEmail}
           userDisplayName={userDisplayName}

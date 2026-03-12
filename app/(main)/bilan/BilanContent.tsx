@@ -312,10 +312,10 @@ function MobileBilan({ parMois }: IBilanContentProps) {
 export default function BilanContent({ parMois, stats }: IBilanContentProps) {
   return (
     <>
-      <div className="md:hidden">
+      <div className="lg:hidden">
         <MobileBilan parMois={parMois} stats={stats} />
       </div>
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <DesktopBilan parMois={parMois} stats={stats} />
       </div>
     </>

@@ -664,10 +664,10 @@ export default function BudgetContent({
 
   return (
     <>
-      <div className="md:hidden">
+      <div className="lg:hidden">
         <MobileBudget {...sharedProps} />
       </div>
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <DesktopBudget {...sharedProps} />
       </div>
 
