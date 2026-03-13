@@ -89,25 +89,27 @@ function MobileTxRow({
     >
       {/* Ligne principale — tappable */}
       <div
-        className="grid py-3 cursor-pointer select-none items-start"
-        style={{ gridTemplateColumns: "1fr 110px 1fr" }}
+        className="grid py-3 cursor-pointer select-none items-center"
+        style={{ gridTemplateColumns: "1fr 110px 1fr", minHeight: "56px" }}
         onClick={onRowTap}
       >
         {/* Colonne gauche: dot + nom + date */}
-        <div className="flex gap-3 min-w-0 pr-2">
-          <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-[6px]" style={{ background: couleur }} />
-          <div className="min-w-0 flex-1">
-            <p className="text-[17px] font-[600] text-white leading-tight truncate">
-              {transaction.description ?? "—"}
-            </p>
-            <span className="text-[9px] text-white/55 leading-none mt-0.5 block">
-              {formatDate(transaction.date)}
-            </span>
+        <div className="flex flex-col justify-center min-w-0 pr-2">
+          <div className="flex gap-3 min-w-0">
+            <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-[3px]" style={{ background: couleur }} />
+            <div className="min-w-0 flex-1">
+              <p className="text-[17px] font-[600] text-white leading-tight truncate">
+                {transaction.description ?? "—"}
+              </p>
+              <span className="text-[9px] text-white/55 leading-none mt-0.5 block">
+                {formatDate(transaction.date)}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Colonne centrale: bulle catégorie 110px */}
-        <div className="flex items-start justify-center">
+        <div className="flex items-center justify-center h-full">
           <span
             className="w-full block text-[10px] font-[700] text-center overflow-hidden truncate"
             style={{
@@ -122,7 +124,7 @@ function MobileTxRow({
         </div>
 
         {/* Colonne droite: montant */}
-        <div className="flex items-start justify-end pl-2">
+        <div className="flex items-center justify-end h-full pl-2">
           <span
             className={`text-[17px] font-[800] tabular-nums tracking-tight ${
               isRevenu ? "text-emerald-400" : "text-red-400"
