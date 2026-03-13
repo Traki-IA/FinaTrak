@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Check, X, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import TransactionModal from "./TransactionModal";
@@ -56,19 +56,23 @@ function groupByDate(transactions: TTransactionWithCategorie[]): { label: string
 function MobileTxRow({
   transaction,
   index,
+  isActive,
   confirmingDeleteId,
   onEdit,
   onDeleteRequest,
   onDeleteConfirm,
   onDeleteCancel,
+  onRowTap,
 }: {
   transaction: TTransactionWithCategorie;
   index: number;
+  isActive: boolean;
   confirmingDeleteId: string | null;
   onEdit: (t: TTransactionWithCategorie) => void;
   onDeleteRequest: (id: string) => void;
   onDeleteConfirm: (id: string) => void;
   onDeleteCancel: () => void;
+  onRowTap: () => void;
 }) {
   const isRevenu = transaction.type === "revenu";
   const couleur = transaction.categories?.couleur ?? "#94a3b8";
@@ -81,69 +85,87 @@ function MobileTxRow({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
-      className="flex gap-3 py-3 border-b border-white/[0.05] last:border-0"
+      className="border-b border-white/[0.05] last:border-0"
     >
-      {/* Dot coloré */}
-      <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-[6px]" style={{ background: couleur }} />
+      {/* Ligne principale — tappable */}
+      <div
+        className="flex gap-3 py-3 cursor-pointer select-none"
+        onClick={onRowTap}
+      >
+        {/* Dot coloré */}
+        <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-[6px]" style={{ background: couleur }} />
 
-      {/* Contenu : gauche (nom + catégorie) | droite (montant + actions) */}
-      <div className="flex-1 min-w-0 flex items-start justify-between gap-3">
-
-        {/* Gauche */}
-        <div className="min-w-0 flex-1">
-          <p className="text-[17px] font-[600] text-white leading-tight truncate">
-            {transaction.description ?? "—"}
-          </p>
-          <p className="text-[13px] mt-0.5 leading-none">
-            <span className="text-white/40">{formatDate(transaction.date)}</span>
-            <span className="text-white/25"> · </span>
-            <span style={{ color: couleur }}>{transaction.categories?.nom ?? "—"}</span>
-          </p>
-        </div>
-
-        {/* Droite */}
-        <div className="shrink-0 flex flex-col items-end gap-1">
+        {/* Contenu : gauche (nom + méta) | droite (montant) */}
+        <div className="flex-1 min-w-0 flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-[17px] font-[600] text-white leading-tight truncate">
+              {transaction.description ?? "—"}
+            </p>
+            <p className="text-[13px] mt-0.5 leading-none">
+              <span className="text-white/40">{formatDate(transaction.date)}</span>
+              <span className="text-white/25"> · </span>
+              <span style={{ color: couleur }}>{transaction.categories?.nom ?? "—"}</span>
+            </p>
+          </div>
           <span
-            className={`text-[17px] font-[800] tabular-nums tracking-tight ${
+            className={`text-[17px] font-[800] tabular-nums tracking-tight shrink-0 ${
               isRevenu ? "text-emerald-400" : "text-red-400"
             }`}
           >
             {isRevenu ? "+" : "−"}{formatEur(transaction.montant)}
           </span>
-
-          {isConfirming ? (
-            <div className="flex gap-1 mt-1">
-              <button
-                onClick={() => onDeleteConfirm(transaction.id)}
-                className="p-1 rounded-lg bg-red-500/15 text-red-400"
-              >
-                <Check size={13} strokeWidth={2.5} />
-              </button>
-              <button
-                onClick={onDeleteCancel}
-                className="p-1 rounded-lg bg-white/[0.05] text-white/40"
-              >
-                <X size={13} strokeWidth={2.5} />
-              </button>
-            </div>
-          ) : (
-            <div className="flex gap-2 mt-1">
-              <button
-                onClick={() => onEdit(transaction)}
-                className="p-1.5 rounded-lg text-orange-400 hover:text-orange-300 hover:bg-orange-400/10 transition-colors"
-              >
-                <Pencil size={14} strokeWidth={2} />
-              </button>
-              <button
-                onClick={() => onDeleteRequest(transaction.id)}
-                className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors"
-              >
-                <X size={14} strokeWidth={2.5} />
-              </button>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Strip d'actions */}
+      <AnimatePresence>
+        {isActive && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div className="border-t flex gap-2 px-1 py-1.5" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
+              {isConfirming ? (
+                <>
+                  <button
+                    onClick={() => onDeleteConfirm(transaction.id)}
+                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-[700] text-red-400"
+                  >
+                    ✓ Confirmer la suppression
+                  </button>
+                  <button
+                    onClick={onDeleteCancel}
+                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-[700]"
+                    style={{ color: "rgba(255,255,255,0.35)" }}
+                  >
+                    ✕ Annuler
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => { onEdit(transaction); onRowTap(); }}
+                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-[700]"
+                    style={{ color: "rgba(255,255,255,0.35)" }}
+                  >
+                    ✎ Modifier
+                  </button>
+                  <button
+                    onClick={() => onDeleteRequest(transaction.id)}
+                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-[700]"
+                    style={{ color: "rgba(239,68,68,0.45)" }}
+                  >
+                    ✕ Supprimer
+                  </button>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -156,11 +178,13 @@ interface ISharedProps {
   typeFilter: TTypeFilter;
   setTypeFilter: (v: TTypeFilter) => void;
   totalFiltre: number;
+  activeRowId: string | null;
   confirmingDeleteId: string | null;
   onEdit: (t: TTransactionWithCategorie) => void;
   onDeleteRequest: (id: string) => void;
   onDeleteConfirm: (id: string) => void;
   onDeleteCancel: () => void;
+  onRowTap: (id: string) => void;
   searchParams: ReturnType<typeof useSearchParams>;
 }
 
@@ -172,11 +196,13 @@ function Transactions({
   typeFilter,
   setTypeFilter,
   totalFiltre,
+  activeRowId,
   confirmingDeleteId,
   onEdit,
   onDeleteRequest,
   onDeleteConfirm,
   onDeleteCancel,
+  onRowTap,
   searchParams,
 }: ISharedProps) {
   const [filterOpen, setFilterOpen] = useState(false);
@@ -265,11 +291,13 @@ function Transactions({
                       key={t.id}
                       transaction={t}
                       index={idx}
+                      isActive={activeRowId === t.id}
                       confirmingDeleteId={confirmingDeleteId}
                       onEdit={onEdit}
                       onDeleteRequest={onDeleteRequest}
                       onDeleteConfirm={onDeleteConfirm}
                       onDeleteCancel={onDeleteCancel}
+                      onRowTap={() => onRowTap(t.id)}
                     />
                   );
                 })}
@@ -306,6 +334,7 @@ export default function TransactionsContent({
   const [editingTransaction, setEditingTransaction] =
     useState<TTransactionWithCategorie | undefined>(undefined);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [activeRowId, setActiveRowId] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<TTypeFilter>("all");
 
   const filtered = typeFilter === "all"
@@ -327,8 +356,17 @@ export default function TransactionsContent({
     setModalOpen(true);
   }
 
+  function handleRowTap(id: string) {
+    setActiveRowId((prev) => {
+      if (prev === id) return null;
+      if (confirmingDeleteId) setConfirmingDeleteId(null);
+      return id;
+    });
+  }
+
   async function handleDeleteConfirm(id: string) {
     setConfirmingDeleteId(null);
+    setActiveRowId(null);
     const result = await deleteTransaction(id);
     if ("error" in result) {
       toast.error(result.error);
@@ -344,11 +382,13 @@ export default function TransactionsContent({
     typeFilter,
     setTypeFilter,
     totalFiltre,
+    activeRowId,
     confirmingDeleteId,
     onEdit: openEditModal,
     onDeleteRequest: setConfirmingDeleteId,
     onDeleteConfirm: handleDeleteConfirm,
-    onDeleteCancel: () => setConfirmingDeleteId(null),
+    onDeleteCancel: () => { setConfirmingDeleteId(null); setActiveRowId(null); },
+    onRowTap: handleRowTap,
     searchParams,
   };
 
