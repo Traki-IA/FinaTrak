@@ -101,11 +101,17 @@ function MobileTxRow({
             <p className="text-[17px] font-[600] text-white leading-tight truncate">
               {transaction.description ?? "—"}
             </p>
-            <p className="text-[13px] mt-0.5 leading-none">
-              <span className="text-white/40">{formatDate(transaction.date)}</span>
-              <span className="text-white/25"> · </span>
-              <span style={{ color: couleur }}>{transaction.categories?.nom ?? "—"}</span>
-            </p>
+            <div className="grid mt-0.5" style={{ gridTemplateColumns: "72px 1fr" }}>
+              <span className="text-[9px] text-white/28 leading-none">
+                {formatDate(transaction.date)}
+              </span>
+              <span
+                className="text-[9px] px-1.5 py-0.5 rounded font-bold leading-none self-start truncate"
+                style={{ background: `${couleur}20`, color: couleur }}
+              >
+                {transaction.categories?.nom ?? "—"}
+              </span>
+            </div>
           </div>
           <span
             className={`text-[17px] font-[800] tabular-nums tracking-tight shrink-0 ${

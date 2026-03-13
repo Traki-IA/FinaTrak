@@ -80,13 +80,21 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
           <p className="text-[17px] font-[600] text-white leading-tight truncate">
             {tx.description ?? "—"}
           </p>
-          <span className="text-[13px] mt-0.5 block leading-none" style={{ color: couleur }}>
-            {tx.categories?.nom ?? "—"}
-          </span>
+          <div className="grid mt-0.5" style={{ gridTemplateColumns: "72px 1fr" }}>
+            <span className="text-[9px] text-white/28 leading-none">
+              {formatDate(tx.date)}
+            </span>
+            <span
+              className="text-[9px] px-1.5 py-0.5 rounded font-bold leading-none self-start truncate"
+              style={{ background: `${couleur}20`, color: couleur }}
+            >
+              {tx.categories?.nom ?? "—"}
+            </span>
+          </div>
         </div>
 
         {/* Droite */}
-        <div className="shrink-0 flex flex-col items-end gap-0.5">
+        <div className="shrink-0 flex flex-col items-end">
           <span
             className={`text-[17px] font-[800] tabular-nums tracking-tight ${
               isRevenu ? "text-emerald-400" : "text-red-400"
@@ -94,7 +102,6 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
           >
             {isRevenu ? "+" : "−"}{fmt(tx.montant)} €
           </span>
-          <span className="text-[12px] text-white/40 leading-none">{formatDate(tx.date)}</span>
         </div>
       </div>
     </div>
