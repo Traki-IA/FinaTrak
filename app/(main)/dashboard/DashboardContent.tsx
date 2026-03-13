@@ -81,7 +81,7 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
             {tx.description ?? "—"}
           </p>
           <div className="grid mt-0.5" style={{ gridTemplateColumns: "72px 1fr" }}>
-            <span className="text-[9px] text-white/28 leading-none">
+            <span className="text-[9px] text-white/55 leading-none">
               {formatDate(tx.date)}
             </span>
             <span

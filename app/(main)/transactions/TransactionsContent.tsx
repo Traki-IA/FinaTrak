@@ -89,32 +89,42 @@ function MobileTxRow({
     >
       {/* Ligne principale — tappable */}
       <div
-        className="flex gap-3 py-3 cursor-pointer select-none"
+        className="grid py-3 cursor-pointer select-none items-start"
+        style={{ gridTemplateColumns: "1fr 110px 1fr" }}
         onClick={onRowTap}
       >
-        {/* Dot coloré */}
-        <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-[6px]" style={{ background: couleur }} />
-
-        {/* Contenu : gauche (nom + méta) | droite (montant) */}
-        <div className="flex-1 min-w-0 flex items-start justify-between gap-3">
+        {/* Colonne gauche: dot + nom + date */}
+        <div className="flex gap-3 min-w-0 pr-2">
+          <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-[6px]" style={{ background: couleur }} />
           <div className="min-w-0 flex-1">
             <p className="text-[17px] font-[600] text-white leading-tight truncate">
               {transaction.description ?? "—"}
             </p>
-            <div className="grid mt-0.5" style={{ gridTemplateColumns: "72px 1fr" }}>
-              <span className="text-[9px] text-white/28 leading-none">
-                {formatDate(transaction.date)}
-              </span>
-              <span
-                className="text-[9px] px-1.5 py-0.5 rounded font-bold leading-none self-start truncate"
-                style={{ background: `${couleur}20`, color: couleur }}
-              >
-                {transaction.categories?.nom ?? "—"}
-              </span>
-            </div>
+            <span className="text-[9px] text-white/55 leading-none mt-0.5 block">
+              {formatDate(transaction.date)}
+            </span>
           </div>
+        </div>
+
+        {/* Colonne centrale: bulle catégorie 110px */}
+        <div className="flex items-start justify-center">
           <span
-            className={`text-[17px] font-[800] tabular-nums tracking-tight shrink-0 ${
+            className="w-full block text-[10px] font-[700] text-center overflow-hidden truncate"
+            style={{
+              borderRadius: "9999px",
+              background: `${couleur}26`,
+              color: couleur,
+              padding: "4px 0",
+            }}
+          >
+            {transaction.categories?.nom ?? "—"}
+          </span>
+        </div>
+
+        {/* Colonne droite: montant */}
+        <div className="flex items-start justify-end pl-2">
+          <span
+            className={`text-[17px] font-[800] tabular-nums tracking-tight ${
               isRevenu ? "text-emerald-400" : "text-red-400"
             }`}
           >
