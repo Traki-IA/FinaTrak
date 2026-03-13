@@ -69,40 +69,49 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
   const couleur = tx.categories?.couleur ?? "#94a3b8";
 
   return (
-    <div className="flex gap-3 py-3 border-b border-white/[0.05] last:border-0">
-      {/* Dot coloré */}
-      <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-[6px]" style={{ background: couleur }} />
-
-      {/* Contenu : gauche (nom + catégorie) | droite (montant) */}
-      <div className="flex-1 min-w-0 flex items-start justify-between gap-3">
-        {/* Gauche */}
-        <div className="min-w-0 flex-1">
-          <p className="text-[17px] font-[600] text-white leading-tight truncate">
-            {tx.description ?? "—"}
-          </p>
-          <div className="grid mt-0.5" style={{ gridTemplateColumns: "72px 1fr" }}>
-            <span className="text-[9px] text-white/55 leading-none">
+    <div
+      className="grid py-3 border-b border-white/[0.05] last:border-0 items-center"
+      style={{ gridTemplateColumns: "1fr 110px 1fr", minHeight: "56px" }}
+    >
+      {/* Colonne gauche : dot + nom + date */}
+      <div className="flex flex-col justify-center min-w-0 pr-2">
+        <div className="flex gap-3 min-w-0">
+          <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-[3px]" style={{ background: couleur }} />
+          <div className="min-w-0 flex-1">
+            <p className="text-[17px] font-[600] text-white leading-tight truncate">
+              {tx.description ?? "—"}
+            </p>
+            <span className="text-[9px] text-white/55 leading-none mt-0.5 block">
               {formatDate(tx.date)}
-            </span>
-            <span
-              className="text-[9px] px-1.5 py-0.5 rounded font-bold leading-none self-start truncate"
-              style={{ background: `${couleur}20`, color: couleur }}
-            >
-              {tx.categories?.nom ?? "—"}
             </span>
           </div>
         </div>
+      </div>
 
-        {/* Droite */}
-        <div className="shrink-0 flex flex-col items-end">
-          <span
-            className={`text-[17px] font-[800] tabular-nums tracking-tight ${
-              isRevenu ? "text-emerald-400" : "text-red-400"
-            }`}
-          >
-            {isRevenu ? "+" : "−"}{fmt(tx.montant)} €
-          </span>
-        </div>
+      {/* Colonne centrale : bulle catégorie */}
+      <div className="flex items-center justify-center h-full">
+        <span
+          className="w-full block text-[10px] font-[700] text-center overflow-hidden truncate"
+          style={{
+            borderRadius: "9999px",
+            background: `${couleur}26`,
+            color: couleur,
+            padding: "4px 0",
+          }}
+        >
+          {tx.categories?.nom ?? "—"}
+        </span>
+      </div>
+
+      {/* Colonne droite : montant */}
+      <div className="flex items-center justify-end h-full pl-2">
+        <span
+          className={`text-[17px] font-[800] tabular-nums tracking-tight ${
+            isRevenu ? "text-emerald-400" : "text-red-400"
+          }`}
+        >
+          {isRevenu ? "+" : "−"}{fmt(tx.montant)} €
+        </span>
       </div>
     </div>
   );
