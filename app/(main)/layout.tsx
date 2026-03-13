@@ -4,6 +4,8 @@ import { getActiveCompteId, DEFAULT_COMPTE_ID } from "@/lib/active-compte";
 import { getSession } from "@/lib/auth";
 import { fetchDashboardStats } from "@/lib/dashboard";
 
+export const dynamic = "force-dynamic";
+
 export default async function MainLayout({
   children,
 }: Readonly<{
@@ -42,12 +44,12 @@ export default async function MainLayout({
       try {
         const stats = await fetchDashboardStats(activeCompteId, "1m");
         solde = stats.soldeTotal;
-      } catch {
-        // Sidebar solde is optional
+      } catch (err) {
+        console.error("[layout] fetchDashboardStats failed:", err);
       }
     }
-  } catch {
-    // Supabase may not be configured during build
+  } catch (err) {
+    console.error("[layout] initialization failed:", err);
   }
 
   return (
