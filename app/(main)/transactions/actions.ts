@@ -91,6 +91,7 @@ export async function insertTransaction(
 
   revalidatePath("/transactions");
   revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
   return { success: true, objectifUpdated };
 }
 
@@ -116,6 +117,7 @@ export async function updateTransaction(
 
   revalidatePath("/transactions");
   revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
   return { success: true, objectifUpdated: false };
 }
 
@@ -137,5 +139,6 @@ export async function deleteTransaction(
 
   revalidatePath("/transactions");
   revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
   return { success: true };
 }

@@ -86,6 +86,8 @@ export async function insertBudgetItem(
   if (error) return { error: error.message };
 
   revalidatePath("/budget");
+  revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -105,6 +107,8 @@ export async function toggleBudgetItem(
   if (error) return { error: error.message };
 
   revalidatePath("/budget");
+  revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -121,6 +125,8 @@ export async function deleteBudgetItem(id: string): Promise<TActionResult> {
   if (error) return { error: error.message };
 
   revalidatePath("/budget");
+  revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -145,6 +151,8 @@ export async function updateBudgetItem(
   if (error) return { error: error.message };
 
   revalidatePath("/budget");
+  revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -165,5 +173,7 @@ export async function reorderBudgetItems(
   }
 
   revalidatePath("/budget");
+  revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
   return { success: true };
 }
