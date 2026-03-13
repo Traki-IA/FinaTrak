@@ -179,16 +179,14 @@ export default function DashboardContent({
           <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">
             Solde disponible
           </p>
-          <div className="flex items-baseline gap-1.5 mt-1.5">
+          <div className="flex items-baseline gap-2 mt-1.5">
             <span className="text-[42px] font-[900] tracking-tight leading-none">
               {fmt(stats.soldeTotal)}
             </span>
             <span className="text-[22px] text-white/28 font-light">€</span>
-          </div>
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <span className="text-[12px] text-emerald-400 font-bold">↑ +{Math.abs(tauxEpargne)}%</span>
-            <span className="text-[10px] text-white/20">·</span>
-            <span className="text-[12px] text-white/50">Init. {fmt(stats.soldeInitial)} €</span>
+            <span className="text-[20px] font-[900] tracking-tight leading-none text-emerald-400 ml-1">
+              ↑ +{Math.abs(tauxEpargne)}%
+            </span>
           </div>
           <div className="mt-4 -mx-1">
             <Sparkline data={sparkData} height={72} />
