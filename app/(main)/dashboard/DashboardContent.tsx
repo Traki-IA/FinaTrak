@@ -184,8 +184,8 @@ export default function DashboardContent({
               {fmt(stats.soldeTotal)}
             </span>
             <span className="text-[22px] text-white/28 font-light">€</span>
-            <span className="text-[20px] font-[900] tracking-tight leading-none text-emerald-400 ml-1">
-              ↑ +{Math.abs(tauxEpargne)}%
+            <span className={`text-[20px] font-[900] tracking-tight leading-none ml-1 ${tauxEpargne >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+              {tauxEpargne >= 0 ? "↑" : "↓"} {tauxEpargne > 0 ? "+" : ""}{tauxEpargne}%
             </span>
           </div>
           <div className="mt-4 -mx-1">

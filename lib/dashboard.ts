@@ -260,6 +260,26 @@ export async function fetchBalanceHistory(
   const supabase = await createServerSupabaseClient();
   const { debut } = getPeriodBounds(period);
 
+  // Solde cumulatif au début de la fenêtre = solde initial + toutes les transactions antérieures
+  const soldeInitial = await fetchSoldeInitial(compteId);
+
+  const { data: prevData, error: prevError } = await supabase
+    .from("transactions")
+    .select("montant, type")
+    .eq("compte_id", compteId)
+    .eq("user_id", userId)
+    .lt("date", debut);
+
+  if (prevError) {
+    throw new Error(`fetchBalanceHistory (prev): ${prevError.message}`);
+  }
+
+  let runningBalance = soldeInitial;
+  for (const row of prevData ?? []) {
+    runningBalance += row.type === "revenu" ? Number(row.montant) : -Number(row.montant);
+  }
+
+  // Transactions de la fenêtre, triées chronologiquement
   const { data, error } = await supabase
     .from("transactions")
     .select("montant, type, date")
@@ -272,26 +292,45 @@ export async function fetchBalanceHistory(
     throw new Error(`fetchBalanceHistory: ${error.message}`);
   }
 
-  const monthly = new Map<string, { solde: number; depenses: number }>();
+  // Déltas nets par mois (flux mensuel)
+  const deltas = new Map<string, { net: number; depenses: number }>();
 
   for (const row of data ?? []) {
     const mois = labelMois(row.date as string);
-    const entry = monthly.get(mois) ?? { solde: 0, depenses: 0 };
+    const entry = deltas.get(mois) ?? { net: 0, depenses: 0 };
 
     if (row.type === "revenu") {
-      entry.solde += Number(row.montant);
+      entry.net += Number(row.montant);
     } else {
-      entry.solde -= Number(row.montant);
+      entry.net -= Number(row.montant);
       entry.depenses += Number(row.montant);
     }
 
-    monthly.set(mois, entry);
+    deltas.set(mois, entry);
   }
 
-  return Array.from(monthly.entries()).map(([mois, vals]) => ({
-    mois,
-    ...vals,
-  }));
+  // Générer tous les mois de la fenêtre (debut → aujourd'hui) pour combler les trous
+  const months: string[] = [];
+  const periodStart = new Date(debut);
+  const today = new Date();
+  let cur = new Date(periodStart.getFullYear(), periodStart.getMonth(), 1);
+
+  while (cur <= today) {
+    months.push(labelMois(cur.toISOString().split("T")[0]));
+    cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+  }
+
+  // Convertir en solde cumulatif réel, mois par mois
+  const result: TBalancePoint[] = [];
+  let cumulative = runningBalance;
+
+  for (const mois of months) {
+    const d = deltas.get(mois) ?? { net: 0, depenses: 0 };
+    cumulative += d.net;
+    result.push({ mois, solde: cumulative, depenses: d.depenses });
+  }
+
+  return result;
 }
 
 // ── Revenus vs Dépenses par mois (bar chart) ────────────────────────────────
@@ -328,7 +367,7 @@ export async function fetchRevenusDepensesParMois(
       epargne: 0,
     };
     if (row.type === "revenu") entry.revenus += Number(row.montant);
-    else entry.depenses += Number(row.montant);
+    else if (row.type === "depense") entry.depenses += Number(row.montant);
     entry.epargne = entry.revenus - entry.depenses;
     monthMap.set(moisKey, entry);
   }
