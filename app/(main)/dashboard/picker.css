@@ -1,0 +1,85 @@
+/* ── Pulse Flat — react-day-picker overrides ─────────────────────────────── */
+
+/* Reset fond blanc plage */
+.pulse-picker .rdp-day_range_middle,
+.pulse-picker [class*="range_middle"] {
+  background-color: rgba(249, 115, 22, 0.15) !important;
+  color: #fb923c !important;
+  border-radius: 0 !important;
+}
+
+.pulse-picker .rdp-day_range_start,
+.pulse-picker .rdp-day_range_end,
+.pulse-picker [class*="range_start"],
+.pulse-picker [class*="range_end"] {
+  background-color: #f97316 !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+}
+
+/* Fond général */
+.pulse-picker .rdp,
+.pulse-picker .rdp-months,
+.pulse-picker .rdp-month,
+.pulse-picker .rdp-table,
+.pulse-picker .rdp-tbody,
+.pulse-picker .rdp-cell,
+.pulse-picker .rdp-day {
+  background: transparent !important;
+}
+
+/* Texte jours */
+.pulse-picker .rdp-day {
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-size: 11px !important;
+  border-radius: 6px !important;
+}
+
+.pulse-picker .rdp-day:hover:not([disabled]) {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+}
+
+/* Noms jours semaine */
+.pulse-picker .rdp-head_cell,
+.pulse-picker .rdp-weekday {
+  color: rgba(255, 255, 255, 0.22) !important;
+  font-size: 8px !important;
+  font-weight: 700 !important;
+}
+
+/* Header mois */
+.pulse-picker .rdp-caption_label,
+.pulse-picker .rdp-month_caption {
+  color: #fff !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+/* Flèches navigation */
+.pulse-picker .rdp-nav_button,
+.pulse-picker .rdp-button_previous,
+.pulse-picker .rdp-button_next,
+.pulse-picker button[class*="nav"] {
+  color: rgba(255, 255, 255, 0.35) !important;
+  background: transparent !important;
+}
+
+.pulse-picker .rdp-nav_button:hover,
+.pulse-picker .rdp-button_previous:hover,
+.pulse-picker .rdp-button_next:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Aujourd'hui */
+.pulse-picker .rdp-day_today {
+  color: #f97316 !important;
+  font-weight: 700 !important;
+}
+
+/* Supprimer outline focus */
+.pulse-picker .rdp-day:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
