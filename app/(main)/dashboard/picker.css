@@ -39,6 +39,9 @@
   background-color: rgba(249, 115, 22, 0.28) !important;
   color: #f97316 !important;
   border-radius: 6px !important;
+  /* v9 force width: 100% pour la barre continue → on revient à la taille normale du bouton */
+  width: var(--rdp-day_button-width, 36px) !important;
+  height: var(--rdp-day_button-height, 36px) !important;
 }
 
 /* ── Day button default ─────────────────────────────────────────────────── */
@@ -113,4 +116,6 @@
   background-color: rgba(249, 115, 22, 0.28) !important;
   color: #f97316 !important;
   border-radius: 6px !important;
+  width: var(--rdp-day_button-width, 36px) !important;
+  height: var(--rdp-day_button-height, 36px) !important;
 }
