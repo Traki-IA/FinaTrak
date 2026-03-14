@@ -138,6 +138,7 @@ function PeriodPill({
   onClick: () => void;
 }) {
   const base: React.CSSProperties = {
+    display: "block",
     borderRadius: "9999px",
     padding: "6px 0",
     textAlign: "center",
@@ -293,7 +294,7 @@ export default function DashboardContent({
 
           {/* Sélecteur de période — mobile uniquement */}
           <div className="md:hidden mt-4">
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1.5fr", gap: "5px", padding: "0 14px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1.5fr", gap: "5px" }}>
               <PeriodPill
                 label={labelMoisCourant}
                 active={period === "1m"}
@@ -334,7 +335,7 @@ export default function DashboardContent({
                       type="date"
                       value={customFrom}
                       onChange={(e) => setCustomFrom(e.target.value)}
-                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)", borderRadius: "9px", padding: "9px 12px", fontSize: "12px", color: "#fff", width: "100%", outline: "none" }}
+                      style={{ background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "9px", padding: "9px 12px", fontSize: "12px", color: "#fff", width: "100%", outline: "none", colorScheme: "dark" }}
                     />
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
@@ -345,14 +346,13 @@ export default function DashboardContent({
                       type="date"
                       value={customTo}
                       onChange={(e) => setCustomTo(e.target.value)}
-                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)", borderRadius: "9px", padding: "9px 12px", fontSize: "12px", color: "#fff", width: "100%", outline: "none" }}
+                      style={{ background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "9px", padding: "9px 12px", fontSize: "12px", color: "#fff", width: "100%", outline: "none", colorScheme: "dark" }}
                     />
                   </div>
                 </div>
                 <button
                   onClick={handleApplyCustom}
-                  disabled={!customFrom || !customTo}
-                  style={{ marginTop: "10px", width: "100%", background: "#f97316", borderRadius: "10px", padding: "11px", fontSize: "12px", fontWeight: 800, color: "#fff", opacity: (!customFrom || !customTo) ? 0.4 : 1, transition: "opacity 0.15s" }}
+                  style={{ marginTop: "10px", width: "100%", background: "#f97316", borderRadius: "10px", padding: "11px", fontSize: "12px", fontWeight: 800, color: "#fff", opacity: (!customFrom || !customTo) ? 0.4 : 1, transition: "opacity 0.15s", pointerEvents: (!customFrom || !customTo) ? "none" : "auto", cursor: (!customFrom || !customTo) ? "default" : "pointer" }}
                 >
                   Appliquer
                 </button>
