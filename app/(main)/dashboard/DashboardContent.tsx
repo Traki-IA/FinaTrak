@@ -124,64 +124,6 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
   );
 }
 
-// ── Period Pill ───────────────────────────────────────────────────────────────
-
-function PeriodPill({
-  label,
-  active,
-  isCustom,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  isCustom?: boolean;
-  onClick: () => void;
-}) {
-  const base: React.CSSProperties = {
-    display: "block",
-    borderRadius: "9999px",
-    padding: "6px 0",
-    textAlign: "center",
-    fontSize: "10px",
-    fontWeight: 700,
-    width: "100%",
-    border: "1px solid",
-    transition: "background 0.15s, color 0.15s",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  };
-
-  if (isCustom) {
-    return (
-      <button
-        onClick={onClick}
-        style={{
-          ...base,
-          background: "rgba(249,115,22,0.12)",
-          borderColor: "rgba(249,115,22,0.3)",
-          color: "#f97316",
-        }}
-      >
-        {label}
-      </button>
-    );
-  }
-
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        ...base,
-        background: active ? "rgba(255,255,255,0.10)" : "transparent",
-        borderColor: active ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.08)",
-        color: active ? "#ffffff" : "rgba(255,255,255,0.50)",
-      }}
-    >
-      {label}
-    </button>
-  );
-}
 
 // ── Date input iOS-compatible ─────────────────────────────────────────────────
 // L'input[type="date"] natif est invisible et positionné par-dessus le div
@@ -236,7 +178,7 @@ export default function DashboardContent({
 }: IDashboardContentProps) {
   const router = useRouter();
   const [tab, setTab] = useState<TMobileTab>("flux");
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
   const [customFrom, setCustomFrom] = useState(dateFrom ?? "");
   const [customTo, setCustomTo] = useState(dateTo ?? "");
 
@@ -247,30 +189,19 @@ export default function DashboardContent({
       ? -100
       : 0;
 
-  // Label du mois courant pour la pill "1m"
-  const labelMoisCourant = new Date()
-    .toLocaleDateString("fr-FR", { month: "long", year: "numeric" })
-    .replace(/^\w/, (c) => c.toUpperCase());
-
-  // Label de la plage custom quand active
-  const labelCustom =
-    period === "custom" && dateFrom && dateTo
-      ? `${fmtShort(dateFrom)} → ${fmtShort(dateTo)}`
-      : "Perso. ⚙";
-
   function handlePeriod(p: TPeriod) {
     if (p === "1m") {
       router.push("/dashboard");
     } else {
       router.push(`/dashboard?period=${p}`);
     }
-    setDrawerOpen(false);
+    setShowPicker(false);
   }
 
   function handleApplyCustom() {
     if (customFrom && customTo) {
       router.push(`/dashboard?period=custom&dateFrom=${customFrom}&dateTo=${customTo}`);
-      setDrawerOpen(false);
+      setShowPicker(false);
     }
   }
 
@@ -314,7 +245,27 @@ export default function DashboardContent({
 
         {/* Hero Solde */}
         <div className="mb-2">
-          <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">
+          <div className="md:hidden flex justify-between items-center">
+            <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">
+              Solde disponible
+            </p>
+            {/* Sélecteur de période inline */}
+            <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "9999px", padding: "2px 3px", display: "flex", gap: "2px" }}>
+              {([ { key: "1m", label: "Ce mois" }, { key: "3m", label: "3m" }, { key: "6m", label: "6m" }, { key: "1a", label: "1a" }, { key: "custom", label: "⚙" } ] as { key: TPeriod; label: string }[]).map(({ key, label }) => {
+                const isActive = period === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => key === "custom" ? setShowPicker((v) => !v) : handlePeriod(key)}
+                    style={{ borderRadius: "9999px", fontSize: "9px", fontWeight: isActive ? 800 : 600, color: isActive ? "#fff" : "rgba(255,255,255,0.35)", padding: isActive ? "3px 8px" : "3px 7px", background: isActive ? "rgba(249,115,22,0.9)" : "transparent", border: "none", cursor: "pointer", whiteSpace: "nowrap", transition: "background 0.15s, color 0.15s" }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <p className="hidden md:block text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">
             Solde disponible
           </p>
           <div className="flex items-baseline gap-2 mt-1.5">
@@ -330,53 +281,21 @@ export default function DashboardContent({
             <Sparkline data={sparkData} height={72} />
           </div>
 
-          {/* Sélecteur de période — mobile uniquement */}
-          <div className="md:hidden mt-4">
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1.5fr", gap: "5px" }}>
-              <PeriodPill
-                label={labelMoisCourant}
-                active={period === "1m"}
-                onClick={() => handlePeriod("1m")}
-              />
-              <PeriodPill
-                label="3m"
-                active={period === "3m"}
-                onClick={() => handlePeriod("3m")}
-              />
-              <PeriodPill
-                label="6m"
-                active={period === "6m"}
-                onClick={() => handlePeriod("6m")}
-              />
-              <PeriodPill
-                label="1a"
-                active={period === "1a"}
-                onClick={() => handlePeriod("1a")}
-              />
-              <PeriodPill
-                label={labelCustom}
-                active={period === "custom"}
-                isCustom
-                onClick={() => setDrawerOpen((o) => !o)}
-              />
-            </div>
-
-            {/* Drawer inline */}
-            {drawerOpen && (
-              <div className="mt-3 rounded-xl border border-white/[0.08] bg-white/[0.04] p-4">
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                  <DateInputField label="Du" value={customFrom} onChange={setCustomFrom} />
-                  <DateInputField label="Au" value={customTo} onChange={setCustomTo} />
-                </div>
-                <button
-                  onClick={handleApplyCustom}
-                  style={{ marginTop: "10px", width: "100%", background: "#f97316", borderRadius: "10px", padding: "11px", fontSize: "12px", fontWeight: 800, color: "#fff", opacity: (!customFrom || !customTo) ? 0.4 : 1, transition: "opacity 0.15s", pointerEvents: (!customFrom || !customTo) ? "none" : "auto", cursor: (!customFrom || !customTo) ? "default" : "pointer" }}
-                >
-                  Appliquer
-                </button>
+          {/* Drawer période personnalisée — mobile uniquement */}
+          {showPicker && (
+            <div className="md:hidden mt-3 rounded-xl border border-white/[0.08] bg-white/[0.04] p-4">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                <DateInputField label="Du" value={customFrom} onChange={setCustomFrom} />
+                <DateInputField label="Au" value={customTo} onChange={setCustomTo} />
               </div>
-            )}
-          </div>
+              <button
+                onClick={handleApplyCustom}
+                style={{ marginTop: "10px", width: "100%", background: "#f97316", borderRadius: "10px", padding: "11px", fontSize: "13px", fontWeight: 800, color: "#fff", opacity: (!customFrom || !customTo) ? 0.4 : 1, transition: "opacity 0.15s", pointerEvents: (!customFrom || !customTo) ? "none" : "auto", cursor: (!customFrom || !customTo) ? "default" : "pointer" }}
+              >
+                Appliquer
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="border-b border-white/[0.05]" />
