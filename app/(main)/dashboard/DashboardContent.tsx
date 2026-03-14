@@ -131,10 +131,12 @@ export default function DashboardContent({
   stats, transactions, categories, history,
 }: IDashboardContentProps) {
   const [tab, setTab] = useState<TMobileTab>("flux");
+  const epargne = stats.revenus - stats.depenses;
   const tauxEpargne = stats.revenus > 0
     ? Math.round(((stats.revenus - stats.depenses) / stats.revenus) * 100)
-    : 0;
-  const epargne = stats.revenus - stats.depenses;
+    : stats.depenses > 0
+      ? -100
+      : 0;
 
   const totalDep = categories.reduce((s, c) => s + c.valeur, 0) || 1;
   const donut = categories
@@ -219,7 +221,7 @@ export default function DashboardContent({
             <div className="flex">
               <div className="flex-1 pr-4 flex flex-col items-center">
                 <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Épargne</p>
-                <p className="text-[28px] font-[900] mt-2 mb-2.5 tracking-tight text-emerald-400">{fmt(epargne)} €</p>
+                <p className={`text-[28px] font-[900] mt-2 mb-2.5 tracking-tight ${epargne >= 0 ? "text-emerald-400" : "text-red-400"}`}>{fmt(epargne)} €</p>
                 <Bar pct={Math.min(100, Math.round(Math.abs(epargne) / 2500 * 100))} color="#6366f1" height={3} className="opacity-60 w-full" />
               </div>
               <div className="border-r border-white/[0.05]" />
