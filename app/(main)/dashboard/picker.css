@@ -23,29 +23,8 @@
   background: transparent !important;
 }
 
-/* ── Range start / end — cercle orange plein ────────────────────────────── */
-.pulse-picker .rdp-range_start .rdp-day_button,
-.pulse-picker .rdp-range_end .rdp-day_button,
-.pulse-picker [class*="range_start"] .rdp-day_button,
-.pulse-picker [class*="range_end"] .rdp-day_button {
-  background-color: #f97316 !important;
-  color: #fff !important;
-  border-radius: 50% !important;
-}
-
-/* ── Range middle — cellule individuelle arrondie, fond orange, texte orange */
-.pulse-picker .rdp-range_middle .rdp-day_button,
-.pulse-picker [class*="range_middle"] .rdp-day_button {
-  background-color: rgba(249, 115, 22, 0.28) !important;
-  color: #f97316 !important;
-  border-radius: 6px !important;
-  /* v9 force width: 100% pour la barre continue → on revient à la taille normale du bouton */
-  width: var(--rdp-day_button-width, 36px) !important;
-  height: var(--rdp-day_button-height, 36px) !important;
-}
-
-/* ── Day button default ─────────────────────────────────────────────────── */
-.pulse-picker .rdp-day_button {
+/* ── Day button default — cercle uniquement sur les jours hors range_middle */
+.pulse-picker .rdp-day:not(.rdp-range_middle):not([class*="range_middle"]) .rdp-day_button {
   color: rgba(255, 255, 255, 0.55) !important;
   font-size: 11px !important;
   border-radius: 50% !important;
@@ -55,6 +34,29 @@
 .pulse-picker .rdp-day_button:hover {
   background-color: rgba(255, 255, 255, 0.08) !important;
   color: #fff !important;
+}
+
+/* ── Range start / end — cercle orange plein ────────────────────────────── */
+.pulse-picker .rdp-range_start .rdp-day_button,
+.pulse-picker .rdp-range_end .rdp-day_button,
+.pulse-picker [class*="range_start"] .rdp-day_button,
+.pulse-picker [class*="range_end"] .rdp-day_button {
+  background-color: #f97316 !important;
+  color: #fff !important;
+  border-radius: 50% !important;
+  border: none !important;
+}
+
+/* ── Range middle — carré arrondi individuel ────────────────────────────── */
+.pulse-picker .rdp-range_middle .rdp-day_button,
+.pulse-picker [class*="range_middle"] .rdp-day_button {
+  background-color: rgba(249, 115, 22, 0.28) !important;
+  color: #f97316 !important;
+  border-radius: 6px !important;
+  border: none !important;
+  /* reset width: v9 force 100% pour la barre continue */
+  width: var(--rdp-day_button-width, 36px) !important;
+  height: var(--rdp-day_button-height, 36px) !important;
 }
 
 /* ── Today ──────────────────────────────────────────────────────────────── */
@@ -108,14 +110,4 @@
 .pulse-picker .rdp-selected:not(.rdp-range_middle):not([class*="range_middle"]) .rdp-day_button {
   background-color: #f97316 !important;
   color: #fff !important;
-}
-
-/* ── Range middle — doit rester après selected pour gagner la cascade ───── */
-.pulse-picker .rdp-range_middle .rdp-day_button,
-.pulse-picker [class*="range_middle"] .rdp-day_button {
-  background-color: rgba(249, 115, 22, 0.28) !important;
-  color: #f97316 !important;
-  border-radius: 6px !important;
-  width: var(--rdp-day_button-width, 36px) !important;
-  height: var(--rdp-day_button-height, 36px) !important;
 }
