@@ -101,8 +101,16 @@
   box-shadow: none !important;
 }
 
-/* ── Selected fallback ──────────────────────────────────────────────────── */
-.pulse-picker .rdp-selected .rdp-day_button {
+/* ── Selected fallback (start/end uniquement — exclut range_middle) ────── */
+.pulse-picker .rdp-selected:not(.rdp-range_middle):not([class*="range_middle"]) .rdp-day_button {
   background-color: #f97316 !important;
   color: #fff !important;
+}
+
+/* ── Range middle — doit rester après selected pour gagner la cascade ───── */
+.pulse-picker .rdp-range_middle .rdp-day_button,
+.pulse-picker [class*="range_middle"] .rdp-day_button {
+  background-color: rgba(249, 115, 22, 0.20) !important;
+  color: #f97316 !important;
+  border-radius: 6px !important;
 }
