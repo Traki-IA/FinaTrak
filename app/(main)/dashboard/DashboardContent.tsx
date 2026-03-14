@@ -1,7 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { DayPicker } from "react-day-picker";
+import type { DateRange } from "react-day-picker";
+import { fr } from "react-day-picker/locale";
+import "react-day-picker/dist/style.css";
 import Shell from "@/components/layout/Shell";
 import Bar from "@/components/ui/Bar";
 import TabBar from "@/components/ui/TabBar";
@@ -41,9 +45,6 @@ function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 }
 
-function fmtShort(d: string): string {
-  return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
-}
 
 function groupByDate(transactions: TTransactionWithCategorie[]): { label: string; items: TTransactionWithCategorie[] }[] {
   const now = new Date();
@@ -67,6 +68,20 @@ function groupByDate(transactions: TTransactionWithCategorie[]): { label: string
   }
 
   return order.filter((l) => groups[l]?.length).map((l) => ({ label: l, items: groups[l] }));
+}
+
+// Date → "YYYY-MM-DD" sans décalage timezone
+function toISO(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+// Date → "14 janv. 2026"
+function fmtRangeDate(d: Date | undefined): string {
+  if (!d) return "—";
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
 }
 
 // ── Transaction Row (Pulse Flat) ─────────────────────────────────────────────
@@ -125,44 +140,6 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
 }
 
 
-// ── Date input iOS-compatible ─────────────────────────────────────────────────
-// L'input[type="date"] natif est invisible et positionné par-dessus le div
-// stylisé — iOS l'ignore pour le rendu mais l'utilise pour ouvrir le calendrier.
-
-function DateInputField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  // YYYY-MM-DD → "JJ/MM/AAAA" affiché
-  const display = value
-    ? (() => { const [y, m, d] = value.split("-"); return `${d}/${m}/${y}`; })()
-    : "";
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-      <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.40)" }}>
-        {label}
-      </span>
-      <div style={{ position: "relative", background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "10px", padding: "10px 13px", minHeight: "40px", display: "flex", alignItems: "center" }}>
-        <span style={{ fontSize: "14px", fontWeight: 600, color: value ? "#fff" : "rgba(255,255,255,0.30)", pointerEvents: "none", userSelect: "none" }}>
-          {display || "JJ/MM/AAAA"}
-        </span>
-        <input
-          type="date"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", height: "100%", cursor: "pointer" }}
-        />
-      </div>
-    </div>
-  );
-}
-
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 
 type TMobileTab = "flux" | "bilan" | "categ";
@@ -179,8 +156,23 @@ export default function DashboardContent({
   const router = useRouter();
   const [tab, setTab] = useState<TMobileTab>("flux");
   const [showPicker, setShowPicker] = useState(false);
-  const [customFrom, setCustomFrom] = useState(dateFrom ?? "");
-  const [customTo, setCustomTo] = useState(dateTo ?? "");
+  const [range, setRange] = useState<DateRange>({
+    from: dateFrom ? new Date(dateFrom + "T00:00:00") : undefined,
+    to:   dateTo   ? new Date(dateTo   + "T00:00:00") : undefined,
+  });
+
+  // Fermeture au clic en dehors de l'overlay
+  const pickerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!showPicker) return;
+    function onMouseDown(e: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setShowPicker(false);
+      }
+    }
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, [showPicker]);
 
   const epargne = stats.revenus - stats.depenses;
   const tauxEpargne = stats.revenus > 0
@@ -198,9 +190,9 @@ export default function DashboardContent({
     setShowPicker(false);
   }
 
-  function handleApplyCustom() {
-    if (customFrom && customTo) {
-      router.push(`/dashboard?period=custom&dateFrom=${customFrom}&dateTo=${customTo}`);
+  function handleApplyRange() {
+    if (range.from && range.to) {
+      router.push(`/dashboard?period=custom&dateFrom=${toISO(range.from)}&dateTo=${toISO(range.to)}`);
       setShowPicker(false);
     }
   }
@@ -277,25 +269,51 @@ export default function DashboardContent({
               {tauxEpargne >= 0 ? "↑" : "↓"} {tauxEpargne > 0 ? "+" : ""}{tauxEpargne}%
             </span>
           </div>
-          <div className="mt-4 -mx-1">
+          {/* Sparkline + overlay calendrier */}
+          <div className="mt-4 -mx-1" style={{ position: "relative" }}>
             <Sparkline data={sparkData} height={72} />
-          </div>
 
-          {/* Drawer période personnalisée — mobile uniquement */}
-          {showPicker && (
-            <div className="md:hidden mt-3 rounded-xl border border-white/[0.08] bg-white/[0.04] p-4">
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                <DateInputField label="Du" value={customFrom} onChange={setCustomFrom} />
-                <DateInputField label="Au" value={customTo} onChange={setCustomTo} />
-              </div>
-              <button
-                onClick={handleApplyCustom}
-                style={{ marginTop: "10px", width: "100%", background: "#f97316", borderRadius: "10px", padding: "11px", fontSize: "13px", fontWeight: 800, color: "#fff", opacity: (!customFrom || !customTo) ? 0.4 : 1, transition: "opacity 0.15s", pointerEvents: (!customFrom || !customTo) ? "none" : "auto", cursor: (!customFrom || !customTo) ? "default" : "pointer" }}
+            {/* Overlay picker — mobile uniquement */}
+            {showPicker && (
+              <div
+                ref={pickerRef}
+                className="md:hidden"
+                style={{ position: "absolute", top: "8px", left: "10px", right: "10px", zIndex: 20, background: "#0f0f1e", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", padding: "12px", boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}
               >
-                Appliquer
-              </button>
-            </div>
-          )}
+                {/* Range indicator DU → AU */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                  <div style={{ border: "1px solid rgba(255,255,255,0.10)", borderRadius: "9px", padding: "6px 10px" }}>
+                    <div style={{ fontSize: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)", marginBottom: 2 }}>Du</div>
+                    <div style={{ fontSize: "12px", fontWeight: 600, color: "#f97316" }}>{fmtRangeDate(range.from)}</div>
+                  </div>
+                  <span style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px" }}>→</span>
+                  <div style={{ border: "1px solid rgba(249,115,22,0.30)", background: "rgba(249,115,22,0.08)", borderRadius: "9px", padding: "6px 10px" }}>
+                    <div style={{ fontSize: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)", marginBottom: 2 }}>Au</div>
+                    <div style={{ fontSize: "12px", fontWeight: 600, color: "#f97316" }}>{fmtRangeDate(range.to)}</div>
+                  </div>
+                </div>
+
+                {/* Calendrier DayPicker */}
+                <div style={{ "--rdp-accent-color": "#f97316", "--rdp-background-color": "rgba(249,115,22,0.15)", color: "rgba(255,255,255,0.5)", fontSize: "11px" } as React.CSSProperties}>
+                  <DayPicker
+                    mode="range"
+                    selected={range}
+                    onSelect={(r) => setRange({ from: r?.from, to: r?.to })}
+                    locale={fr}
+                    style={{ margin: 0 }}
+                  />
+                </div>
+
+                {/* Bouton Appliquer */}
+                <button
+                  onClick={handleApplyRange}
+                  style={{ width: "100%", background: "#f97316", borderRadius: "9px", padding: "9px", fontSize: "11px", fontWeight: 800, color: "#fff", opacity: (range.from && range.to) ? 1 : 0.4, pointerEvents: (range.from && range.to) ? "auto" : "none", cursor: (range.from && range.to) ? "pointer" : "default", transition: "opacity 0.15s" }}
+                >
+                  Appliquer
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="border-b border-white/[0.05]" />
