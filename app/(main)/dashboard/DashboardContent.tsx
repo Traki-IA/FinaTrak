@@ -45,31 +45,6 @@ function fmtShort(d: string): string {
   return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 }
 
-// YYYY-MM-DD → JJ/MM/AAAA (affichage)
-function toDisplayDate(iso: string): string {
-  if (!iso) return "";
-  const [y, m, d] = iso.split("-");
-  return `${d}/${m}/${y}`;
-}
-
-// JJ/MM/AAAA → YYYY-MM-DD (URL param) — null si invalide
-function parseDisplayDate(display: string): string | null {
-  const match = display.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (!match) return null;
-  const [, d, m, y] = match;
-  const date = new Date(Number(y), Number(m) - 1, Number(d));
-  if (isNaN(date.getTime())) return null;
-  return `${y}-${m}-${d}`;
-}
-
-// Auto-insère les "/" pendant la saisie : 01012026 → 01/01/2026
-function autoFormatDate(raw: string): string {
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length <= 2) return digits;
-  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
-}
-
 function groupByDate(transactions: TTransactionWithCategorie[]): { label: string; items: TTransactionWithCategorie[] }[] {
   const now = new Date();
   const today = now.toDateString();
@@ -224,8 +199,8 @@ export default function DashboardContent({
   const router = useRouter();
   const [tab, setTab] = useState<TMobileTab>("flux");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [customFrom, setCustomFrom] = useState(dateFrom ? toDisplayDate(dateFrom) : "");
-  const [customTo, setCustomTo] = useState(dateTo ? toDisplayDate(dateTo) : "");
+  const [customFrom, setCustomFrom] = useState(dateFrom ?? "");
+  const [customTo, setCustomTo] = useState(dateTo ?? "");
 
   const epargne = stats.revenus - stats.depenses;
   const tauxEpargne = stats.revenus > 0
@@ -255,10 +230,8 @@ export default function DashboardContent({
   }
 
   function handleApplyCustom() {
-    const from = parseDisplayDate(customFrom);
-    const to = parseDisplayDate(customTo);
-    if (from && to) {
-      router.push(`/dashboard?period=custom&dateFrom=${from}&dateTo=${to}`);
+    if (customFrom && customTo) {
+      router.push(`/dashboard?period=custom&dateFrom=${customFrom}&dateTo=${customTo}`);
       setDrawerOpen(false);
     }
   }
@@ -359,13 +332,10 @@ export default function DashboardContent({
                       Du
                     </label>
                     <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="JJ/MM/AAAA"
-                      maxLength={10}
+                      type="date"
                       value={customFrom}
-                      onChange={(e) => setCustomFrom(autoFormatDate(e.target.value))}
-                      style={{ background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "9px", padding: "9px 12px", fontSize: "13px", color: "#fff", width: "100%", outline: "none" }}
+                      onChange={(e) => setCustomFrom(e.target.value)}
+                      style={{ background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "9px", padding: "9px 12px", fontSize: "12px", color: "#fff", width: "100%", outline: "none", colorScheme: "dark" }}
                     />
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
@@ -373,19 +343,16 @@ export default function DashboardContent({
                       Au
                     </label>
                     <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="JJ/MM/AAAA"
-                      maxLength={10}
+                      type="date"
                       value={customTo}
-                      onChange={(e) => setCustomTo(autoFormatDate(e.target.value))}
-                      style={{ background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "9px", padding: "9px 12px", fontSize: "13px", color: "#fff", width: "100%", outline: "none" }}
+                      onChange={(e) => setCustomTo(e.target.value)}
+                      style={{ background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "9px", padding: "9px 12px", fontSize: "12px", color: "#fff", width: "100%", outline: "none", colorScheme: "dark" }}
                     />
                   </div>
                 </div>
                 <button
                   onClick={handleApplyCustom}
-                  style={{ marginTop: "10px", width: "100%", background: "#f97316", borderRadius: "10px", padding: "11px", fontSize: "13px", fontWeight: 800, color: "#fff", opacity: (!parseDisplayDate(customFrom) || !parseDisplayDate(customTo)) ? 0.4 : 1, transition: "opacity 0.15s", pointerEvents: (!parseDisplayDate(customFrom) || !parseDisplayDate(customTo)) ? "none" : "auto", cursor: (!parseDisplayDate(customFrom) || !parseDisplayDate(customTo)) ? "default" : "pointer" }}
+                  style={{ marginTop: "10px", width: "100%", background: "#f97316", borderRadius: "10px", padding: "11px", fontSize: "12px", fontWeight: 800, color: "#fff", opacity: (!customFrom || !customTo) ? 0.4 : 1, transition: "opacity 0.15s", pointerEvents: (!customFrom || !customTo) ? "none" : "auto", cursor: (!customFrom || !customTo) ? "default" : "pointer" }}
                 >
                   Appliquer
                 </button>
