@@ -234,23 +234,23 @@ export default function DashboardContent({
 
       <Shell>
         {/* Spacer pour le header sticky */}
-        <div className="h-10" />
+        <div className="h-14" />
 
         {/* Hero Solde */}
         <div className="mb-2">
           <div className="md:hidden flex justify-between items-center">
-            <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">
+            <p className="text-[11px] text-white/65 uppercase tracking-[0.14em] font-bold whitespace-nowrap">
               Solde disponible
             </p>
             {/* Sélecteur de période inline */}
-            <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "9999px", padding: "2px 3px", display: "flex", gap: "2px" }}>
+            <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)", borderRadius: "9999px", padding: "3px 4px", display: "flex", gap: "2px" }}>
               {([ { key: "1m", label: "Ce mois" }, { key: "3m", label: "3m" }, { key: "6m", label: "6m" }, { key: "1a", label: "1a" }, { key: "custom", label: "⚙" } ] as { key: TPeriod; label: string }[]).map(({ key, label }) => {
                 const isActive = period === key;
                 return (
                   <button
                     key={key}
                     onClick={() => key === "custom" ? setShowPicker((v) => !v) : handlePeriod(key)}
-                    style={{ borderRadius: "9999px", fontSize: "11px", fontWeight: isActive ? 800 : 600, color: isActive ? "#fff" : "rgba(255,255,255,0.35)", padding: isActive ? "6px 12px" : "6px 10px", background: isActive ? "rgba(249,115,22,0.9)" : "transparent", border: "none", cursor: "pointer", whiteSpace: "nowrap", transition: "background 0.15s, color 0.15s" }}
+                    style={{ borderRadius: "9999px", fontSize: "11px", fontWeight: isActive ? 800 : 600, color: isActive ? "#fff" : "rgba(255,255,255,0.45)", padding: isActive ? "0 11px" : "0 9px", minHeight: "36px", display: "inline-flex", alignItems: "center", background: isActive ? "rgba(249,115,22,0.9)" : "transparent", border: "none", cursor: "pointer", whiteSpace: "nowrap", transition: "background 0.15s, color 0.15s" }}
                   >
                     {label}
                   </button>
