@@ -1,15 +1,20 @@
 /* ── Pulse Flat — react-day-picker v9 overrides ─────────────────────────── */
 
-/* CSS variables — injectées sur le root .rdp pour overrider le bleu par défaut */
+/* CSS variables sur le root .rdp
+   - neutralise tous les fonds td-level (gradient start/end, range_middle)
+   - le fond est appliqué au niveau du <button> uniquement → cellules individuelles */
 .pulse-picker .rdp {
   --rdp-accent-color: #f97316;
-  --rdp-accent-background-color: rgba(249, 115, 22, 0.15);
+  --rdp-accent-background-color: transparent;
+  --rdp-range_middle-background-color: transparent;
+  --rdp-range_start-background: transparent;
+  --rdp-range_end-background: transparent;
   --rdp-today-color: #f97316;
   background: transparent !important;
   color: rgba(255, 255, 255, 0.55) !important;
 }
 
-/* Fond transparent partout */
+/* Fond transparent sur tous les conteneurs */
 .pulse-picker .rdp-months,
 .pulse-picker .rdp-month,
 .pulse-picker .rdp-month_grid,
@@ -20,26 +25,20 @@
 
 /* ── Range start / end — cercle orange plein ────────────────────────────── */
 .pulse-picker .rdp-range_start .rdp-day_button,
-.pulse-picker .rdp-range_end .rdp-day_button {
+.pulse-picker .rdp-range_end .rdp-day_button,
+.pulse-picker [class*="range_start"] .rdp-day_button,
+.pulse-picker [class*="range_end"] .rdp-day_button {
   background-color: #f97316 !important;
   color: #fff !important;
   border-radius: 50% !important;
 }
 
-/* ── Range middle — fond très léger, texte lisible ──────────────────────── */
-.pulse-picker .rdp-day_range_middle,
-.pulse-picker [class*="range_middle"],
-.pulse-picker td[class*="range_middle"] button,
-.pulse-picker td[class*="range_middle"] {
-  background-color: rgba(249, 115, 22, 0.12) !important;
-  color: rgba(255, 255, 255, 0.75) !important;
-  border-radius: 0 !important;
-}
-
-/* Override fond des cellules td parentes */
-.pulse-picker .rdp-cell:has(.rdp-day_range_middle),
-.pulse-picker .rdp-cell:has([class*="range_middle"]) {
-  background-color: rgba(249, 115, 22, 0.12) !important;
+/* ── Range middle — cellule individuelle arrondie, fond orange, texte orange */
+.pulse-picker .rdp-range_middle .rdp-day_button,
+.pulse-picker [class*="range_middle"] .rdp-day_button {
+  background-color: rgba(249, 115, 22, 0.20) !important;
+  color: #f97316 !important;
+  border-radius: 6px !important;
 }
 
 /* ── Day button default ─────────────────────────────────────────────────── */
@@ -48,6 +47,7 @@
   font-size: 11px !important;
   border-radius: 50% !important;
   border: none !important;
+  background: transparent !important;
 }
 .pulse-picker .rdp-day_button:hover {
   background-color: rgba(255, 255, 255, 0.08) !important;
@@ -101,18 +101,8 @@
   box-shadow: none !important;
 }
 
-/* ── Selected (applied to both range_start & range_end in v9) ──────────── */
+/* ── Selected fallback ──────────────────────────────────────────────────── */
 .pulse-picker .rdp-selected .rdp-day_button {
   background-color: #f97316 !important;
   color: #fff !important;
-}
-
-/* ── Fallback attribute selectors ──────────────────────────────────────── */
-.pulse-picker [class*="range_start"] .rdp-day_button,
-.pulse-picker [class*="range_end"] .rdp-day_button {
-  background-color: #f97316 !important;
-  color: #fff !important;
-}
-.pulse-picker [class*="range_middle"] .rdp-day_button {
-  background: transparent !important;
 }
