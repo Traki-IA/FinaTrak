@@ -293,8 +293,22 @@ export default function DashboardContent({
                   </div>
                 </div>
 
-                {/* Calendrier DayPicker */}
-                <div style={{ "--rdp-accent-color": "#f97316", "--rdp-background-color": "rgba(249,115,22,0.15)", color: "rgba(255,255,255,0.5)", fontSize: "11px" } as React.CSSProperties}>
+                {/* Calendrier DayPicker — styles Pulse Flat scopés via .rdp-pulse */}
+                <style>{`
+                  .rdp-pulse .rdp-day_range_middle { background: rgba(249,115,22,.15) !important; color: #fb923c !important; border-radius: 0 !important; }
+                  .rdp-pulse .rdp-day_range_start, .rdp-pulse .rdp-day_range_end { background: #f97316 !important; color: #fff !important; border-radius: 6px !important; }
+                  .rdp-pulse .rdp-day_today { color: #f97316 !important; font-weight: 700 !important; }
+                  .rdp-pulse .rdp { background: transparent !important; color: rgba(255,255,255,.55) !important; }
+                  .rdp-pulse .rdp-months { background: transparent !important; }
+                  .rdp-pulse .rdp-table { width: 100% !important; }
+                  .rdp-pulse .rdp-head_cell { color: rgba(255,255,255,.22) !important; font-size: 8px !important; font-weight: 700 !important; }
+                  .rdp-pulse .rdp-day { color: rgba(255,255,255,.55) !important; font-size: 11px !important; border-radius: 6px !important; }
+                  .rdp-pulse .rdp-day:hover:not(.rdp-day_selected) { background: rgba(255,255,255,.08) !important; }
+                  .rdp-pulse .rdp-nav_button { color: rgba(255,255,255,.35) !important; }
+                  .rdp-pulse .rdp-nav_button:hover { color: #fff !important; background: rgba(255,255,255,.08) !important; }
+                  .rdp-pulse .rdp-caption_label { color: #fff !important; font-size: 12px !important; font-weight: 700 !important; }
+                `}</style>
+                <div className="rdp-pulse" style={{ "--rdp-accent-color": "#f97316", "--rdp-background-color": "rgba(249,115,22,0.15)" } as React.CSSProperties}>
                   <DayPicker
                     mode="range"
                     selected={range}
