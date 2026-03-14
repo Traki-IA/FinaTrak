@@ -250,7 +250,7 @@ export default function DashboardContent({
                   <button
                     key={key}
                     onClick={() => key === "custom" ? setShowPicker((v) => !v) : handlePeriod(key)}
-                    style={{ borderRadius: "9999px", fontSize: "9px", fontWeight: isActive ? 800 : 600, color: isActive ? "#fff" : "rgba(255,255,255,0.35)", padding: isActive ? "3px 8px" : "3px 7px", background: isActive ? "rgba(249,115,22,0.9)" : "transparent", border: "none", cursor: "pointer", whiteSpace: "nowrap", transition: "background 0.15s, color 0.15s" }}
+                    style={{ borderRadius: "9999px", fontSize: "11px", fontWeight: isActive ? 800 : 600, color: isActive ? "#fff" : "rgba(255,255,255,0.35)", padding: isActive ? "6px 12px" : "6px 10px", background: isActive ? "rgba(249,115,22,0.9)" : "transparent", border: "none", cursor: "pointer", whiteSpace: "nowrap", transition: "background 0.15s, color 0.15s" }}
                   >
                     {label}
                   </button>
