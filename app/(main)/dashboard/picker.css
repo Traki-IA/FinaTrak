@@ -43,8 +43,8 @@
   color: #fff !important;
   border-radius: 6px !important;
   border: none !important;
-  width: 36px !important;
-  height: 36px !important;
+  width: calc(100% - 6px) !important;
+  height: 32px !important;
 }
 
 /* ── Range middle — rectangle orange transparent ────────────────────────── */
@@ -54,8 +54,8 @@
   color: #f97316 !important;
   border-radius: 6px !important;
   border: none !important;
-  width: 36px !important;
-  height: 36px !important;
+  width: calc(100% - 6px) !important;
+  height: 32px !important;
 }
 
 /* ── Today ──────────────────────────────────────────────────────────────── */
@@ -110,8 +110,8 @@
   background-color: #f97316 !important;
   color: #fff !important;
   border-radius: 6px !important;
-  width: 36px !important;
-  height: 36px !important;
+  width: calc(100% - 6px) !important;
+  height: 32px !important;
 }
 
 /* ── Range middle — EN DERNIER pour gagner sur selected fallback ─────────── */
@@ -120,6 +120,6 @@
   background-color: rgba(249, 115, 22, 0.28) !important;
   color: #f97316 !important;
   border-radius: 6px !important;
-  width: 36px !important;
-  height: 36px !important;
+  width: calc(100% - 6px) !important;
+  height: 32px !important;
 }
