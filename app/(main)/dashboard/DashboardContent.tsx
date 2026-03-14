@@ -271,7 +271,7 @@ export default function DashboardContent({
           </div>
           {/* Sparkline + overlay calendrier */}
           <div className="mt-4 -mx-1" style={{ position: "relative" }}>
-            <Sparkline data={sparkData} height={72} />
+            <Sparkline data={sparkData} height={120} />
 
             {/* Overlay picker — mobile uniquement */}
             {showPicker && (
