@@ -100,7 +100,7 @@ export type TObjectifWithBudgetLines = TObjectif & {
 
 // ── Types période & bilan ────────────────────────────────────────────────────
 
-export type TPeriod = "1m" | "3m" | "6m" | "1y";
+export type TPeriod = "1m" | "3m" | "6m" | "1a" | "custom";
 
 export type TBilanMois = {
   mois: string;

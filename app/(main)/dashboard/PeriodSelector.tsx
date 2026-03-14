@@ -8,7 +8,7 @@ const PERIODS: { value: TPeriod; label: string }[] = [
   { value: "1m", label: "Ce mois" },
   { value: "3m", label: "3 mois" },
   { value: "6m", label: "6 mois" },
-  { value: "1y", label: "1 an" },
+  { value: "1a", label: "1 an" },
 ];
 
 export default function PeriodSelector({ current }: { current: TPeriod }) {

@@ -14,21 +14,30 @@ import type { TPeriod } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-const VALID_PERIODS: TPeriod[] = ["1m", "3m", "6m", "1y"];
+const VALID_PERIODS: TPeriod[] = ["1m", "3m", "6m", "1a"];
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 // ── Chargement des données côté serveur ──────────────────────────────────────
 
-async function DashboardData({ period }: { period: TPeriod }) {
+async function DashboardData({
+  period,
+  dateFrom,
+  dateTo,
+}: {
+  period: TPeriod;
+  dateFrom?: string;
+  dateTo?: string;
+}) {
   const compteId = await getActiveCompteId();
 
   const [stats, transactions, categories, history, parMois, categoriesDetailed] =
     await Promise.all([
-      fetchDashboardStats(compteId, period),
+      fetchDashboardStats(compteId, period, dateFrom, dateTo),
       fetchRecentTransactions(compteId),
-      fetchDepensesParCategorie(compteId, period),
-      fetchBalanceHistory(compteId, period),
-      fetchRevenusDepensesParMois(compteId, period),
-      fetchDepensesParCategorieDetailed(compteId, period),
+      fetchDepensesParCategorie(compteId, period, dateFrom, dateTo),
+      fetchBalanceHistory(compteId, period, dateFrom, dateTo),
+      fetchRevenusDepensesParMois(compteId, period, dateFrom, dateTo),
+      fetchDepensesParCategorieDetailed(compteId, period, dateFrom, dateTo),
     ]);
 
   return (
@@ -40,6 +49,8 @@ async function DashboardData({ period }: { period: TPeriod }) {
       parMois={parMois}
       categoriesDetailed={categoriesDetailed}
       period={period}
+      dateFrom={dateFrom}
+      dateTo={dateTo}
     />
   );
 }
@@ -47,18 +58,27 @@ async function DashboardData({ period }: { period: TPeriod }) {
 // ── Page — Suspense affiche le skeleton pendant le fetch ─────────────────────
 
 interface IDashboardPageProps {
-  searchParams: Promise<{ period?: string }>;
+  searchParams: Promise<{ period?: string; dateFrom?: string; dateTo?: string }>;
 }
 
 export default async function DashboardPage({ searchParams }: IDashboardPageProps) {
   const params = await searchParams;
-  const period = (VALID_PERIODS.includes(params.period as TPeriod)
-    ? params.period
-    : "1m") as TPeriod;
+
+  const dateFrom = DATE_RE.test(params.dateFrom ?? "") ? params.dateFrom : undefined;
+  const dateTo   = DATE_RE.test(params.dateTo ?? "")   ? params.dateTo   : undefined;
+
+  let period: TPeriod;
+  if (params.period === "custom" && dateFrom && dateTo) {
+    period = "custom";
+  } else if (VALID_PERIODS.includes(params.period as TPeriod)) {
+    period = params.period as TPeriod;
+  } else {
+    period = "1m";
+  }
 
   return (
     <Suspense fallback={<DashboardSkeleton />}>
-      <DashboardData period={period} />
+      <DashboardData period={period} dateFrom={dateFrom} dateTo={dateTo} />
     </Suspense>
   );
 }

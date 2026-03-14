@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Shell from "@/components/layout/Shell";
 import Bar from "@/components/ui/Bar";
 import TabBar from "@/components/ui/TabBar";
@@ -26,6 +27,8 @@ interface IDashboardContentProps {
   parMois: TBilanMois[];
   categoriesDetailed: TBilanCategorie[];
   period: TPeriod;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -36,6 +39,10 @@ function fmt(n: number): string {
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+}
+
+function fmtShort(d: string): string {
+  return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 }
 
 function groupByDate(transactions: TTransactionWithCategorie[]): { label: string; items: TTransactionWithCategorie[] }[] {
@@ -117,6 +124,51 @@ function MobileTxRow({ tx }: { tx: TTransactionWithCategorie }) {
   );
 }
 
+// ── Period Pill ───────────────────────────────────────────────────────────────
+
+function PeriodPill({
+  label,
+  active,
+  isCustom,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  isCustom?: boolean;
+  onClick: () => void;
+}) {
+  const base = "rounded-full px-3 py-1.5 text-[12px] font-[600] whitespace-nowrap shrink-0 border transition-colors";
+
+  if (isCustom) {
+    return (
+      <button
+        onClick={onClick}
+        className={`${base}`}
+        style={{
+          background: "rgba(249,115,22,0.12)",
+          borderColor: "rgba(249,115,22,0.3)",
+          color: "#f97316",
+        }}
+      >
+        {label}
+      </button>
+    );
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      className={`${base} ${
+        active
+          ? "bg-white/10 border-white/[0.18] text-white"
+          : "bg-transparent border-white/[0.08] text-white/50"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 
 type TMobileTab = "flux" | "bilan" | "categ";
@@ -128,15 +180,47 @@ const MOBILE_TABS: { key: TMobileTab; label: string }[] = [
 ];
 
 export default function DashboardContent({
-  stats, transactions, categories, history,
+  stats, transactions, categories, history, period, dateFrom, dateTo,
 }: IDashboardContentProps) {
+  const router = useRouter();
   const [tab, setTab] = useState<TMobileTab>("flux");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [customFrom, setCustomFrom] = useState(dateFrom ?? "");
+  const [customTo, setCustomTo] = useState(dateTo ?? "");
+
   const epargne = stats.revenus - stats.depenses;
   const tauxEpargne = stats.revenus > 0
     ? Math.round(((stats.revenus - stats.depenses) / stats.revenus) * 100)
     : stats.depenses > 0
       ? -100
       : 0;
+
+  // Label du mois courant pour la pill "1m"
+  const labelMoisCourant = new Date()
+    .toLocaleDateString("fr-FR", { month: "long", year: "numeric" })
+    .replace(/^\w/, (c) => c.toUpperCase());
+
+  // Label de la plage custom quand active
+  const labelCustom =
+    period === "custom" && dateFrom && dateTo
+      ? `${fmtShort(dateFrom)} → ${fmtShort(dateTo)}`
+      : "Perso. ⚙";
+
+  function handlePeriod(p: TPeriod) {
+    if (p === "1m") {
+      router.push("/dashboard");
+    } else {
+      router.push(`/dashboard?period=${p}`);
+    }
+    setDrawerOpen(false);
+  }
+
+  function handleApplyCustom() {
+    if (customFrom && customTo) {
+      router.push(`/dashboard?period=custom&dateFrom=${customFrom}&dateTo=${customTo}`);
+      setDrawerOpen(false);
+    }
+  }
 
   const totalDep = categories.reduce((s, c) => s + c.valeur, 0) || 1;
   const donut = categories
@@ -192,6 +276,75 @@ export default function DashboardContent({
           </div>
           <div className="mt-4 -mx-1">
             <Sparkline data={sparkData} height={72} />
+          </div>
+
+          {/* Sélecteur de période — mobile uniquement */}
+          <div className="md:hidden mt-4">
+            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+              <PeriodPill
+                label={labelMoisCourant}
+                active={period === "1m"}
+                onClick={() => handlePeriod("1m")}
+              />
+              <PeriodPill
+                label="3m"
+                active={period === "3m"}
+                onClick={() => handlePeriod("3m")}
+              />
+              <PeriodPill
+                label="6m"
+                active={period === "6m"}
+                onClick={() => handlePeriod("6m")}
+              />
+              <PeriodPill
+                label="1a"
+                active={period === "1a"}
+                onClick={() => handlePeriod("1a")}
+              />
+              <PeriodPill
+                label={labelCustom}
+                active={period === "custom"}
+                isCustom
+                onClick={() => setDrawerOpen((o) => !o)}
+              />
+            </div>
+
+            {/* Drawer inline */}
+            {drawerOpen && (
+              <div className="mt-3 rounded-xl border border-white/[0.08] bg-white/[0.04] p-4">
+                <div className="flex gap-3">
+                  <div className="flex-1 flex flex-col gap-1.5">
+                    <label className="text-[11px] text-white/55 uppercase tracking-[0.12em] font-semibold">
+                      Du
+                    </label>
+                    <input
+                      type="date"
+                      value={customFrom}
+                      onChange={(e) => setCustomFrom(e.target.value)}
+                      className="w-full rounded-lg bg-white/[0.06] border border-white/[0.08] text-white text-[13px] px-3 py-2 outline-none focus:border-orange-500/50"
+                    />
+                  </div>
+                  <div className="flex-1 flex flex-col gap-1.5">
+                    <label className="text-[11px] text-white/55 uppercase tracking-[0.12em] font-semibold">
+                      Au
+                    </label>
+                    <input
+                      type="date"
+                      value={customTo}
+                      onChange={(e) => setCustomTo(e.target.value)}
+                      className="w-full rounded-lg bg-white/[0.06] border border-white/[0.08] text-white text-[13px] px-3 py-2 outline-none focus:border-orange-500/50"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={handleApplyCustom}
+                  disabled={!customFrom || !customTo}
+                  className="mt-3 w-full rounded-xl bg-[#f97316] text-white text-[13px] font-[700] py-2.5 disabled:opacity-40 transition-opacity"
+                >
+                  Appliquer
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

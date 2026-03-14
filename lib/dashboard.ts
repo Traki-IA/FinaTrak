@@ -13,7 +13,7 @@ import type {
 
 // ── Helpers privés ───────────────────────────────────────────────────────────
 
-function getPeriodBounds(period: TPeriod): { debut: string; fin: string } {
+function getPeriodBounds(period: Exclude<TPeriod, "custom">): { debut: string; fin: string } {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
@@ -31,13 +31,26 @@ function getPeriodBounds(period: TPeriod): { debut: string; fin: string } {
     case "6m":
       startDate = new Date(year, month - 5, 1);
       break;
-    case "1y":
+    case "1a":
       startDate = new Date(year - 1, month + 1, 1);
       break;
+    default: {
+      const _exhaustive: never = period;
+      throw new Error(`Période inconnue : ${_exhaustive}`);
+    }
   }
 
   const debut = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}-01`;
   return { debut, fin };
+}
+
+function resolveBounds(
+  period: TPeriod,
+  dateFrom?: string,
+  dateTo?: string
+): { debut: string; fin: string } {
+  if (period === "custom" && dateFrom && dateTo) return { debut: dateFrom, fin: dateTo };
+  return getPeriodBounds(period as Exclude<TPeriod, "custom">);
 }
 
 function labelMois(dateStr: string): string {
@@ -117,11 +130,13 @@ export async function upsertSoldeInitial(
 
 export async function fetchDashboardStats(
   compteId: string,
-  period: TPeriod = "1m"
+  period: TPeriod = "1m",
+  dateFrom?: string,
+  dateTo?: string
 ): Promise<TDashboardStats> {
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
-  const { debut, fin } = getPeriodBounds(period);
+  const { debut, fin } = resolveBounds(period, dateFrom, dateTo);
 
   // Transactions de la période sélectionnée
   const { data: periodData, error: periodError } = await supabase
@@ -213,11 +228,13 @@ export async function fetchRecentTransactions(
 
 export async function fetchDepensesParCategorie(
   compteId: string,
-  period: TPeriod = "1m"
+  period: TPeriod = "1m",
+  dateFrom?: string,
+  dateTo?: string
 ): Promise<TDepenseCategorie[]> {
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
-  const { debut, fin } = getPeriodBounds(period);
+  const { debut, fin } = resolveBounds(period, dateFrom, dateTo);
 
   const { data, error } = await supabase
     .from("transactions")
@@ -254,11 +271,13 @@ export async function fetchDepensesParCategorie(
 
 export async function fetchBalanceHistory(
   compteId: string,
-  period: TPeriod = "1m"
+  period: TPeriod = "1m",
+  dateFrom?: string,
+  dateTo?: string
 ): Promise<TBalancePoint[]> {
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
-  const { debut } = getPeriodBounds(period);
+  const { debut, fin } = resolveBounds(period, dateFrom, dateTo);
 
   // Solde cumulatif au début de la fenêtre = solde initial + toutes les transactions antérieures
   const soldeInitial = await fetchSoldeInitial(compteId);
@@ -286,6 +305,7 @@ export async function fetchBalanceHistory(
     .eq("compte_id", compteId)
     .eq("user_id", userId)
     .gte("date", debut)
+    .lte("date", fin)
     .order("date", { ascending: true });
 
   if (error) {
@@ -309,13 +329,13 @@ export async function fetchBalanceHistory(
     deltas.set(mois, entry);
   }
 
-  // Générer tous les mois de la fenêtre (debut → aujourd'hui) pour combler les trous
+  // Générer tous les mois de la fenêtre (debut → fin) pour combler les trous
   const months: string[] = [];
   const periodStart = new Date(debut);
-  const today = new Date();
+  const loopEnd = new Date(fin);
   let cur = new Date(periodStart.getFullYear(), periodStart.getMonth(), 1);
 
-  while (cur <= today) {
+  while (cur <= loopEnd) {
     months.push(labelMois(cur.toISOString().split("T")[0]));
     cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
   }
@@ -337,11 +357,13 @@ export async function fetchBalanceHistory(
 
 export async function fetchRevenusDepensesParMois(
   compteId: string,
-  period: TPeriod = "1m"
+  period: TPeriod = "1m",
+  dateFrom?: string,
+  dateTo?: string
 ): Promise<TBilanMois[]> {
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
-  const { debut } = getPeriodBounds(period);
+  const { debut, fin } = resolveBounds(period, dateFrom, dateTo);
 
   const { data, error } = await supabase
     .from("transactions")
@@ -349,6 +371,7 @@ export async function fetchRevenusDepensesParMois(
     .eq("compte_id", compteId)
     .eq("user_id", userId)
     .gte("date", debut)
+    .lte("date", fin)
     .order("date", { ascending: true });
 
   if (error) {
@@ -379,11 +402,13 @@ export async function fetchRevenusDepensesParMois(
 
 export async function fetchDepensesParCategorieDetailed(
   compteId: string,
-  period: TPeriod = "1m"
+  period: TPeriod = "1m",
+  dateFrom?: string,
+  dateTo?: string
 ): Promise<TBilanCategorie[]> {
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
-  const { debut, fin } = getPeriodBounds(period);
+  const { debut, fin } = resolveBounds(period, dateFrom, dateTo);
 
   const { data, error } = await supabase
     .from("transactions")
