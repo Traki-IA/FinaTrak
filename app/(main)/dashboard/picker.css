@@ -26,14 +26,20 @@
   border-radius: 50% !important;
 }
 
-/* ── Range middle — fond orange transparent, texte orange clair ─────────── */
-.pulse-picker .rdp-range_middle {
-  background-color: rgba(249, 115, 22, 0.15) !important;
+/* ── Range middle — fond très léger, texte lisible ──────────────────────── */
+.pulse-picker .rdp-day_range_middle,
+.pulse-picker [class*="range_middle"],
+.pulse-picker td[class*="range_middle"] button,
+.pulse-picker td[class*="range_middle"] {
+  background-color: rgba(249, 115, 22, 0.12) !important;
+  color: rgba(255, 255, 255, 0.75) !important;
   border-radius: 0 !important;
 }
-.pulse-picker .rdp-range_middle .rdp-day_button {
-  background: transparent !important;
-  color: #fb923c !important;
+
+/* Override fond des cellules td parentes */
+.pulse-picker .rdp-cell:has(.rdp-day_range_middle),
+.pulse-picker .rdp-cell:has([class*="range_middle"]) {
+  background-color: rgba(249, 115, 22, 0.12) !important;
 }
 
 /* ── Day button default ─────────────────────────────────────────────────── */
@@ -107,10 +113,6 @@
   background-color: #f97316 !important;
   color: #fff !important;
 }
-.pulse-picker [class*="range_middle"] {
-  background-color: rgba(249, 115, 22, 0.15) !important;
-}
 .pulse-picker [class*="range_middle"] .rdp-day_button {
-  color: #fb923c !important;
   background: transparent !important;
 }
