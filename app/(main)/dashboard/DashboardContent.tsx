@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Shell from "@/components/layout/Shell";
 import Bar from "@/components/ui/Bar";
@@ -137,14 +137,26 @@ function PeriodPill({
   isCustom?: boolean;
   onClick: () => void;
 }) {
-  const base = "rounded-full px-3 py-1.5 text-[12px] font-[600] whitespace-nowrap shrink-0 border transition-colors";
+  const base: React.CSSProperties = {
+    borderRadius: "9999px",
+    padding: "6px 0",
+    textAlign: "center",
+    fontSize: "10px",
+    fontWeight: 700,
+    width: "100%",
+    border: "1px solid",
+    transition: "background 0.15s, color 0.15s",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  };
 
   if (isCustom) {
     return (
       <button
         onClick={onClick}
-        className={`${base}`}
         style={{
+          ...base,
           background: "rgba(249,115,22,0.12)",
           borderColor: "rgba(249,115,22,0.3)",
           color: "#f97316",
@@ -158,11 +170,12 @@ function PeriodPill({
   return (
     <button
       onClick={onClick}
-      className={`${base} ${
-        active
-          ? "bg-white/10 border-white/[0.18] text-white"
-          : "bg-transparent border-white/[0.08] text-white/50"
-      }`}
+      style={{
+        ...base,
+        background: active ? "rgba(255,255,255,0.10)" : "transparent",
+        borderColor: active ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.08)",
+        color: active ? "#ffffff" : "rgba(255,255,255,0.50)",
+      }}
     >
       {label}
     </button>
@@ -280,7 +293,7 @@ export default function DashboardContent({
 
           {/* Sélecteur de période — mobile uniquement */}
           <div className="md:hidden mt-4">
-            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1.5fr", gap: "5px", padding: "0 14px" }}>
               <PeriodPill
                 label={labelMoisCourant}
                 active={period === "1m"}
@@ -312,34 +325,34 @@ export default function DashboardContent({
             {/* Drawer inline */}
             {drawerOpen && (
               <div className="mt-3 rounded-xl border border-white/[0.08] bg-white/[0.04] p-4">
-                <div className="flex gap-3">
-                  <div className="flex-1 flex flex-col gap-1.5">
-                    <label className="text-[11px] text-white/55 uppercase tracking-[0.12em] font-semibold">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                    <label style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em" }}>
                       Du
                     </label>
                     <input
                       type="date"
                       value={customFrom}
                       onChange={(e) => setCustomFrom(e.target.value)}
-                      className="w-full rounded-lg bg-white/[0.06] border border-white/[0.08] text-white text-[13px] px-3 py-2 outline-none focus:border-orange-500/50"
+                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)", borderRadius: "9px", padding: "9px 12px", fontSize: "12px", color: "#fff", width: "100%", outline: "none" }}
                     />
                   </div>
-                  <div className="flex-1 flex flex-col gap-1.5">
-                    <label className="text-[11px] text-white/55 uppercase tracking-[0.12em] font-semibold">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                    <label style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em" }}>
                       Au
                     </label>
                     <input
                       type="date"
                       value={customTo}
                       onChange={(e) => setCustomTo(e.target.value)}
-                      className="w-full rounded-lg bg-white/[0.06] border border-white/[0.08] text-white text-[13px] px-3 py-2 outline-none focus:border-orange-500/50"
+                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)", borderRadius: "9px", padding: "9px 12px", fontSize: "12px", color: "#fff", width: "100%", outline: "none" }}
                     />
                   </div>
                 </div>
                 <button
                   onClick={handleApplyCustom}
                   disabled={!customFrom || !customTo}
-                  className="mt-3 w-full rounded-xl bg-[#f97316] text-white text-[13px] font-[700] py-2.5 disabled:opacity-40 transition-opacity"
+                  style={{ marginTop: "10px", width: "100%", background: "#f97316", borderRadius: "10px", padding: "11px", fontSize: "12px", fontWeight: 800, color: "#fff", opacity: (!customFrom || !customTo) ? 0.4 : 1, transition: "opacity 0.15s" }}
                 >
                   Appliquer
                 </button>
