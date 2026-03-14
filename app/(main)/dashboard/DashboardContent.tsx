@@ -183,6 +183,44 @@ function PeriodPill({
   );
 }
 
+// ── Date input iOS-compatible ─────────────────────────────────────────────────
+// L'input[type="date"] natif est invisible et positionné par-dessus le div
+// stylisé — iOS l'ignore pour le rendu mais l'utilise pour ouvrir le calendrier.
+
+function DateInputField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  // YYYY-MM-DD → "JJ/MM/AAAA" affiché
+  const display = value
+    ? (() => { const [y, m, d] = value.split("-"); return `${d}/${m}/${y}`; })()
+    : "";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.40)" }}>
+        {label}
+      </span>
+      <div style={{ position: "relative", background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "10px", padding: "10px 13px", minHeight: "40px", display: "flex", alignItems: "center" }}>
+        <span style={{ fontSize: "14px", fontWeight: 600, color: value ? "#fff" : "rgba(255,255,255,0.30)", pointerEvents: "none", userSelect: "none" }}>
+          {display || "JJ/MM/AAAA"}
+        </span>
+        <input
+          type="date"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", height: "100%", cursor: "pointer" }}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 
 type TMobileTab = "flux" | "bilan" | "categ";
@@ -327,28 +365,8 @@ export default function DashboardContent({
             {drawerOpen && (
               <div className="mt-3 rounded-xl border border-white/[0.08] bg-white/[0.04] p-4">
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                    <label style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em" }}>
-                      Du
-                    </label>
-                    <input
-                      type="date"
-                      value={customFrom}
-                      onChange={(e) => setCustomFrom(e.target.value)}
-                      style={{ background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "9px", padding: "9px 12px", fontSize: "12px", color: "#fff", width: "100%", outline: "none", colorScheme: "dark" }}
-                    />
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                    <label style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em" }}>
-                      Au
-                    </label>
-                    <input
-                      type="date"
-                      value={customTo}
-                      onChange={(e) => setCustomTo(e.target.value)}
-                      style={{ background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "9px", padding: "9px 12px", fontSize: "12px", color: "#fff", width: "100%", outline: "none", colorScheme: "dark" }}
-                    />
-                  </div>
+                  <DateInputField label="Du" value={customFrom} onChange={setCustomFrom} />
+                  <DateInputField label="Au" value={customTo} onChange={setCustomTo} />
                 </div>
                 <button
                   onClick={handleApplyCustom}
