@@ -36,7 +36,7 @@
 /* ── Range middle — cellule individuelle arrondie, fond orange, texte orange */
 .pulse-picker .rdp-range_middle .rdp-day_button,
 .pulse-picker [class*="range_middle"] .rdp-day_button {
-  background-color: rgba(249, 115, 22, 0.20) !important;
+  background-color: rgba(249, 115, 22, 0.28) !important;
   color: #f97316 !important;
   border-radius: 6px !important;
 }
@@ -110,7 +110,7 @@
 /* ── Range middle — doit rester après selected pour gagner la cascade ───── */
 .pulse-picker .rdp-range_middle .rdp-day_button,
 .pulse-picker [class*="range_middle"] .rdp-day_button {
-  background-color: rgba(249, 115, 22, 0.20) !important;
+  background-color: rgba(249, 115, 22, 0.28) !important;
   color: #f97316 !important;
   border-radius: 6px !important;
 }
