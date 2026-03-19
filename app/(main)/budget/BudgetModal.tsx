@@ -20,6 +20,7 @@ interface IBudgetModalProps {
   objectifs: TObjectif[];
   budgetItem?: TBudgetItemWithRelations;
   compteId: string;
+  onDelete?: (id: string) => void;
 }
 
 const INITIAL_FORM = {
@@ -72,6 +73,7 @@ export default function BudgetModal({
   objectifs,
   budgetItem,
   compteId,
+  onDelete,
 }: IBudgetModalProps) {
   const router = useRouter();
   const isEditMode = Boolean(budgetItem);
@@ -476,6 +478,18 @@ export default function BudgetModal({
                   Annuler
                 </button>
               </Dialog.Close>
+              {isEditMode && onDelete && budgetItem && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDelete(budgetItem.id);
+                    handleOpenChange(false);
+                  }}
+                  className="px-4 py-2.5 rounded-xl text-sm font-medium border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"
+                >
+                  Supprimer
+                </button>
+              )}
               <button
                 type="submit"
                 disabled={isSubmitting}
