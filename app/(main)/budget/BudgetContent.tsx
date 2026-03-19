@@ -22,6 +22,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Shell from "@/components/layout/Shell";
+import LogoHeader from "@/components/ui/LogoHeader";
 import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 import TabBar from "@/components/ui/TabBar";
 import Bar from "@/components/ui/Bar";
@@ -139,7 +140,7 @@ function SortableBudgetRow({
   const barPct = maxAmount > 0 ? Math.round((item.montant / maxAmount) * 100) : 0;
 
   return (
-    <div ref={setNodeRef} style={style} className="border-b border-white/[0.05]">
+    <div ref={setNodeRef} style={style} className="border-b border-[var(--bg2)]">
       <motion.div
         layout
         initial={{ opacity: 0, y: 8 }}
@@ -159,13 +160,13 @@ function SortableBudgetRow({
             <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: couleur }} />
             <div className="min-w-0">
               <p className="text-[14px] font-[600] text-white leading-none truncate">{item.nom}</p>
-              <span className="text-[12px] text-white/50 mt-0.5 block">{item.categories?.nom ?? "—"}</span>
+              <span className="text-[12px] text-[var(--text2)] mt-0.5 block">{item.categories?.nom ?? "—"}</span>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0 ml-2">
             <span className="text-[16px] font-[800] tracking-tight">
               {formatEur(item.montant)}{" "}
-              <span className="text-[12px] text-white/50 font-normal">
+              <span className="text-[12px] text-[var(--text2)] font-normal">
                 €/{item.frequence === "mensuel" ? "m" : "an"}
               </span>
             </span>
@@ -262,20 +263,14 @@ function Budget({
 
   return (
     <Shell>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-0">
-        <div>
-          <h1 className="text-[22px] font-black tracking-tight">Budget</h1>
-          <p className="text-[10px] text-white/50 mt-0.5">Charges récurrentes</p>
-        </div>
-      </div>
+      <LogoHeader />
 
       {localItems.length === 0 ? (
         <EmptyState onAdd={onAdd} />
       ) : (
         <>
           {/* KPIs — 2 colonnes Pulse Flat */}
-          <div className="border-b border-white/[0.05] mt-3 mb-0" />
+          <div className="border-b border-[var(--bg2)] mt-3 mb-0" />
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -284,15 +279,15 @@ function Budget({
           >
             <div className="flex">
               <div className="flex-1 pr-[18px]">
-                <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Charges / mois</p>
+                <p className="text-[11px] text-[var(--text3)] uppercase tracking-[0.14em] font-semibold">Charges / mois</p>
                 <p className="text-[18px] font-[900] tracking-tight mt-1 mb-1.5 leading-none text-orange-500">
                   {formatEur(totalMensuel)} €
                 </p>
                 <Bar pct={Math.min(100, Math.round(totalMensuel / 2000 * 100))} color="#f97316" height={2} className="opacity-60" />
               </div>
-              <div className="border-r border-white/[0.05]" />
+              <div className="border-r border-[var(--bg2)]" />
               <div className="flex-1 pl-[18px]">
-                <p className="text-[11px] text-white/55 uppercase tracking-[0.14em] font-semibold">Projection ann.</p>
+                <p className="text-[11px] text-[var(--text3)] uppercase tracking-[0.14em] font-semibold">Projection ann.</p>
                 <p className="text-[18px] font-[900] tracking-tight mt-1 mb-1.5 leading-none text-indigo-400">
                   {formatEur(totalAnnuel)} €
                 </p>
@@ -301,14 +296,14 @@ function Budget({
             </div>
           </motion.div>
 
-          <div className="border-b border-white/[0.05] mb-0" />
+          <div className="border-b border-[var(--bg2)] mb-0" />
           <TabBar tabs={SECTION_TABS} active={section} onChange={setSection} />
 
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
             <SortableContext items={sectionItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
               <AnimatePresence mode="popLayout">
                 {sectionItems.length === 0 ? (
-                  <motion.p key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center text-white/50 text-[12px] py-12">
+                  <motion.p key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center text-[var(--text2)] text-[12px] py-12">
                     Aucune charge {section === "mensuel" ? "mensuelle" : "annuelle"}
                   </motion.p>
                 ) : (

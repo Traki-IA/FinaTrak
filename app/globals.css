@@ -1,8 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0f;
-  --foreground: #ffffff;
+  --bg: #111111;
+  --bg2: #181818;
+  --bg3: #1E1E1E;
+  --border: #222222;
+  --border2: #2A2A2A;
+  --text: #F0F0F0;
+  --text2: #888888;
+  --text3: #555555;
+  --orange: #F97316;
+  --green: #4ADE80;
+  --red: #F87171;
+  --revenue-bg: #0D2214;
+  --expense-bg: #2A0D0D;
+  --orange-bg: #1E1208;
+  --background: var(--bg);
+  --foreground: var(--text);
 }
 
 @theme inline {
@@ -38,7 +52,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: #0a0a0f;
+  background: #111111;
   flex-direction: column;
   align-items: center;
   justify-content: center;

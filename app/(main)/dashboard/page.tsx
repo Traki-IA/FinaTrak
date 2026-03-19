@@ -3,11 +3,9 @@ import DashboardContent from "./DashboardContent";
 import DashboardSkeleton from "./DashboardSkeleton";
 import {
   fetchDashboardStats,
-  fetchRecentTransactions,
   fetchDepensesParCategorie,
   fetchBalanceHistory,
   fetchRevenusDepensesParMois,
-  fetchDepensesParCategorieDetailed,
 } from "@/lib/dashboard";
 import { getActiveCompteId } from "@/lib/active-compte";
 import type { TPeriod } from "@/types";
@@ -30,24 +28,19 @@ async function DashboardData({
 }) {
   const compteId = await getActiveCompteId();
 
-  const [stats, transactions, categories, history, parMois, categoriesDetailed] =
-    await Promise.all([
-      fetchDashboardStats(compteId, period, dateFrom, dateTo),
-      fetchRecentTransactions(compteId),
-      fetchDepensesParCategorie(compteId, period, dateFrom, dateTo),
-      fetchBalanceHistory(compteId, period, dateFrom, dateTo),
-      fetchRevenusDepensesParMois(compteId, period, dateFrom, dateTo),
-      fetchDepensesParCategorieDetailed(compteId, period, dateFrom, dateTo),
-    ]);
+  const [stats, categories, history, parMois] = await Promise.all([
+    fetchDashboardStats(compteId, period, dateFrom, dateTo),
+    fetchDepensesParCategorie(compteId, period, dateFrom, dateTo),
+    fetchBalanceHistory(compteId, period, dateFrom, dateTo),
+    fetchRevenusDepensesParMois(compteId, period, dateFrom, dateTo),
+  ]);
 
   return (
     <DashboardContent
       stats={stats}
-      transactions={transactions}
       categories={categories}
       history={history}
       parMois={parMois}
-      categoriesDetailed={categoriesDetailed}
       period={period}
       dateFrom={dateFrom}
       dateTo={dateTo}

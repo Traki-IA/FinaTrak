@@ -14,15 +14,15 @@ export default function TabBar<T extends string>({
   className = "",
 }: ITabBarProps<T>) {
   return (
-    <div className={`flex ${className}`}>
+    <div className={`flex gap-[6px] ${className}`}>
       {tabs.map((tab) => (
         <button
           key={tab.key}
           onClick={() => onChange(tab.key)}
-          className={`flex-1 py-2.5 text-[11px] font-semibold cursor-pointer border-b-2 transition-all bg-transparent ${
+          className={`flex-1 py-[5px] text-[11px] font-medium cursor-pointer rounded-lg border transition-all bg-transparent ${
             active === tab.key
-              ? "text-white border-orange-500"
-              : "text-white/28 border-white/[0.06]"
+              ? "border-[var(--orange)] text-[var(--orange)]"
+              : "border-[var(--border)] text-[var(--text3)] hover:border-[var(--border2)] hover:text-[var(--text2)]"
           }`}
         >
           {tab.label}

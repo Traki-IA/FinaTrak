@@ -2,16 +2,10 @@
 
 import Navbar from "@/components/Navbar";
 import AccountGuard from "@/components/AccountGuard";
-import type { TCompte } from "@/types";
 
 interface IMainLayoutShellProps {
-  comptes: TCompte[];
   activeCompteId: string;
-  navOrder: string[];
   needsAccountFix: boolean;
-  solde?: number;
-  userName?: string;
-  userEmail?: string;
   children: React.ReactNode;
 }
 

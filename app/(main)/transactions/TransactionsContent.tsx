@@ -1,23 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { SlidersHorizontal } from "lucide-react";
+import { Search, Plus, Calendar } from "lucide-react";
 import { toast } from "sonner";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import TransactionModal from "./TransactionModal";
 import Shell from "@/components/layout/Shell";
-import FilterBar from "@/components/FilterBar";
+import LogoHeader from "@/components/ui/LogoHeader";
 import TabBar from "@/components/ui/TabBar";
-import Fab from "@/components/ui/Fab";
 import { deleteTransaction } from "./actions";
-import { formatEur } from "@/lib/format";
 import type { TTransactionWithCategorie, TCategorie, TObjectif, TBudgetItem } from "@/types";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+function fmt(n: number): string {
+  return Math.abs(n).toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const d = new Date(dateStr);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 }
 
 type TTypeFilter = "all" | "revenu" | "depense";
@@ -27,31 +33,7 @@ const TYPE_TABS: { key: TTypeFilter; label: string }[] = [
   { key: "depense", label: "Dépenses" },
 ];
 
-function groupByDate(transactions: TTransactionWithCategorie[]): { label: string; items: TTransactionWithCategorie[] }[] {
-  const now = new Date();
-  const today = now.toDateString();
-  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).toDateString();
-  const weekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).getTime();
-
-  const groups: Record<string, TTransactionWithCategorie[]> = {};
-  const order = ["Aujourd'hui", "Hier", "Cette semaine", "Plus ancien"];
-
-  for (const tx of transactions) {
-    const d = new Date(tx.date);
-    let label: string;
-    if (d.toDateString() === today) label = "Aujourd'hui";
-    else if (d.toDateString() === yesterday) label = "Hier";
-    else if (d.getTime() >= weekAgo) label = "Cette semaine";
-    else label = "Plus ancien";
-
-    if (!groups[label]) groups[label] = [];
-    groups[label].push(tx);
-  }
-
-  return order.filter((l) => groups[l]?.length).map((l) => ({ label: l, items: groups[l] }));
-}
-
-// ── Transaction Row (Pulse Flat) ──────────────────────────────────────────────
+// ── Transaction Row (4 colonnes maquette) ────────────────────────────────────
 
 function MobileTxRow({
   transaction,
@@ -77,6 +59,9 @@ function MobileTxRow({
   const isRevenu = transaction.type === "revenu";
   const couleur = transaction.categories?.couleur ?? "#94a3b8";
   const isConfirming = confirmingDeleteId === transaction.id;
+  const color = isRevenu ? "var(--green)" : "var(--red)";
+  const bgColor = isRevenu ? "var(--revenue-bg)" : "var(--expense-bg)";
+  const borderCat = isRevenu ? "#1A4428" : "#4A1A1A";
 
   return (
     <motion.div
@@ -85,54 +70,45 @@ function MobileTxRow({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
-      className="border-b border-white/[0.05] last:border-0"
+      className="border-b border-[var(--bg2)] last:border-0"
     >
       {/* Ligne principale — tappable */}
       <div
-        className="grid py-3 cursor-pointer select-none items-center"
-        style={{ gridTemplateColumns: "1fr 110px 1fr", minHeight: "56px" }}
+        className="grid py-[10px] cursor-pointer select-none items-center gap-2"
+        style={{ gridTemplateColumns: "72px 76px 1fr 68px" }}
         onClick={onRowTap}
       >
-        {/* Colonne gauche: dot + nom + date */}
-        <div className="flex flex-col justify-center min-w-0 pr-2">
-          <div className="flex gap-3 min-w-0">
-            <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-[3px]" style={{ background: couleur }} />
-            <div className="min-w-0 flex-1">
-              <p className="text-[17px] font-[600] text-white leading-tight truncate">
-                {transaction.description ?? "—"}
-              </p>
-              <span className="text-[9px] text-white/55 leading-none mt-0.5 block">
-                {formatDate(transaction.date)}
-              </span>
-            </div>
-          </div>
-        </div>
+        {/* Col 1: date */}
+        <span className="text-[11px] text-[var(--text3)] tabular-nums whitespace-nowrap">
+          {formatDate(transaction.date)}
+        </span>
 
-        {/* Colonne centrale: bulle catégorie 110px */}
-        <div className="flex items-center justify-center h-full">
-          <span
-            className="w-full block text-[10px] font-[700] text-center overflow-hidden truncate"
-            style={{
-              borderRadius: "9999px",
-              background: `${couleur}26`,
-              color: couleur,
-              padding: "4px 0",
-            }}
-          >
-            {transaction.categories?.nom ?? "—"}
-          </span>
-        </div>
+        {/* Col 2: badge catégorie */}
+        <span
+          className="text-[10px] font-medium text-center block overflow-hidden truncate"
+          style={{
+            borderRadius: "20px",
+            background: bgColor,
+            border: `1px solid ${borderCat}`,
+            color: color,
+            padding: "2px 0",
+          }}
+        >
+          {transaction.categories?.nom ?? "—"}
+        </span>
 
-        {/* Colonne droite: montant */}
-        <div className="flex items-center justify-end h-full pl-2">
-          <span
-            className={`text-[17px] font-[800] tabular-nums tracking-tight ${
-              isRevenu ? "text-emerald-400" : "text-red-400"
-            }`}
-          >
-            {isRevenu ? "+" : "−"}{formatEur(transaction.montant)}
-          </span>
-        </div>
+        {/* Col 3: nom */}
+        <span className="text-[13px] font-medium text-[var(--text)] truncate">
+          {transaction.description ?? "—"}
+        </span>
+
+        {/* Col 4: montant */}
+        <span
+          className="text-[13px] font-semibold tabular-nums text-right whitespace-nowrap"
+          style={{ color, letterSpacing: "-0.01em" }}
+        >
+          {isRevenu ? "+" : "−"}{fmt(transaction.montant)} €
+        </span>
       </div>
 
       {/* Strip d'actions */}
@@ -145,38 +121,36 @@ function MobileTxRow({
             transition={{ duration: 0.18, ease: "easeOut" }}
             className="overflow-hidden"
           >
-            <div className="border-t flex gap-2 px-1 py-1.5" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
+            <div className="border-t border-[var(--bg2)] flex gap-2 px-1 py-1.5">
               {isConfirming ? (
                 <>
                   <button
                     onClick={() => onDeleteConfirm(transaction.id)}
-                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-[700] text-red-400"
+                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-bold text-[var(--red)]"
                   >
-                    ✓ Confirmer la suppression
+                    Confirmer la suppression
                   </button>
                   <button
                     onClick={onDeleteCancel}
-                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-[700]"
-                    style={{ color: "rgba(255,255,255,0.35)" }}
+                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-bold text-[var(--text3)]"
                   >
-                    ✕ Annuler
+                    Annuler
                   </button>
                 </>
               ) : (
                 <>
                   <button
                     onClick={() => { onEdit(transaction); onRowTap(); }}
-                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-[700]"
-                    style={{ color: "rgba(255,255,255,0.35)" }}
+                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-bold text-[var(--text3)]"
                   >
-                    ✎ Modifier
+                    Modifier
                   </button>
                   <button
                     onClick={() => onDeleteRequest(transaction.id)}
-                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-[700]"
-                    style={{ color: "rgba(239,68,68,0.45)" }}
+                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-bold"
+                    style={{ color: "rgba(248,113,113,0.6)" }}
                   >
-                    ✕ Supprimer
+                    Supprimer
                   </button>
                 </>
               )}
@@ -188,143 +162,48 @@ function MobileTxRow({
   );
 }
 
-// ── Shared props ──────────────────────────────────────────────────────────────
+// ── Categories Chart ─────────────────────────────────────────────────────────
 
-interface ISharedProps {
-  filtered: TTransactionWithCategorie[];
-  categories: TCategorie[];
-  typeFilter: TTypeFilter;
-  setTypeFilter: (v: TTypeFilter) => void;
-  totalFiltre: number;
-  activeRowId: string | null;
-  confirmingDeleteId: string | null;
-  onEdit: (t: TTransactionWithCategorie) => void;
-  onDeleteRequest: (id: string) => void;
-  onDeleteConfirm: (id: string) => void;
-  onDeleteCancel: () => void;
-  onRowTap: (id: string) => void;
-  searchParams: ReturnType<typeof useSearchParams>;
-}
+function CategoriesChart({ transactions }: { transactions: TTransactionWithCategorie[] }) {
+  const depenses = transactions.filter((t) => t.type === "depense");
+  const total = depenses.reduce((s, t) => s + t.montant, 0) || 1;
 
-// ── Transactions ───────────────────────────────────────────────────────────────
+  const byCategory = depenses.reduce<Record<string, { nom: string; couleur: string; total: number }>>((acc, t) => {
+    const cat = t.categories?.nom ?? "Autre";
+    const couleur = t.categories?.couleur ?? "#94a3b8";
+    if (!acc[cat]) acc[cat] = { nom: cat, couleur, total: 0 };
+    acc[cat].total += t.montant;
+    return acc;
+  }, {});
 
-function Transactions({
-  filtered,
-  categories,
-  typeFilter,
-  setTypeFilter,
-  totalFiltre,
-  activeRowId,
-  confirmingDeleteId,
-  onEdit,
-  onDeleteRequest,
-  onDeleteConfirm,
-  onDeleteCancel,
-  onRowTap,
-  searchParams,
-}: ISharedProps) {
-  const [filterOpen, setFilterOpen] = useState(false);
-  const grouped = groupByDate(filtered);
-  let rowIndex = 0;
+  const sorted = Object.values(byCategory).sort((a, b) => b.total - a.total);
+
+  if (sorted.length === 0) return null;
 
   return (
-    <Shell>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-0">
-        <div>
-          <p className="text-[13px] text-white/55 uppercase tracking-[0.14em] font-semibold">Transactions</p>
-          <p className="text-[14px] text-white/50 mt-0.5">
-            {filtered.length} opération{filtered.length !== 1 ? "s" : ""}
-            {searchParams.toString() ? " · filtrées" : ""}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span
-            className={`text-[18px] font-[800] ${
-              totalFiltre >= 0 ? "text-emerald-400" : "text-red-400"
-            }`}
-          >
-            {totalFiltre >= 0 ? "+" : ""}
-            {totalFiltre.toFixed(0)} €
-          </span>
-          <button
-            onClick={() => setFilterOpen((v) => !v)}
-            className={`p-1.5 rounded-lg transition-colors ${
-              filterOpen
-                ? "bg-orange-500/20 text-orange-400"
-                : "bg-white/[0.05] text-white/40"
-            }`}
-          >
-            <SlidersHorizontal size={14} />
-          </button>
-        </div>
+    <div className="py-[10px] px-0 bg-[var(--bg2)] mb-[2px]">
+      <div className="flex justify-between mb-2 px-0">
+        <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em]">Catégories</span>
+        <span className="text-[10px] text-[var(--text3)]">{fmt(total)} €</span>
       </div>
-
-      <div className="border-b border-white/[0.05] mt-3 mb-0" />
-
-      {/* Type tabs */}
-      <TabBar tabs={TYPE_TABS} active={typeFilter} onChange={setTypeFilter} />
-
-      {/* Filter bar (toggle) */}
-      <AnimatePresence>
-        {filterOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="py-3">
-              <FilterBar categories={categories} />
-            </div>
-            <div className="border-b border-white/[0.05]" />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Transactions grouped by date */}
-      <div className="mt-2">
-        <AnimatePresence mode="popLayout">
-          {filtered.length === 0 ? (
-            <motion.p
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="text-center text-white/50 text-[12px] py-12"
-            >
-              Aucune transaction
-            </motion.p>
-          ) : (
-            grouped.map((group) => (
-              <div key={group.label}>
-                <p className="text-[11px] text-white/50 uppercase tracking-wider mt-3 mb-1">
-                  {group.label}
-                </p>
-                {group.items.map((t) => {
-                  const idx = rowIndex++;
-                  return (
-                    <MobileTxRow
-                      key={t.id}
-                      transaction={t}
-                      index={idx}
-                      isActive={activeRowId === t.id}
-                      confirmingDeleteId={confirmingDeleteId}
-                      onEdit={onEdit}
-                      onDeleteRequest={onDeleteRequest}
-                      onDeleteConfirm={onDeleteConfirm}
-                      onDeleteCancel={onDeleteCancel}
-                      onRowTap={() => onRowTap(t.id)}
-                    />
-                  );
-                })}
+      <div className="flex flex-col gap-[7px]">
+        {sorted.map((cat) => {
+          const pct = Math.round((cat.total / total) * 100);
+          return (
+            <div key={cat.nom} className="flex items-center gap-2">
+              <span className="text-[10px] text-[var(--text3)] w-[70px] truncate">{cat.nom}</span>
+              <div className="flex-1 h-[3px] bg-[var(--bg3)] rounded-[2px] overflow-hidden">
+                <div
+                  className="h-full rounded-[2px] transition-all"
+                  style={{ width: `${pct}%`, background: cat.couleur }}
+                />
               </div>
-            ))
-          )}
-        </AnimatePresence>
+              <span className="text-[10px] text-[var(--text3)] w-[32px] text-right">{pct}%</span>
+            </div>
+          );
+        })}
       </div>
-    </Shell>
+    </div>
   );
 }
 
@@ -346,7 +225,6 @@ export default function TransactionsContent({
   compteId,
 }: ITransactionsContentProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] =
@@ -354,10 +232,23 @@ export default function TransactionsContent({
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<TTypeFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const filtered = typeFilter === "all"
-    ? transactions
-    : transactions.filter((t) => t.type === typeFilter);
+  const filtered = useMemo(() => {
+    let result = transactions;
+    if (typeFilter !== "all") {
+      result = result.filter((t) => t.type === typeFilter);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (t) =>
+          (t.description ?? "").toLowerCase().includes(q) ||
+          (t.categories?.nom ?? "").toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [transactions, typeFilter, searchQuery]);
 
   const totalFiltre = filtered.reduce(
     (acc, t) => acc + (t.type === "revenu" ? t.montant : -t.montant),
@@ -394,28 +285,93 @@ export default function TransactionsContent({
     }
   }
 
-  const sharedProps: ISharedProps = {
-    filtered,
-    categories,
-    typeFilter,
-    setTypeFilter,
-    totalFiltre,
-    activeRowId,
-    confirmingDeleteId,
-    onEdit: openEditModal,
-    onDeleteRequest: setConfirmingDeleteId,
-    onDeleteConfirm: handleDeleteConfirm,
-    onDeleteCancel: () => { setConfirmingDeleteId(null); setActiveRowId(null); },
-    onRowTap: handleRowTap,
-    searchParams,
-  };
+  let rowIndex = 0;
 
   return (
     <>
-      <Transactions {...sharedProps} />
+      <Shell>
+        <LogoHeader
+          rightSlot={
+            <button
+              onClick={openAddModal}
+              className="w-[28px] h-[28px] rounded-lg bg-[var(--bg3)] border-none cursor-pointer flex items-center justify-center text-[var(--text2)]"
+            >
+              <Plus size={14} />
+            </button>
+          }
+        />
 
-      {/* FAB — rendered once */}
-      <Fab label="Transaction" onClick={openAddModal} />
+        {/* Search */}
+        <div className="py-2">
+          <div className="relative">
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text3)]"
+            />
+            <input
+              type="text"
+              placeholder="Rechercher..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full py-2 pl-8 pr-3 bg-[var(--bg2)] rounded-[10px] border border-[var(--border)] text-[var(--text)] text-[12px] font-[inherit] outline-none transition-colors focus:border-[var(--orange)] placeholder:text-[var(--text3)]"
+            />
+          </div>
+        </div>
+
+        {/* Filter tabs */}
+        <div className="pb-2">
+          <TabBar tabs={TYPE_TABS} active={typeFilter} onChange={setTypeFilter} />
+        </div>
+
+        {/* Divider */}
+        <div className="h-px bg-[var(--bg2)]" />
+
+        {/* Categories chart */}
+        <CategoriesChart transactions={filtered} />
+
+        {/* Transaction list */}
+        <div>
+          <AnimatePresence mode="popLayout">
+            {filtered.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-center justify-center py-8 gap-2"
+              >
+                <div className="w-11 h-11 rounded-[14px] bg-[var(--bg2)] flex items-center justify-center">
+                  <Search size={20} className="text-[var(--text3)]" />
+                </div>
+                <span className="text-[12px] text-[var(--text3)]">
+                  Aucune transaction trouvée
+                </span>
+              </motion.div>
+            ) : (
+              filtered.map((t) => {
+                const idx = rowIndex++;
+                return (
+                  <MobileTxRow
+                    key={t.id}
+                    transaction={t}
+                    index={idx}
+                    isActive={activeRowId === t.id}
+                    confirmingDeleteId={confirmingDeleteId}
+                    onEdit={openEditModal}
+                    onDeleteRequest={setConfirmingDeleteId}
+                    onDeleteConfirm={handleDeleteConfirm}
+                    onDeleteCancel={() => {
+                      setConfirmingDeleteId(null);
+                      setActiveRowId(null);
+                    }}
+                    onRowTap={() => handleRowTap(t.id)}
+                  />
+                );
+              })
+            )}
+          </AnimatePresence>
+        </div>
+      </Shell>
 
       {/* Modal — rendered once */}
       <TransactionModal
