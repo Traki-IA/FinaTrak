@@ -427,6 +427,8 @@ interface ITransactionsContentProps {
   objectifs: TObjectif[];
   budgetItems: TBudgetItem[];
   compteId: string;
+  initialFrom?: string;
+  initialTo?: string;
 }
 
 export default function TransactionsContent({
@@ -435,6 +437,8 @@ export default function TransactionsContent({
   objectifs,
   budgetItems,
   compteId,
+  initialFrom,
+  initialTo,
 }: ITransactionsContentProps) {
   const router = useRouter();
 
@@ -445,10 +449,12 @@ export default function TransactionsContent({
   const [typeFilter, setTypeFilter] = useState<TTypeFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Period filter state
-  const [periodFilter, setPeriodFilter] = useState<TPeriodFilter>("all");
-  const [customFrom, setCustomFrom] = useState("");
-  const [customTo,   setCustomTo]   = useState("");
+  // Period filter state — initialisé depuis les URL params si fournis
+  const [periodFilter, setPeriodFilter] = useState<TPeriodFilter>(
+    initialFrom && initialTo ? "custom" : "all"
+  );
+  const [customFrom, setCustomFrom] = useState(initialFrom ?? "");
+  const [customTo,   setCustomTo]   = useState(initialTo   ?? "");
   const [periodSheetOpen, setPeriodSheetOpen] = useState(false);
 
   const filtered = useMemo(() => {

@@ -21,6 +21,7 @@ interface IDashboardContentProps {
   categories: TDepenseCategorie[];
   history: TBalancePoint[];
   parMois: TBilanMois[];
+  allParMois: TBilanMois[];
   period: TPeriod;
   dateFrom?: string;
   dateTo?: string;
@@ -59,6 +60,7 @@ export default function DashboardContent({
   categories,
   history,
   parMois,
+  allParMois,
   period,
 }: IDashboardContentProps) {
   const router = useRouter();
@@ -185,19 +187,22 @@ export default function DashboardContent({
         </div>
       </div>
 
-      {/* Détail mensuel */}
-      <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em] text-center py-1 mt-[6px]">
-        Détail mensuel
-      </div>
-
+      {/* Historique mensuel — toujours complet, indépendant de la période */}
       <div className="flex flex-col px-0 pb-4">
-        {parMois.map((m, i) => {
-          const prev = i > 0 ? parMois[i - 1] : null;
+        {allParMois.map((m) => {
           const net = m.revenus - m.depenses;
+
+          // Bornes du mois pour la navigation vers Transactions
+          const [y, mo] = m.moisKey.split("-").map(Number);
+          const lastDay = new Date(y, mo, 0).getDate();
+          const dateFrom = `${m.moisKey}-01`;
+          const dateTo   = `${m.moisKey}-${String(lastDay).padStart(2, "0")}`;
+
           return (
             <div
               key={m.moisKey}
-              className="flex items-center py-[8px] border-b border-[var(--bg2)]"
+              onClick={() => router.push(`/transactions?dateFrom=${dateFrom}&dateTo=${dateTo}`)}
+              className="flex items-center py-[8px] border-b border-[var(--bg2)] cursor-pointer active:opacity-70 transition-opacity"
             >
               <span className="text-[13px] font-medium text-[var(--text)] flex-1">
                 {m.mois}
@@ -218,7 +223,7 @@ export default function DashboardContent({
             </div>
           );
         })}
-        {parMois.length === 0 && (
+        {allParMois.length === 0 && (
           <p className="text-[13px] text-[var(--text3)] text-center py-8">
             Aucune donnée
           </p>

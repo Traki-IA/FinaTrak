@@ -438,6 +438,46 @@ export async function fetchRevenusDepensesParMois(
   return Array.from(monthMap.values());
 }
 
+// ── Historique complet (tous les mois, sans filtre période) ──────────────────
+
+export async function fetchAllRevenusDepensesParMois(
+  compteId: string
+): Promise<TBilanMois[]> {
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("montant, type, date")
+    .eq("compte_id", compteId)
+    .eq("user_id", userId)
+    .order("date", { ascending: true });
+
+  if (error) {
+    throw new Error(`fetchAllRevenusDepensesParMois: ${error.message}`);
+  }
+
+  const monthMap = new Map<string, TBilanMois>();
+
+  for (const row of data ?? []) {
+    const moisKey = (row.date as string).slice(0, 7);
+    const entry = monthMap.get(moisKey) ?? {
+      mois: labelMoisFromKey(moisKey),
+      moisKey,
+      revenus: 0,
+      depenses: 0,
+      epargne: 0,
+    };
+    if (row.type === "revenu") entry.revenus += Number(row.montant);
+    else if (row.type === "depense") entry.depenses += Number(row.montant);
+    entry.epargne = entry.revenus - entry.depenses;
+    monthMap.set(moisKey, entry);
+  }
+
+  // Retourné du plus récent au plus ancien
+  return Array.from(monthMap.values()).reverse();
+}
+
 // ── Dépenses par catégorie détaillées (barres horizontales) ─────────────────
 
 export async function fetchDepensesParCategorieDetailed(

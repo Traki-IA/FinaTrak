@@ -62,6 +62,10 @@ async function TransactionsData({
     fetchBudgetItems(compteId),
   ]);
 
+  const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+  const initialFrom = DATE_RE.test(rawParams.dateFrom as string ?? "") ? rawParams.dateFrom as string : undefined;
+  const initialTo   = DATE_RE.test(rawParams.dateTo   as string ?? "") ? rawParams.dateTo   as string : undefined;
+
   return (
     <TransactionsContent
       transactions={transactions}
@@ -69,6 +73,8 @@ async function TransactionsData({
       objectifs={objectifs}
       budgetItems={budgetItems}
       compteId={compteId}
+      initialFrom={initialFrom}
+      initialTo={initialTo}
     />
   );
 }
