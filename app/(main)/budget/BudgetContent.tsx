@@ -206,10 +206,12 @@ export default function BudgetContent({
   const [localItems, setLocalItems] = useState(initialItems);
 
   // Sync depuis le serveur
-  // Sync depuis le serveur — useEffect garantit l'exécution quand initialItems change
+  // Sync depuis le serveur — clé string pour comparer les contenus (pas les références)
+  const serverKey = initialItems.map((i) => `${i.id}:${i.actif}:${i.montant}`).join(",");
   useEffect(() => {
     setLocalItems(initialItems);
-  }, [initialItems]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverKey]);
 
   // ── KPIs ─────────────────────────────────────────────────────────────────
   const actifs = localItems.filter((i) => i.actif);
