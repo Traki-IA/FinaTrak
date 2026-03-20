@@ -188,7 +188,7 @@ export default function DashboardContent({
               key={m.moisKey}
               className="flex items-center py-[8px] border-b border-[var(--bg2)]"
             >
-              <span className="text-[13px] font-medium text-[var(--text2)] flex-1">
+              <span className="text-[13px] font-medium text-[var(--text)] flex-1">
                 {m.mois}
               </span>
               <span className="text-[13px] font-medium text-[var(--green)] tabular-nums text-right w-[64px]">

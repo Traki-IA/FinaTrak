@@ -183,22 +183,22 @@ function CategoriesChart({ transactions }: { transactions: TTransactionWithCateg
   return (
     <div className="py-[10px] px-0 bg-[var(--bg2)] mb-[2px]">
       <div className="flex justify-between mb-2 px-0">
-        <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em]">Catégories</span>
-        <span className="text-[10px] text-[var(--text3)]">{fmt(total)} €</span>
+        <span className="text-[10px] text-[var(--text2)] uppercase tracking-[0.07em]">Catégories</span>
+        <span className="text-[10px] text-[var(--text2)]">{fmt(total)} €</span>
       </div>
       <div className="flex flex-col gap-[7px]">
         {sorted.map((cat) => {
           const pct = Math.round((cat.total / total) * 100);
           return (
             <div key={cat.nom} className="flex items-center gap-2">
-              <span className="text-[10px] text-[var(--text3)] w-[70px] truncate">{cat.nom}</span>
+              <span className="text-[10px] text-[var(--text2)] w-[70px] truncate">{cat.nom}</span>
               <div className="flex-1 h-[3px] bg-[var(--bg3)] rounded-[2px] overflow-hidden">
                 <div
                   className="h-full rounded-[2px] transition-all"
                   style={{ width: `${pct}%`, background: cat.couleur }}
                 />
               </div>
-              <span className="text-[10px] text-[var(--text3)] w-[32px] text-right">{pct}%</span>
+              <span className="text-[10px] text-[var(--text2)] w-[32px] text-right">{pct}%</span>
             </div>
           );
         })}
@@ -313,7 +313,7 @@ export default function TransactionsContent({
               placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-2 pl-8 pr-3 bg-[var(--bg2)] rounded-[10px] border border-[var(--border)] text-[var(--text)] text-[12px] font-[inherit] outline-none transition-colors focus:border-[var(--orange)] placeholder:text-[var(--text3)]"
+              className="w-full py-2 pl-8 pr-3 bg-[var(--bg2)] rounded-[10px] border border-[#2d2d2d] text-[var(--text)] text-[12px] font-[inherit] outline-none transition-colors focus:border-[var(--orange)] placeholder:text-[var(--text2)]"
             />
           </div>
         </div>

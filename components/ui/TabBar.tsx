@@ -22,7 +22,7 @@ export default function TabBar<T extends string>({
           className={`flex-1 py-[5px] text-[11px] font-medium cursor-pointer rounded-lg border transition-all bg-transparent ${
             active === tab.key
               ? "border-[var(--orange)] text-[var(--orange)] bg-[rgba(249,115,22,0.10)]"
-              : "border-[var(--border)] text-[var(--text3)] hover:border-[var(--border2)] hover:text-[var(--text2)]"
+              : "border-[#2d2d2d] text-[var(--text2)] hover:border-[#3a3a3a] hover:text-[var(--text)]"
           }`}
         >
           {tab.label}
