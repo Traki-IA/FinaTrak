@@ -270,7 +270,7 @@ export default function BudgetContent({
               <div className="flex-1 text-center py-[10px] px-1 border-r border-[var(--bg2)]">
                 <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em]">/ mois</div>
                 <div className="text-[18px] font-[600] text-[var(--orange)] tracking-tight mt-0.5">
-                  {formatEur(totalMensuel)} €
+                  {formatEur(totalMensuel)}
                 </div>
               </div>
               <div className="flex-1 text-center py-[10px] px-1 border-r border-[var(--bg2)]">
@@ -282,7 +282,7 @@ export default function BudgetContent({
               <div className="flex-1 text-center py-[10px] px-1">
                 <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em]">/ an</div>
                 <div className="text-[18px] font-[600] text-[var(--text3)] tracking-tight mt-0.5">
-                  {formatEur(totalAnnuel)} €
+                  {formatEur(totalAnnuel)}
                 </div>
               </div>
             </div>
