@@ -186,19 +186,19 @@ export default function DashboardContent({
           return (
             <div
               key={m.moisKey}
-              className="flex items-center justify-between py-[8px] border-b border-[var(--bg2)]"
+              className="flex items-center py-[8px] border-b border-[var(--bg2)]"
             >
-              <span className="text-[13px] font-medium text-[var(--text2)] w-[60px]">
+              <span className="text-[13px] font-medium text-[var(--text2)] flex-1">
                 {m.mois}
               </span>
-              <span className="text-[13px] font-medium text-[var(--green)]">
+              <span className="text-[13px] font-medium text-[var(--green)] tabular-nums text-right w-[64px]">
                 +{fmt(m.revenus)}
               </span>
-              <span className="text-[13px] font-medium text-[var(--red)]">
+              <span className="text-[13px] font-medium text-[var(--red)] tabular-nums text-right w-[64px]">
                 −{fmt(m.depenses)}
               </span>
               <span
-                className={`text-[13px] font-semibold ${
+                className={`text-[13px] font-semibold tabular-nums text-right w-[72px] ${
                   net >= 0 ? "text-[var(--orange)]" : "text-[var(--red)]"
                 }`}
               >
