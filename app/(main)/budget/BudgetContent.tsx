@@ -217,7 +217,6 @@ export default function BudgetContent({
   const actifs = localItems.filter((i) => i.actif);
   const totalMensuel = actifs.reduce((sum, i) => sum + mensualise(i.montant, i.frequence), 0);
   const totalAnnuel = actifs.reduce((sum, i) => sum + annualise(i.montant, i.frequence), 0);
-  const countActifs = actifs.length;
 
   // ── Groupement par catégorie ──────────────────────────────────────────────
   const grouped = useMemo(() => {
@@ -265,18 +264,12 @@ export default function BudgetContent({
           <EmptyState onAdd={openAddModal} />
         ) : (
           <>
-            {/* KPIs — 3 colonnes */}
+            {/* KPIs — 2 colonnes */}
             <div className="flex border-b border-[var(--bg2)] flex-shrink-0">
               <div className="flex-1 text-center py-[10px] px-1 border-r border-[var(--bg2)]">
                 <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em]">/ mois</div>
                 <div className="text-[18px] font-[600] text-[var(--orange)] tracking-tight mt-0.5">
                   {formatEur(totalMensuel)}
-                </div>
-              </div>
-              <div className="flex-1 text-center py-[10px] px-1 border-r border-[var(--bg2)]">
-                <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em]">Actives</div>
-                <div className="text-[18px] font-[600] text-[var(--text)] tracking-tight mt-0.5">
-                  {countActifs}
                 </div>
               </div>
               <div className="flex-1 text-center py-[10px] px-1">
