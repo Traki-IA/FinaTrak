@@ -123,19 +123,20 @@ function BudgetRow({
         style={{
           fontSize: 9,
           fontWeight: 500,
-          padding: "2px 0",
-          width: 46,
+          padding: "3px 0",
+          width: 36,
           background: badgeBg,
           color: badgeColor,
+          border: `0.5px solid ${isAnnual ? "#1A4428" : "#3a2010"}`,
         }}
       >
-        {badgeLabel}
+        {isAnnual ? "/ an" : "/ mois"}
       </span>
 
       {/* Montants */}
       <div
         className="text-right flex-shrink-0"
-        style={{ width: 92 }}
+        style={{ width: 92, minWidth: 72 }}
       >
         <div
           className="text-[var(--text)]"

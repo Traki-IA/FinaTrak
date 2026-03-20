@@ -22,7 +22,7 @@ function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
   const day = String(d.getDate()).padStart(2, "0");
   const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
+  const year = String(d.getFullYear()).slice(2);
   return `${day}/${month}/${year}`;
 }
 
@@ -75,7 +75,7 @@ function MobileTxRow({
       {/* Ligne principale — tappable */}
       <div
         className="grid py-[10px] cursor-pointer select-none items-center gap-2"
-        style={{ gridTemplateColumns: "72px 76px 1fr 68px" }}
+        style={{ gridTemplateColumns: "54px 76px 1fr 68px" }}
         onClick={onRowTap}
       >
         {/* Col 1: date */}
