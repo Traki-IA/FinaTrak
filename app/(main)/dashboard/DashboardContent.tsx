@@ -76,7 +76,11 @@ export default function DashboardContent({
     }
   }
 
-  const soldeNet = stats.revenus - stats.depenses;
+  // Flux net de la période sélectionnée (revenus - dépenses sur la fenêtre)
+  const periodNet = stats.revenus - stats.depenses;
+
+  // Solde réel du compte (solde initial + toutes les transactions historiques)
+  const soldeCourant = stats.soldeTotal;
 
   // Comparaison vs mois précédent (si parMois a au moins 2 entrées)
   const currentMonth = parMois.length > 0 ? parMois[parMois.length - 1] : null;
@@ -158,19 +162,26 @@ export default function DashboardContent({
           )}
         </div>
 
-        {/* Solde net */}
+        {/* Solde courant — solde réel du compte (toutes transactions confondues) */}
         <div className="flex-1 text-center py-[10px] px-1">
           <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em] mb-[3px]">
-            Solde net
+            Solde
           </div>
-          <div className="text-[17px] font-semibold text-[var(--orange)] tracking-[-0.02em]">
-            {soldeNet >= 0 ? "+" : "−"}{fmt(soldeNet)} €
+          <div
+            className={`text-[17px] font-semibold tracking-[-0.02em] ${
+              soldeCourant >= 0 ? "text-[var(--orange)]" : "text-[var(--red)]"
+            }`}
+          >
+            {soldeCourant >= 0 ? "" : "−"}{fmt(soldeCourant)} €
           </div>
-          {prevMonth && (
-            <div className="text-[10px] font-medium text-[var(--orange)] mt-0.5">
-              {vsLabel(soldeNet, prevMonth.epargne)}
-            </div>
-          )}
+          {/* Flux de la période sélectionnée en sous-titre */}
+          <div
+            className={`text-[10px] font-medium mt-0.5 ${
+              periodNet >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
+            }`}
+          >
+            {periodNet >= 0 ? "+" : "−"}{fmt(periodNet)} flux
+          </div>
         </div>
       </div>
 
