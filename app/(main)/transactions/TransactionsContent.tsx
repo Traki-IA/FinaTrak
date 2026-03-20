@@ -539,7 +539,7 @@ export default function TransactionsContent({
           {/* Période button */}
           <button
             onClick={() => setPeriodSheetOpen(true)}
-            className={`flex items-center gap-1.5 px-3 py-[5px] text-[11px] font-medium rounded-lg border transition-all whitespace-nowrap ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-[5px] text-[11px] font-medium rounded-lg border transition-all whitespace-nowrap ${
               isPeriodActive
                 ? "border-[var(--orange)] text-[var(--orange)] bg-[rgba(249,115,22,0.10)]"
                 : "border-[var(--border)] text-[var(--text2)] bg-transparent"
