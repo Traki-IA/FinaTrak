@@ -60,6 +60,13 @@ function labelMois(dateStr: string): string {
   });
 }
 
+function labelJour(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
 function labelMoisFromKey(moisKey: string): string {
   const [year, month] = moisKey.split("-");
   return new Date(Number(year), Number(month) - 1, 1).toLocaleDateString(
@@ -312,7 +319,40 @@ export async function fetchBalanceHistory(
     throw new Error(`fetchBalanceHistory: ${error.message}`);
   }
 
-  // Déltas nets par mois (flux mensuel)
+  // ── Granularité journalière pour "1m" ────────────────────────────────────
+  if (period === "1m") {
+    const dayDeltas = new Map<string, { net: number; depenses: number }>();
+
+    for (const row of data ?? []) {
+      const dateKey = (row.date as string).slice(0, 10);
+      const entry = dayDeltas.get(dateKey) ?? { net: 0, depenses: 0 };
+      if (row.type === "revenu") {
+        entry.net += Number(row.montant);
+      } else {
+        entry.net -= Number(row.montant);
+        entry.depenses += Number(row.montant);
+      }
+      dayDeltas.set(dateKey, entry);
+    }
+
+    const result: TBalancePoint[] = [];
+    let cumulative = runningBalance;
+    const todayStr = new Date().toISOString().split("T")[0];
+    const loopEnd = new Date(fin < todayStr ? fin : todayStr);
+    const cur = new Date(debut);
+
+    while (cur <= loopEnd) {
+      const dateKey = cur.toISOString().split("T")[0];
+      const d = dayDeltas.get(dateKey) ?? { net: 0, depenses: 0 };
+      cumulative += d.net;
+      result.push({ mois: labelJour(dateKey), solde: cumulative, depenses: d.depenses });
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    return result;
+  }
+
+  // ── Granularité mensuelle pour 3m, 6m, 1a ────────────────────────────────
   const deltas = new Map<string, { net: number; depenses: number }>();
 
   for (const row of data ?? []) {

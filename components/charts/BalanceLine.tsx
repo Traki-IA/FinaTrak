@@ -60,6 +60,10 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
     data.reduce((acc, d) => acc + d.solde, 0) / data.length
   );
 
+  // Granularité journalière si > 12 points → espacer les labels pour éviter l'entassement
+  const isDaily = data.length > 12;
+  const xInterval = isDaily ? Math.max(1, Math.floor(data.length / 5)) : "preserveStartEnd";
+
   return (
     <div className="h-[190px]">
       <ResponsiveContainer width="100%" height="100%">
@@ -75,7 +79,7 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
             axisLine={false}
             tickLine={false}
             tick={{ fill: "#444", fontSize: 10 }}
-            interval="preserveStartEnd"
+            interval={xInterval}
           />
           <YAxis hide domain={["dataMin - 200", "dataMax + 200"]} />
           <Tooltip
