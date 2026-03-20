@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Receipt } from "lucide-react";
@@ -206,11 +206,10 @@ export default function BudgetContent({
   const [localItems, setLocalItems] = useState(initialItems);
 
   // Sync depuis le serveur
-  const serverKey = initialItems.map((i) => `${i.id}-${i.actif}-${i.montant}`).join("|");
-  useMemo(() => {
+  // Sync depuis le serveur — useEffect garantit l'exécution quand initialItems change
+  useEffect(() => {
     setLocalItems(initialItems);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverKey]);
+  }, [initialItems]);
 
   // ── KPIs ─────────────────────────────────────────────────────────────────
   const actifs = localItems.filter((i) => i.actif);
