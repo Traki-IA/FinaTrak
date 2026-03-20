@@ -79,7 +79,7 @@ function MobileTxRow({
         onClick={onRowTap}
       >
         {/* Col 1: date */}
-        <span className="text-[11px] text-[var(--text3)] tabular-nums whitespace-nowrap">
+        <span className="text-[12px] text-[var(--text3)] tabular-nums whitespace-nowrap">
           {formatDate(transaction.date)}
         </span>
 
@@ -343,7 +343,7 @@ export default function TransactionsContent({
                 <div className="w-11 h-11 rounded-[14px] bg-[var(--bg2)] flex items-center justify-center">
                   <Search size={20} className="text-[var(--text3)]" />
                 </div>
-                <span className="text-[12px] text-[var(--text3)]">
+                <span className="text-[13px] text-[var(--text3)]">
                   Aucune transaction trouvée
                 </span>
               </motion.div>

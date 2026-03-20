@@ -82,11 +82,11 @@ function BudgetRow({
   const badgeColor = isAnnual ? "var(--green, #4ADE80)" : "var(--orange, #F97316)";
   const badgeLabel = isAnnual ? "annuel" : "mensuel";
   const mainAmount = isAnnual
-    ? `${formatEur(annual)} €/an`
-    : `${formatEur(monthly)} €/mois`;
+    ? `${formatEur(annual)}/an`
+    : `${formatEur(monthly)}/mois`;
   const subAmount = isAnnual
-    ? `${formatEur(monthly)} €/mois`
-    : `${formatEur(annual)} €/an`;
+    ? `${formatEur(monthly)}/mois`
+    : `${formatEur(annual)}/an`;
 
   return (
     <motion.div
@@ -111,7 +111,7 @@ function BudgetRow({
 
       {/* Nom */}
       <div
-        className="flex-1 min-w-0 text-[12px] font-[500] text-[var(--text)] truncate"
+        className="flex-1 min-w-0 text-[13px] font-[500] text-[var(--text)] truncate"
         style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
       >
         {item.nom}
@@ -121,7 +121,7 @@ function BudgetRow({
       <span
         className="flex-shrink-0 text-center rounded-[3px]"
         style={{
-          fontSize: 8,
+          fontSize: 9,
           fontWeight: 500,
           padding: "2px 0",
           width: 46,
@@ -139,13 +139,13 @@ function BudgetRow({
       >
         <div
           className="text-[var(--text)]"
-          style={{ fontSize: 12, fontWeight: 500, letterSpacing: "-0.01em" }}
+          style={{ fontSize: 13, fontWeight: 500, letterSpacing: "-0.01em" }}
         >
           {mainAmount}
         </div>
         <div
           className="text-[var(--text3)]"
-          style={{ fontSize: 9 }}
+          style={{ fontSize: 10 }}
         >
           {subAmount}
         </div>

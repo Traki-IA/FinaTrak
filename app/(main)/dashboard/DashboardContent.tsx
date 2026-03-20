@@ -133,7 +133,7 @@ export default function DashboardContent({
           <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em] mb-[3px]">
             Revenus
           </div>
-          <div className="text-[16px] font-semibold text-[var(--green)] tracking-[-0.02em]">
+          <div className="text-[17px] font-semibold text-[var(--green)] tracking-[-0.02em]">
             {fmt(stats.revenus)} €
           </div>
           {prevMonth && (
@@ -148,7 +148,7 @@ export default function DashboardContent({
           <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em] mb-[3px]">
             Dépenses
           </div>
-          <div className="text-[16px] font-semibold text-[var(--red)] tracking-[-0.02em]">
+          <div className="text-[17px] font-semibold text-[var(--red)] tracking-[-0.02em]">
             {fmt(stats.depenses)} €
           </div>
           {prevMonth && (
@@ -163,7 +163,7 @@ export default function DashboardContent({
           <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em] mb-[3px]">
             Solde net
           </div>
-          <div className="text-[16px] font-semibold text-[var(--orange)] tracking-[-0.02em]">
+          <div className="text-[17px] font-semibold text-[var(--orange)] tracking-[-0.02em]">
             {soldeNet >= 0 ? "+" : "−"}{fmt(soldeNet)} €
           </div>
           {prevMonth && (
@@ -188,17 +188,17 @@ export default function DashboardContent({
               key={m.moisKey}
               className="flex items-center justify-between py-[8px] border-b border-[var(--bg2)]"
             >
-              <span className="text-[12px] font-medium text-[var(--text2)] w-[60px]">
+              <span className="text-[13px] font-medium text-[var(--text2)] w-[60px]">
                 {m.mois}
               </span>
-              <span className="text-[12px] font-medium text-[var(--green)]">
+              <span className="text-[13px] font-medium text-[var(--green)]">
                 +{fmt(m.revenus)}
               </span>
-              <span className="text-[12px] font-medium text-[var(--red)]">
+              <span className="text-[13px] font-medium text-[var(--red)]">
                 −{fmt(m.depenses)}
               </span>
               <span
-                className={`text-[12px] font-semibold ${
+                className={`text-[13px] font-semibold ${
                   net >= 0 ? "text-[var(--orange)]" : "text-[var(--red)]"
                 }`}
               >
@@ -208,7 +208,7 @@ export default function DashboardContent({
           );
         })}
         {parMois.length === 0 && (
-          <p className="text-[12px] text-[var(--text3)] text-center py-8">
+          <p className="text-[13px] text-[var(--text3)] text-center py-8">
             Aucune donnée
           </p>
         )}

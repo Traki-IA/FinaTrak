@@ -135,8 +135,8 @@ function SortableObjectifRow({
           </div>
           <div className="flex items-center gap-2 flex-shrink-0 ml-2">
             <div className="text-right">
-              <p className="text-[16px] font-[800] leading-none" style={{ color: couleur }}>{pct}%</p>
-              <p className="text-[12px] text-[var(--text2)] mt-0.5 whitespace-nowrap">
+              <p className="text-[17px] font-[800] leading-none" style={{ color: couleur }}>{pct}%</p>
+              <p className="text-[13px] text-[var(--text2)] mt-0.5 whitespace-nowrap">
                 {objectif.montant_actuel.toLocaleString("fr")} / {objectif.montant_cible.toLocaleString("fr")} €
               </p>
             </div>
@@ -161,12 +161,12 @@ function SortableObjectifRow({
             >
               <div className="mt-2.5 px-3 py-2.5 rounded-[10px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
                 <div className="flex justify-between mb-1">
-                  <span className="text-[12px] text-[var(--text2)]">Restant</span>
-                  <span className="text-[12px] font-[800]" style={{ color: couleur }}>{formatEur(restant)} €</span>
+                  <span className="text-[13px] text-[var(--text2)]">Restant</span>
+                  <span className="text-[13px] font-[800]" style={{ color: couleur }}>{formatEur(restant)}</span>
                 </div>
                 <div className="flex justify-between mb-2.5">
-                  <span className="text-[12px] text-[var(--text2)]">Effort mensuel (6m)</span>
-                  <span className="text-[12px] font-[800] text-white">~{formatEur(effortMensuel)} €</span>
+                  <span className="text-[13px] text-[var(--text2)]">Effort mensuel (6m)</span>
+                  <span className="text-[13px] font-[800] text-white">~{formatEur(effortMensuel)}</span>
                 </div>
                 <AnimatePresence mode="wait">
                   {showInput ? (
@@ -178,7 +178,7 @@ function SortableObjectifRow({
                       <button onClick={() => setShowInput(false)} className="px-2 py-1.5 bg-white/[0.05] text-[var(--text2)] rounded-xl text-xs">✕</button>
                     </motion.div>
                   ) : (
-                    <motion.button key="btn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setInputValue(objectif.montant_actuel.toString()); setShowInput(true); }} className="w-full py-1.5 rounded-lg text-[12px] text-[var(--text2)] bg-white/[0.03] hover:bg-white/[0.07] transition-all">
+                    <motion.button key="btn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setInputValue(objectif.montant_actuel.toString()); setShowInput(true); }} className="w-full py-1.5 rounded-lg text-[13px] text-[var(--text2)] bg-white/[0.03] hover:bg-white/[0.07] transition-all">
                       Mettre à jour la progression
                     </motion.button>
                   )}
@@ -257,7 +257,7 @@ function Objectifs({
           <div className="text-[24px] font-bold text-[var(--text)] tracking-[-0.02em]">Objectifs</div>
           <div className="text-right">
             <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em] mb-0.5">Total épargné</div>
-            <div className="text-[18px] font-semibold text-[var(--green)] tracking-[-0.02em]">{formatEur(totalEpargne)} €</div>
+            <div className="text-[18px] font-semibold text-[var(--green)] tracking-[-0.02em]">{formatEur(totalEpargne)}</div>
           </div>
         </div>
       )}
@@ -267,7 +267,7 @@ function Objectifs({
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }} className="mt-3 pb-3 border-b border-[var(--bg2)]">
           <div className="flex justify-between items-center mb-1.5">
             <p className="text-[11px] text-[var(--text3)] uppercase tracking-[0.14em] font-semibold">Progression globale</p>
-            <span className="text-[12px] font-bold text-emerald-400">{done} / {localObjectifs.length} atteints</span>
+            <span className="text-[13px] font-bold text-emerald-400">{done} / {localObjectifs.length} atteints</span>
           </div>
           <Bar pct={globalPct} color="#22c55e" height={2} className="opacity-60" />
         </motion.div>
