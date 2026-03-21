@@ -28,15 +28,18 @@ function CustomTooltip({
   const val = payload[0].value;
   return (
     <div
-      className="rounded-lg px-[10px] py-[7px]"
+      className="rounded-[14px] px-[12px] py-[9px]"
       style={{
-        background: "#1C1C1C",
-        border: "1px solid var(--bg3)",
-        minWidth: 90,
+        background: "rgba(28,28,30,0.95)",
+        border: "1px solid var(--border)",
+        minWidth: 110,
       }}
     >
-      <div className="text-[10px] text-[var(--text3)] mb-0.5">{label}</div>
-      <div className="text-[13px] font-medium text-[var(--text)]">
+      <div className="text-[11px] text-[var(--text3)] mb-[3px]">{label}</div>
+      <div
+        className="text-[18px] font-bold leading-none"
+        style={{ color: "var(--orange)" }}
+      >
         {val.toLocaleString("fr-FR")} €
       </div>
     </div>
@@ -64,25 +67,6 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
 
   return (
     <div className="h-[260px] relative">
-      {/* Carte valeur courante — toujours visible, ancrée haut droite */}
-      <div
-        className="absolute top-[6px] right-[6px] z-10 rounded-[14px] px-[12px] py-[8px] text-right pointer-events-none"
-        style={{
-          background: "rgba(28,28,30,0.92)",
-          border: "1px solid var(--border)",
-        }}
-      >
-        <div className="text-[11px] text-[var(--text3)] mb-[3px]">
-          {lastPoint.mois}
-        </div>
-        <div
-          className="text-[18px] font-bold leading-none"
-          style={{ color: "var(--orange)" }}
-        >
-          {lastPoint.solde.toLocaleString("fr-FR")} €
-        </div>
-      </div>
-
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
           <defs>
@@ -110,14 +94,6 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
             y={moyenne}
             stroke="#333"
             strokeDasharray="4 4"
-            strokeWidth={1}
-          />
-
-          {/* Ligne verticale pointillée au dernier point */}
-          <ReferenceLine
-            x={lastPoint.mois}
-            stroke="rgba(249,115,22,0.25)"
-            strokeDasharray="3 3"
             strokeWidth={1}
           />
 
