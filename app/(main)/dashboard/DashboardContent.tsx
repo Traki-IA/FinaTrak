@@ -131,11 +131,7 @@ export default function DashboardContent({
         </div>
         {/* Valeur */}
         <div className="py-[6px] flex items-center justify-center gap-[10px]" style={{ borderBottom: "1px solid var(--border)" }}>
-            <div
-              className={`text-[26px] font-bold tracking-[-0.03em] leading-none ${
-                soldeCourant >= 0 ? "text-[var(--orange)]" : "text-[var(--red)]"
-              }`}
-            >
+            <div className="text-[26px] font-bold tracking-[-0.03em] leading-none text-[var(--text)]">
               {soldeCourant >= 0 ? "" : "−"}{fmt(soldeCourant)} €
             </div>
             {evolutionPct !== null && (
@@ -240,8 +236,8 @@ export default function DashboardContent({
                   m.revenus > 0 ? Math.round(((m.revenus - m.depenses) / m.revenus) * 100) : null;
 
                 const isOpen = openMonth === m.moisKey;
-                const dotColor = net >= 0 ? "var(--orange)" : "var(--red)";
-                const netColor = net >= 0 ? "var(--orange)" : "var(--red)";
+                const dotColor = net >= 0 ? "var(--green)" : "var(--red)";
+                const netColor = net >= 0 ? "var(--green)" : "var(--red)";
                 const evolColor = evol === null ? "var(--text3)" : evol >= 0 ? "var(--green)" : "var(--red)";
                 const evolBg = evol === null
                   ? "rgba(255,255,255,0.06)"
