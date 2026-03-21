@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Loader2, Target, GripVertical } from "lucide-react";
+import { Pencil, Loader2, Target, GripVertical, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -21,7 +21,6 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 import Shell from "@/components/layout/Shell";
 import LogoHeader from "@/components/ui/LogoHeader";
 import Bar from "@/components/ui/Bar";
@@ -133,16 +132,12 @@ function SortableObjectifRow({
               {objectif.date_fin && <span className="text-[12px] text-[var(--text2)] mt-0.5 block">→ {formatDate(objectif.date_fin)}</span>}
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+          <div className="flex items-center flex-shrink-0 ml-2">
             <div className="text-right">
               <p className="text-[17px] font-[800] leading-none" style={{ color: couleur }}>{pct}%</p>
               <p className="text-[13px] text-[var(--text2)] mt-0.5 whitespace-nowrap">
                 {objectif.montant_actuel.toLocaleString("fr")} / {objectif.montant_cible.toLocaleString("fr")} €
               </p>
-            </div>
-            <div className="flex gap-0.5" onClick={(e) => e.stopPropagation()}>
-              {!isConfirming && <button onClick={() => onEdit(objectif)} className="p-1 text-[var(--text3)] hover:text-white"><Pencil size={12} /></button>}
-              <ConfirmDeleteButton isConfirming={isConfirming} onDeleteRequest={() => onDeleteRequest(objectif.id)} onDeleteConfirm={handleDeleteConfirm} onDeleteCancel={onDeleteCancel} size={12} />
             </div>
           </div>
         </div>
@@ -183,6 +178,45 @@ function SortableObjectifRow({
                     </motion.button>
                   )}
                 </AnimatePresence>
+
+                {/* Actions */}
+                <div
+                  className="flex gap-2 mt-2"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 8 }}
+                >
+                  {isConfirming ? (
+                    <>
+                      <button
+                        onClick={handleDeleteConfirm}
+                        className="flex-1 py-1.5 rounded-lg text-[13px] bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <Check size={11} />Confirmer
+                      </button>
+                      <button
+                        onClick={onDeleteCancel}
+                        className="flex-1 py-1.5 rounded-lg text-[13px] text-[var(--text2)] bg-white/[0.03] hover:bg-white/[0.07] transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <X size={11} />Annuler
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => onEdit(objectif)}
+                        className="flex-1 py-1.5 rounded-lg text-[13px] text-[var(--text2)] bg-white/[0.03] hover:bg-white/[0.07] transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <Pencil size={11} />Modifier
+                      </button>
+                      <button
+                        onClick={() => onDeleteRequest(objectif.id)}
+                        className="flex-1 py-1.5 rounded-lg text-[13px] text-red-400/70 bg-white/[0.03] hover:bg-red-500/[0.08] hover:text-red-400 transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <Trash2 size={11} />Supprimer
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </motion.div>
           )}
