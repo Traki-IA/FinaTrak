@@ -303,11 +303,11 @@ function MobileTxRow({
     >
       {/* Ligne principale */}
       <div
-        className="grid py-[10px] cursor-pointer select-none items-center gap-2"
+        className="grid py-[10px] px-[14px] cursor-pointer select-none items-center gap-2"
         style={{ gridTemplateColumns: "54px 76px 1fr 68px" }}
         onClick={onRowTap}
       >
-        <span className="text-[12px] text-[var(--text3)] tabular-nums whitespace-nowrap">
+        <span className="text-[12px] text-[var(--text2)] tabular-nums whitespace-nowrap">
           {formatDate(transaction.date)}
         </span>
         <span
@@ -337,7 +337,7 @@ function MobileTxRow({
             transition={{ duration: 0.18, ease: "easeOut" }}
             className="overflow-hidden"
           >
-            <div className="border-t border-[var(--bg2)] flex gap-2 px-1 py-1.5">
+            <div className="border-t border-[var(--border)] flex gap-2 px-[14px] py-1.5">
               {isConfirming ? (
                 <>
                   <button
@@ -396,12 +396,12 @@ function CategoriesChart({ transactions }: { transactions: TTransactionWithCateg
   if (sorted.length === 0) return null;
 
   return (
-    <div className="py-[10px] px-0 bg-[var(--bg2)] mb-[2px]">
-      <div className="flex justify-between mb-2 px-0">
-        <span className="text-[10px] text-[var(--text2)] uppercase tracking-[0.07em]">Catégories</span>
-        <span className="text-[10px] text-[var(--text2)]">{fmt(total)} € total</span>
+    <div className="mt-[10px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
+      <div className="flex justify-between px-[14px] py-[8px]" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+        <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Catégories</span>
+        <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{fmt(total)} € total</span>
       </div>
-      <div className="flex flex-col gap-[7px]">
+      <div className="flex flex-col gap-[8px] px-[14px] py-[10px]">
         {sorted.map((cat) => {
           const pct = Math.round((cat.total / total) * 100);
           return (
@@ -578,7 +578,7 @@ export default function TransactionsContent({
         <CategoriesChart transactions={filtered} />
 
         {/* Transaction list */}
-        <div>
+        <div className="mt-[10px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
           <AnimatePresence mode="popLayout">
             {filtered.length === 0 ? (
               <motion.div
@@ -596,7 +596,7 @@ export default function TransactionsContent({
                 </span>
               </motion.div>
             ) : (
-              filtered.map((t) => {
+              <div className="divide-y divide-[var(--border)]">{filtered.map((t) => {
                 const idx = rowIndex++;
                 return (
                   <MobileTxRow
@@ -615,7 +615,7 @@ export default function TransactionsContent({
                     onRowTap={() => handleRowTap(t.id)}
                   />
                 );
-              })
+              })}</div>
             )}
           </AnimatePresence>
         </div>
