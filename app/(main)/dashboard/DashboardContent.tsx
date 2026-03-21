@@ -29,6 +29,13 @@ interface IDashboardContentProps {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+const MOIS_COMPLETS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+
+function moisComplet(moisKey: string): string {
+  const month = Number(moisKey.split("-")[1]);
+  return MOIS_COMPLETS[month - 1];
+}
+
 function fmt(n: number): string {
   return Math.abs(n).toLocaleString("fr-FR", {
     minimumFractionDigits: 0,
@@ -269,7 +276,7 @@ export default function DashboardContent({
                         style={{ background: dotColor }}
                       />
                       <span className="text-[14px] font-semibold text-[var(--text)] leading-none whitespace-nowrap overflow-hidden">
-                        {m.mois}
+                        {moisComplet(m.moisKey)}
                       </span>
                       <div />
                       <span
