@@ -267,7 +267,7 @@ export default function DashboardContent({
                         className="w-[7px] h-[7px] rounded-full shrink-0"
                         style={{ background: dotColor }}
                       />
-                      <span className="text-[14px] font-semibold text-[var(--text)] flex-1 leading-none">
+                      <span className="text-[14px] font-semibold text-[var(--text)] flex-1 leading-none whitespace-nowrap">
                         {m.mois}
                       </span>
                       <span
