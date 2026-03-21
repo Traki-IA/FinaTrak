@@ -67,6 +67,7 @@ export default function DashboardContent({
   const [activePeriod, setActivePeriod] = useState<TPeriodTab>(
     period === "1m" ? "1m" : period === "3m" ? "3m" : period === "6m" ? "6m" : period === "1a" ? "1a" : "1m"
   );
+  const [openMonth, setOpenMonth] = useState<string | null>(null);
 
   function handlePeriodChange(p: TPeriodTab) {
     setActivePeriod(p);
@@ -182,71 +183,134 @@ export default function DashboardContent({
         </div>
       </div>
 
-      {/* Historique mensuel — toujours complet, indépendant de la période */}
-      <div className="flex flex-col px-0 pb-4">
-        {/* En-tête colonnes */}
-        <div className="flex items-center pb-[6px] pt-[2px] border-b border-[var(--border)]">
-          <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em] flex-1">Mois</span>
-          <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em] tabular-nums text-right w-[64px]">Revenu</span>
-          <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em] tabular-nums text-right w-[64px]">Dépense</span>
-          <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em] tabular-nums text-right w-[72px]">Solde</span>
-          <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em] tabular-nums text-right w-[46px]">Évol.</span>
-        </div>
+      {/* Historique mensuel — accordion */}
+      <div className="flex flex-col gap-[6px] px-[2px] pb-4">
+        <p className="text-[10px] text-[var(--text3)] uppercase tracking-[0.1em] px-[2px] pt-[2px] pb-[4px]">
+          Historique
+        </p>
 
         {allParMois.map((m, i) => {
           const net = m.revenus - m.depenses;
-
-          // % progression vs mois précédent (index i+1 = mois antérieur dans tableau inversé)
           const prevNet = i < allParMois.length - 1 ? allParMois[i + 1].revenus - allParMois[i + 1].depenses : null;
           const evol =
             prevNet !== null && prevNet !== 0
               ? ((net - prevNet) / Math.abs(prevNet)) * 100
               : null;
+          const tauxEpargne =
+            m.revenus > 0 ? Math.round(((m.revenus - m.depenses) / m.revenus) * 100) : null;
 
-          // Bornes du mois pour la navigation vers Transactions
+          const isOpen = openMonth === m.moisKey;
+          const dotColor = net >= 0 ? "var(--orange)" : "var(--red)";
+          const netColor = net >= 0 ? "var(--orange)" : "var(--red)";
+          const evolColor = evol === null ? "var(--text3)" : evol >= 0 ? "var(--green)" : "var(--red)";
+          const evolBg = evol === null
+            ? "rgba(255,255,255,0.06)"
+            : evol >= 0
+            ? "rgba(74,222,128,0.10)"
+            : "rgba(248,113,113,0.10)";
+          const evolBorder = evol === null
+            ? "rgba(255,255,255,0.10)"
+            : evol >= 0
+            ? "rgba(74,222,128,0.25)"
+            : "rgba(248,113,113,0.25)";
+
           const [y, mo] = m.moisKey.split("-").map(Number);
           const lastDay = new Date(y, mo, 0).getDate();
           const dateFrom = `${m.moisKey}-01`;
-          const dateTo   = `${m.moisKey}-${String(lastDay).padStart(2, "0")}`;
+          const dateTo = `${m.moisKey}-${String(lastDay).padStart(2, "0")}`;
 
           return (
             <div
               key={m.moisKey}
-              onClick={() => router.push(`/transactions?dateFrom=${dateFrom}&dateTo=${dateTo}`)}
-              className="flex items-center py-[8px] border-b border-[var(--bg2)] cursor-pointer active:opacity-70 transition-opacity"
+              className="rounded-[14px] overflow-hidden"
+              style={{ background: "var(--bg2)", border: "1px solid var(--border)" }}
             >
-              <span className="text-[13px] font-medium text-[var(--text)] flex-1">
-                {m.mois}
-              </span>
-              <span className="text-[13px] font-medium text-[var(--green)] tabular-nums text-right w-[64px]">
-                +{fmt(m.revenus)}
-              </span>
-              <span className="text-[13px] font-medium text-[var(--red)] tabular-nums text-right w-[64px]">
-                −{fmt(m.depenses)}
-              </span>
-              <span
-                className={`text-[13px] font-semibold tabular-nums text-right w-[72px] ${
-                  net >= 0 ? "text-[var(--orange)]" : "text-[var(--red)]"
-                }`}
+              {/* Header row */}
+              <div
+                className="flex items-center gap-[10px] px-[14px] py-[12px] cursor-pointer active:opacity-70 transition-opacity"
+                onClick={() => setOpenMonth(isOpen ? null : m.moisKey)}
               >
-                {net >= 0 ? "+" : "−"}{fmt(net)} €
-              </span>
-              <span
-                className={`text-[10px] font-medium tabular-nums text-right w-[46px] ${
-                  evol === null
-                    ? "text-[var(--text3)]"
-                    : evol >= 0
-                    ? "text-[var(--green)]"
-                    : "text-[var(--red)]"
-                }`}
-              >
-                {evol === null
-                  ? "—"
-                  : `${evol >= 0 ? "+" : ""}${evol.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`}
-              </span>
+                <span
+                  className="w-[7px] h-[7px] rounded-full shrink-0"
+                  style={{ background: dotColor }}
+                />
+                <span className="text-[14px] font-semibold text-[var(--text)] flex-1 leading-none">
+                  {m.mois}
+                </span>
+                <span
+                  className="text-[14px] font-bold tabular-nums leading-none"
+                  style={{ color: netColor }}
+                >
+                  {net >= 0 ? "+" : "−"}{fmt(net)} €
+                </span>
+                <span
+                  className="inline-flex items-center justify-center h-[20px] w-[60px] rounded-full text-[11px] font-semibold tabular-nums shrink-0"
+                  style={{ background: evolBg, border: `1px solid ${evolBorder}`, color: evolColor }}
+                >
+                  {evol === null
+                    ? "—"
+                    : `${evol >= 0 ? "+" : ""}${evol.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}%`}
+                </span>
+                <span
+                  className="text-[var(--text3)] text-[10px] leading-none transition-transform duration-200 shrink-0"
+                  style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+                >
+                  ▼
+                </span>
+              </div>
+
+              {/* Expanded detail */}
+              {isOpen && (
+                <div
+                  className="px-[14px] pb-[14px] flex flex-col gap-[6px]"
+                  style={{ borderTop: "1px solid var(--border)" }}
+                >
+                  <div className="flex justify-between pt-[10px]">
+                    <span className="text-[13px] text-[var(--text3)]">Revenus</span>
+                    <span className="text-[13px] font-medium text-[var(--green)] tabular-nums">
+                      {fmt(m.revenus)} €
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[13px] text-[var(--text3)]">Dépenses</span>
+                    <span className="text-[13px] font-medium text-[var(--red)] tabular-nums">
+                      {fmt(m.depenses)} €
+                    </span>
+                  </div>
+                  {tauxEpargne !== null && (
+                    <div className="flex justify-between">
+                      <span className="text-[13px] text-[var(--text3)]">Taux d&apos;épargne</span>
+                      <span className="text-[13px] font-medium text-[var(--text)] tabular-nums">
+                        {tauxEpargne}%
+                      </span>
+                    </div>
+                  )}
+                  {evol !== null && (
+                    <div
+                      className="flex justify-between pt-[6px]"
+                      style={{ borderTop: "1px solid var(--border)" }}
+                    >
+                      <span className="text-[12px] text-[var(--text3)]">vs mois précédent</span>
+                      <span
+                        className="text-[12px] font-semibold tabular-nums"
+                        style={{ color: evolColor }}
+                      >
+                        {evol >= 0 ? "+" : ""}{evol.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
+                      </span>
+                    </div>
+                  )}
+                  <button
+                    className="mt-[4px] text-[11px] text-[var(--text3)] underline text-left"
+                    onClick={() => router.push(`/transactions?dateFrom=${dateFrom}&dateTo=${dateTo}`)}
+                  >
+                    Voir les transactions →
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
+
         {allParMois.length === 0 && (
           <p className="text-[13px] text-[var(--text3)] text-center py-8">
             Aucune donnée
