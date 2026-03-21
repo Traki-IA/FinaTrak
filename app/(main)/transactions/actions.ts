@@ -121,6 +121,43 @@ export async function updateTransaction(
   return { success: true, objectifUpdated: false };
 }
 
+export async function upsertCategorie(input: {
+  id?: string;
+  nom: string;
+  couleur: string;
+}): Promise<{ success: true } | { error: string }> {
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
+  if (input.id) {
+    const { error } = await supabase
+      .from("categories")
+      .update({ nom: input.nom, couleur: input.couleur })
+      .eq("id", input.id);
+    if (error) return { error: error.message };
+  } else {
+    const { error } = await supabase
+      .from("categories")
+      .insert([{ nom: input.nom, couleur: input.couleur, user_id: userId }]);
+    if (error) return { error: error.message };
+  }
+
+  revalidatePath("/transactions");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function deleteCategorie(
+  id: string
+): Promise<{ success: true } | { error: string }> {
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/transactions");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
 export async function deleteTransaction(
   id: string
 ): Promise<{ success: true } | { error: string }> {

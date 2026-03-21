@@ -4,9 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, Loader2 } from "lucide-react";
-import { insertTransaction, updateTransaction } from "./actions";
+import { X, Loader2, Pencil, Plus, ArrowLeft, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { insertTransaction, updateTransaction, upsertCategorie, deleteCategorie } from "./actions";
 import type { TCategorie, TObjectif, TBudgetItem, TTransactionWithCategorie } from "@/types";
+
+const COLOR_PALETTE = [
+  "#ef4444", "#f97316", "#eab308", "#22c55e",
+  "#14b8a6", "#3b82f6", "#8b5cf6", "#ec4899",
+  "#f43f5e", "#06b6d4", "#84cc16", "#6b7280",
+];
 
 interface ITransactionModalProps {
   open: boolean;
@@ -39,6 +46,12 @@ export default function TransactionModal({
 }: ITransactionModalProps) {
   const router = useRouter();
   const isEditMode = Boolean(transaction);
+
+  // Local categories state (for optimistic updates)
+  const [localCategories, setLocalCategories] = useState<TCategorie[]>(categories);
+  const [catPickerOpen, setCatPickerOpen] = useState(false);
+  const [catForm, setCatForm] = useState<{ id?: string; nom: string; couleur: string } | null>(null);
+  const [catSaving, setCatSaving] = useState(false);
 
   function buildForm(t: TTransactionWithCategorie) {
     return {
@@ -92,6 +105,30 @@ export default function TransactionModal({
 
     setErrors(next);
     return Object.keys(next).length === 0;
+  }
+
+  async function handleCatSave() {
+    if (!catForm || !catForm.nom.trim()) return;
+    setCatSaving(true);
+    const result = await upsertCategorie({ id: catForm.id, nom: catForm.nom.trim(), couleur: catForm.couleur });
+    setCatSaving(false);
+    if ("error" in result) { toast.error(result.error); return; }
+    if (catForm.id) {
+      setLocalCategories((prev) => prev.map((c) => c.id === catForm.id ? { ...c, nom: catForm.nom.trim(), couleur: catForm.couleur } : c));
+    } else {
+      const newCat: TCategorie = { id: crypto.randomUUID(), nom: catForm.nom.trim(), couleur: catForm.couleur, icone: "", sort_order: 0, created_at: new Date().toISOString() };
+      setLocalCategories((prev) => [...prev, newCat]);
+      set("categorie_id", newCat.id);
+    }
+    setCatForm(null);
+  }
+
+  async function handleCatDelete(id: string) {
+    const result = await deleteCategorie(id);
+    if ("error" in result) { toast.error(result.error); return; }
+    setLocalCategories((prev) => prev.filter((c) => c.id !== id));
+    if (form.categorie_id === id) set("categorie_id", "");
+    setCatForm(null);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -214,24 +251,153 @@ export default function TransactionModal({
 
             {/* Catégorie */}
             <div className="space-y-1.5">
-              <label className="text-sm text-white/60 font-medium">
-                Catégorie
-              </label>
-              <select
-                value={form.categorie_id}
-                onChange={(e) => set("categorie_id", e.target.value)}
-                className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer appearance-none"
-                style={{ colorScheme: "dark" }}
+              <label className="text-sm text-white/60 font-medium">Catégorie</label>
+
+              {/* Bouton sélection */}
+              <button
+                type="button"
+                onClick={() => { setCatPickerOpen((v) => !v); setCatForm(null); }}
+                className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-4 py-2.5 text-sm flex items-center gap-2 text-left transition-colors hover:border-white/20"
               >
-                <option value="" className="bg-[#0f0f1a]">
-                  Aucune catégorie
-                </option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id} className="bg-[#0f0f1a]">
-                    {cat.nom}
-                  </option>
-                ))}
-              </select>
+                {form.categorie_id ? (
+                  <>
+                    <span className="w-3 h-3 rounded-full shrink-0" style={{ background: localCategories.find((c) => c.id === form.categorie_id)?.couleur ?? "#6b7280" }} />
+                    <span>{localCategories.find((c) => c.id === form.categorie_id)?.nom ?? "—"}</span>
+                  </>
+                ) : (
+                  <span className="text-white/40">Aucune catégorie</span>
+                )}
+                <span className="ml-auto text-white/30 text-xs">{catPickerOpen ? "▲" : "▼"}</span>
+              </button>
+
+              {/* Picker inline */}
+              <AnimatePresence>
+                {catPickerOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.18 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="rounded-xl border border-white/[0.1] overflow-hidden bg-white/[0.03]">
+                      <AnimatePresence mode="wait">
+                        {catForm ? (
+                          /* ── Formulaire catégorie ── */
+                          <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.15 }} className="p-3 space-y-3">
+                            {/* Header form */}
+                            <div className="flex items-center gap-2">
+                              <button type="button" onClick={() => setCatForm(null)} className="text-white/40 hover:text-white transition-colors">
+                                <ArrowLeft size={14} />
+                              </button>
+                              <span className="text-sm font-medium text-white">{catForm.id ? "Modifier" : "Nouvelle catégorie"}</span>
+                            </div>
+                            {/* Nom */}
+                            <input
+                              type="text"
+                              placeholder="Nom de la catégorie"
+                              value={catForm.nom}
+                              onChange={(e) => setCatForm((f) => f ? { ...f, nom: e.target.value } : f)}
+                              className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-500/60"
+                            />
+                            {/* Palette couleurs */}
+                            <div>
+                              <p className="text-[10px] text-white/40 uppercase tracking-[0.08em] mb-2">Couleur</p>
+                              <div className="grid grid-cols-7 gap-2">
+                                {COLOR_PALETTE.map((col) => (
+                                  <button
+                                    key={col}
+                                    type="button"
+                                    onClick={() => setCatForm((f) => f ? { ...f, couleur: col } : f)}
+                                    className="w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+                                    style={{ background: col, outline: catForm.couleur === col ? `2px solid white` : "none", outlineOffset: "2px" }}
+                                  >
+                                    {catForm.couleur === col && <Check size={12} className="text-white" />}
+                                  </button>
+                                ))}
+                                {/* Custom color picker */}
+                                <label className="relative w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-transform hover:scale-110 border-2 border-dashed border-white/30 hover:border-white/60"
+                                  style={!COLOR_PALETTE.includes(catForm.couleur) ? { background: catForm.couleur, border: "2px solid white" } : {}}>
+                                  {!COLOR_PALETTE.includes(catForm.couleur)
+                                    ? <Check size={12} className="text-white" />
+                                    : <Plus size={12} className="text-white/50" />}
+                                  <input
+                                    type="color"
+                                    value={catForm.couleur}
+                                    onChange={(e) => setCatForm((f) => f ? { ...f, couleur: e.target.value } : f)}
+                                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                            {/* Actions */}
+                            <div className="flex gap-2">
+                              {catForm.id && (
+                                <button type="button" onClick={() => handleCatDelete(catForm.id!)} className="px-3 py-2 rounded-lg text-[12px] font-medium text-red-400 border border-red-400/20 hover:bg-red-400/10 transition-colors">
+                                  Supprimer
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={handleCatSave}
+                                disabled={catSaving || !catForm.nom.trim()}
+                                className="flex-1 py-2 rounded-lg text-[12px] font-semibold bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white transition-colors flex items-center justify-center gap-1"
+                              >
+                                {catSaving && <Loader2 size={11} className="animate-spin" />}
+                                Enregistrer
+                              </button>
+                            </div>
+                          </motion.div>
+                        ) : (
+                          /* ── Liste catégories ── */
+                          <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                            {/* Aucune */}
+                            <button
+                              type="button"
+                              onClick={() => { set("categorie_id", ""); setCatPickerOpen(false); }}
+                              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-white/40 hover:bg-white/[0.05] transition-colors border-b border-white/[0.06]"
+                            >
+                              <span className="w-3 h-3 rounded-full bg-white/10 shrink-0" />
+                              <span>Aucune catégorie</span>
+                              {!form.categorie_id && <Check size={12} className="ml-auto text-orange-500" />}
+                            </button>
+                            {/* Liste */}
+                            {localCategories.map((cat) => (
+                              <div key={cat.id} className="flex items-center gap-2 px-3 py-2.5 border-b border-white/[0.06] last:border-0 hover:bg-white/[0.04] transition-colors">
+                                <button
+                                  type="button"
+                                  onClick={() => { set("categorie_id", cat.id); setCatPickerOpen(false); }}
+                                  className="flex items-center gap-2 flex-1 text-sm text-white text-left"
+                                >
+                                  <span className="w-3 h-3 rounded-full shrink-0" style={{ background: cat.couleur }} />
+                                  <span>{cat.nom}</span>
+                                  {form.categorie_id === cat.id && <Check size={12} className="text-orange-500" />}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setCatForm({ id: cat.id, nom: cat.nom, couleur: cat.couleur })}
+                                  className="text-white/25 hover:text-white/60 transition-colors p-1"
+                                >
+                                  <Pencil size={11} />
+                                </button>
+                              </div>
+                            ))}
+                            {/* Nouvelle */}
+                            <button
+                              type="button"
+                              onClick={() => setCatForm({ nom: "", couleur: COLOR_PALETTE[0] })}
+                              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-orange-400 hover:bg-white/[0.05] transition-colors"
+                            >
+                              <Plus size={13} />
+                              <span>Nouvelle catégorie</span>
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Description */}
