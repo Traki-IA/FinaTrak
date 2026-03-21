@@ -96,9 +96,9 @@ function BudgetRow({
       exit={{ opacity: 0, x: -12 }}
       transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.25) }}
       onClick={() => onEdit(item)}
-      className="flex items-center border-b border-[var(--bg2)] cursor-pointer"
+      className="flex items-center cursor-pointer"
       style={{
-        padding: "7px 20px",
+        padding: "8px 14px",
         gap: "9px",
         opacity: item.actif ? 1 : 0.4,
       }}
@@ -116,22 +116,6 @@ function BudgetRow({
       >
         {item.nom}
       </div>
-
-      {/* Badge fréquence */}
-      <span
-        className="flex-shrink-0 text-center rounded-[3px]"
-        style={{
-          fontSize: 9,
-          fontWeight: 500,
-          padding: "3px 0",
-          width: 36,
-          background: badgeBg,
-          color: badgeColor,
-          border: `0.5px solid ${isAnnual ? "#1A4428" : "#3a2010"}`,
-        }}
-      >
-        {isAnnual ? "/ an" : "/ mois"}
-      </span>
 
       {/* Montants */}
       <div
@@ -264,18 +248,25 @@ export default function BudgetContent({
           <EmptyState onAdd={openAddModal} />
         ) : (
           <>
-            {/* KPIs — 2 colonnes */}
-            <div className="flex border-b border-[var(--bg2)] flex-shrink-0">
-              <div className="flex-1 text-center py-[10px] px-1 border-r border-[var(--bg2)]">
-                <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em]">/ mois</div>
-                <div className="text-[18px] font-[600] text-[var(--orange)] tracking-tight mt-0.5">
-                  {formatEur(totalMensuel)}
-                </div>
+            {/* KPIs — card harmonisée */}
+            <div className="mt-[10px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
+              {/* Header */}
+              <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+                <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Budget</span>
               </div>
-              <div className="flex-1 text-center py-[10px] px-1">
-                <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em]">/ an</div>
-                <div className="text-[18px] font-[600] text-[var(--text3)] tracking-tight mt-0.5">
-                  {formatEur(totalAnnuel)}
+              {/* Colonnes */}
+              <div className="flex">
+                <div className="flex-1 text-center py-[8px] px-2 min-w-0" style={{ borderRight: "1px solid var(--border)" }}>
+                  <div className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">/ mois</div>
+                  <div className="text-[16px] font-semibold text-[var(--text)] tracking-tight mt-[2px] tabular-nums truncate">
+                    {formatEur(totalMensuel)}
+                  </div>
+                </div>
+                <div className="flex-1 text-center py-[8px] px-2 min-w-0">
+                  <div className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">/ an</div>
+                  <div className="text-[16px] font-semibold text-[var(--text)] tracking-tight mt-[2px] tabular-nums truncate">
+                    {formatEur(totalAnnuel)}
+                  </div>
                 </div>
               </div>
             </div>
@@ -288,31 +279,28 @@ export default function BudgetContent({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
+                  className="mt-[10px] rounded-[14px] overflow-hidden"
+                  style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}
                 >
                   {/* En-tête catégorie */}
-                  <div
-                    className="text-[var(--text3)] uppercase"
-                    style={{
-                      fontSize: 9,
-                      letterSpacing: "0.08em",
-                      padding: "6px 20px 2px",
-                    }}
-                  >
-                    {cat}
+                  <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+                    <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{cat}</span>
                   </div>
 
                   {/* Rows */}
-                  {items.map((item) => {
-                    const idx = rowIndex++;
-                    return (
-                      <BudgetRow
-                        key={item.id}
-                        item={item}
-                        index={idx}
-                        onEdit={openEditModal}
-                      />
-                    );
-                  })}
+                  <div className="divide-y divide-[var(--border)]">
+                    {items.map((item) => {
+                      const idx = rowIndex++;
+                      return (
+                        <BudgetRow
+                          key={item.id}
+                          item={item}
+                          index={idx}
+                          onEdit={openEditModal}
+                        />
+                      );
+                    })}
+                  </div>
                 </motion.div>
               ))}
             </AnimatePresence>
