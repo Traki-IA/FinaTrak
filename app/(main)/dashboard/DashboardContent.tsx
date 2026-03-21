@@ -84,16 +84,20 @@ export default function DashboardContent({
   // Solde réel du compte (solde initial + toutes les transactions historiques)
   const soldeCourant = stats.soldeTotal;
 
-  // Comparaison vs mois précédent (si parMois a au moins 2 entrées)
-  const currentMonth = parMois.length > 0 ? parMois[parMois.length - 1] : null;
-  const prevMonth = parMois.length > 1 ? parMois[parMois.length - 2] : null;
+  // % d'évolution du solde sur la période : periodNet / solde_début_période × 100
+  const soldeDebutPeriode = soldeCourant - periodNet;
+  const evolutionPct =
+    soldeDebutPeriode !== 0
+      ? (periodNet / Math.abs(soldeDebutPeriode)) * 100
+      : null;
 
-  function vsLabel(current: number, previous: number | undefined): string {
-    if (previous === undefined || previous === 0) return "";
-    const diff = current - previous;
-    const pct = Math.round((diff / Math.abs(previous)) * 100);
-    return `${pct >= 0 ? "↑ +" : "↓ "}${pct} %`;
-  }
+  const PERIOD_LABEL: Record<TPeriodTab, string> = {
+    "1m": "ce mois",
+    "7j": "7 jours",
+    "3m": "3 mois",
+    "6m": "6 mois",
+    "1a": "1 an",
+  };
 
   return (
     <Shell>
@@ -166,14 +170,24 @@ export default function DashboardContent({
           >
             {soldeCourant >= 0 ? "" : "−"}{fmt(soldeCourant)} €
           </div>
-          {/* Flux de la période sélectionnée en sous-titre */}
-          <div
-            className={`text-[10px] font-medium mt-0.5 ${
-              periodNet >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"
-            }`}
-          >
-            {periodNet >= 0 ? "+" : "−"}{fmt(periodNet)} flux
-          </div>
+          {/* Badge % évolution du solde sur la période */}
+          {evolutionPct !== null && (
+            <div
+              className="inline-flex items-center gap-[3px] mt-[6px] px-[8px] py-[3px] rounded-full text-[10px] font-semibold"
+              style={{
+                background: evolutionPct >= 0 ? "rgba(74,222,128,0.10)" : "rgba(248,113,113,0.10)",
+                border: `1px solid ${evolutionPct >= 0 ? "rgba(74,222,128,0.25)" : "rgba(248,113,113,0.25)"}`,
+                color: evolutionPct >= 0 ? "var(--green)" : "var(--red)",
+              }}
+            >
+              <span>{evolutionPct >= 0 ? "↑" : "↓"}</span>
+              <span>
+                {evolutionPct >= 0 ? "+" : "−"}
+                {Math.abs(evolutionPct).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
+              </span>
+              <span style={{ opacity: 0.7 }}>{PERIOD_LABEL[activePeriod]}</span>
+            </div>
+          )}
         </div>
       </div>
 
