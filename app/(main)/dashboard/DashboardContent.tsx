@@ -131,6 +131,13 @@ export default function DashboardContent({
         </div>
         {/* Valeur */}
         <div className="py-[6px] flex items-center justify-center gap-[10px]" style={{ borderBottom: "1px solid var(--border)" }}>
+          {/* Miroir invisible pour équilibrer le badge et centrer optiquement le solde */}
+          {evolutionPct !== null && (
+            <div className="invisible pointer-events-none inline-flex items-center gap-[3px] px-[8px] py-[4px] rounded-full text-[10px] font-semibold" aria-hidden="true">
+              <span>{evolutionPct >= 0 ? "↑" : "↓"}</span>
+              <span>{evolutionPct >= 0 ? "+" : "−"}{Math.abs(evolutionPct).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</span>
+            </div>
+          )}
           <div className="text-[26px] font-bold tracking-[-0.03em] leading-none text-[var(--text)]">
             {soldeCourant >= 0 ? "" : "−"}{fmt(soldeCourant)} €
           </div>
