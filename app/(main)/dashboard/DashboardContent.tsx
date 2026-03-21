@@ -260,29 +260,26 @@ export default function DashboardContent({
                   >
                     {/* Header row */}
                     <div
-                      className="flex items-center justify-between px-[14px] py-[12px] cursor-pointer active:opacity-70 transition-opacity"
+                      className="grid items-center px-[14px] py-[12px] cursor-pointer active:opacity-70 transition-opacity"
+                      style={{ gridTemplateColumns: "7px 90px 1fr 90px 60px 14px", columnGap: "10px" }}
                       onClick={() => setOpenMonth(isOpen ? null : m.moisKey)}
                     >
-                      {/* Groupe gauche */}
-                      <div className="flex items-center gap-[10px]">
-                        <span
-                          className="w-[7px] h-[7px] rounded-full shrink-0"
-                          style={{ background: dotColor }}
-                        />
-                        <span className="text-[14px] font-semibold text-[var(--text)] w-[80px] leading-none whitespace-nowrap">
-                          {m.mois}
-                        </span>
-                      </div>
-                      {/* Groupe droit */}
-                      <div className="flex items-center gap-[10px]">
                       <span
-                        className="text-[14px] font-bold tabular-nums leading-none w-[90px] text-right shrink-0"
+                        className="w-[7px] h-[7px] rounded-full"
+                        style={{ background: dotColor }}
+                      />
+                      <span className="text-[14px] font-semibold text-[var(--text)] leading-none whitespace-nowrap overflow-hidden">
+                        {m.mois}
+                      </span>
+                      <div />
+                      <span
+                        className="text-[14px] font-bold tabular-nums leading-none text-right"
                         style={{ color: netColor }}
                       >
                         {net >= 0 ? "+" : "−"}{fmt(net)} €
                       </span>
                       <span
-                        className="inline-flex items-center justify-center h-[20px] w-[60px] rounded-full text-[11px] font-semibold tabular-nums shrink-0"
+                        className="inline-flex items-center justify-center h-[20px] rounded-full text-[11px] font-semibold tabular-nums"
                         style={{ background: evolBg, border: `1px solid ${evolBorder}`, color: evolColor }}
                       >
                         {evol === null
@@ -290,12 +287,11 @@ export default function DashboardContent({
                           : `${evol >= 0 ? "+" : ""}${evol.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}%`}
                       </span>
                       <span
-                        className="text-[var(--text3)] text-[10px] leading-none transition-transform duration-200 shrink-0"
+                        className="text-[var(--text3)] text-[10px] leading-none transition-transform duration-200 text-center"
                         style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
                       >
                         ▼
                       </span>
-                      </div>
                     </div>
 
                     {/* Expanded detail */}
