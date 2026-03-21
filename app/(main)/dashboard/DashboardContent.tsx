@@ -271,7 +271,7 @@ export default function DashboardContent({
                         {m.mois}
                       </span>
                       <span
-                        className="text-[14px] font-bold tabular-nums leading-none"
+                        className="text-[14px] font-bold tabular-nums leading-none w-[90px] text-right shrink-0"
                         style={{ color: netColor }}
                       >
                         {net >= 0 ? "+" : "−"}{fmt(net)} €
