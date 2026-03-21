@@ -142,11 +142,6 @@ export default function DashboardContent({
           <div className="text-[17px] font-semibold text-[var(--green)] tracking-[-0.02em]">
             {fmt(stats.revenus)} €
           </div>
-          {prevMonth && (
-            <div className="text-[10px] font-medium text-[var(--green)] mt-0.5">
-              {vsLabel(stats.revenus, prevMonth.revenus)}
-            </div>
-          )}
         </div>
 
         {/* Dépenses */}
@@ -157,11 +152,6 @@ export default function DashboardContent({
           <div className="text-[17px] font-semibold text-[var(--red)] tracking-[-0.02em]">
             {fmt(stats.depenses)} €
           </div>
-          {prevMonth && (
-            <div className="text-[10px] font-medium text-[var(--red)] mt-0.5">
-              {vsLabel(stats.depenses, prevMonth.depenses)}
-            </div>
-          )}
         </div>
 
         {/* Solde courant — solde réel du compte (toutes transactions confondues) */}
