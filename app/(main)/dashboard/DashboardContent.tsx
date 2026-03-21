@@ -106,16 +106,7 @@ export default function DashboardContent({
       {/* Chart */}
       <BalanceLine data={history} />
 
-      {/* Period tabs */}
-      <div className="px-0 py-[6px]">
-        <TabBar
-          tabs={PERIOD_TABS}
-          active={activePeriod}
-          onChange={handlePeriodChange}
-        />
-      </div>
-
-      {/* Légende */}
+      {/* Légende — sous le graphique */}
       <div className="flex justify-center gap-4 py-[5px]">
         <div className="flex items-center gap-[6px] text-[11px] text-[var(--text3)]">
           <div className="w-[18px] h-[2px] rounded-[1px] bg-[var(--orange)]" />
@@ -128,6 +119,15 @@ export default function DashboardContent({
           />
           Moyenne
         </div>
+      </div>
+
+      {/* Period tabs */}
+      <div className="px-0 py-[6px]">
+        <TabBar
+          tabs={PERIOD_TABS}
+          active={activePeriod}
+          onChange={handlePeriodChange}
+        />
       </div>
 
       {/* Hero Solde courant — centré */}
