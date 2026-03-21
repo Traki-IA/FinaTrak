@@ -186,9 +186,7 @@ export default function DashboardContent({
 
       {/* Historique mensuel — accordion groupé par année */}
       <div className="flex flex-col gap-[6px] px-[2px] pb-4">
-        <p className="text-[10px] text-[var(--text3)] uppercase tracking-[0.1em] px-[2px] pt-[2px] pb-[4px]">
-          Historique
-        </p>
+
 
         {(() => {
           // Grouper par année
