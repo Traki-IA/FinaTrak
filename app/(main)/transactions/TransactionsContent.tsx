@@ -289,8 +289,10 @@ function MobileTxRow({
   const isRevenu = transaction.type === "revenu";
   const isConfirming = confirmingDeleteId === transaction.id;
   const color = isRevenu ? "var(--green)" : "var(--red)";
-  const bgColor = isRevenu ? "var(--revenue-bg)" : "var(--expense-bg)";
-  const borderCat = isRevenu ? "#1A4428" : "#4A1A1A";
+  const catColor = transaction.categories?.couleur;
+  const bgColor = catColor ? `${catColor}20` : (isRevenu ? "var(--revenue-bg)" : "var(--expense-bg)");
+  const borderCat = catColor ? `${catColor}50` : (isRevenu ? "#1A4428" : "#4A1A1A");
+  const catTextColor = catColor ?? color;
 
   return (
     <motion.div
@@ -312,7 +314,7 @@ function MobileTxRow({
         </span>
         <span
           className="text-[10px] font-medium text-center block overflow-hidden truncate"
-          style={{ borderRadius: "20px", background: bgColor, border: `1px solid ${borderCat}`, color, padding: "2px 0" }}
+          style={{ borderRadius: "20px", background: bgColor, border: `1px solid ${borderCat}`, color: catTextColor, padding: "2px 0" }}
         >
           {transaction.categories?.nom ?? "—"}
         </span>
