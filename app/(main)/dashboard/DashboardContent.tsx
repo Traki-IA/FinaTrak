@@ -145,7 +145,6 @@ export default function DashboardContent({
                 {evolutionPct >= 0 ? "+" : "−"}
                 {Math.abs(evolutionPct).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
               </span>
-              <span style={{ opacity: 0.7 }}>{PERIOD_LABEL[activePeriod]}</span>
             </div>
           )}
         </div>
