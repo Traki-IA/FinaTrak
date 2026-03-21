@@ -234,17 +234,17 @@ export default function DashboardContent({
                   className="w-[7px] h-[7px] rounded-full shrink-0"
                   style={{ background: dotColor }}
                 />
-                <span className="text-[14px] font-semibold text-[var(--text)] flex-1">
+                <span className="text-[14px] font-semibold text-[var(--text)] flex-1 leading-none">
                   {m.mois}
                 </span>
                 <span
-                  className="text-[14px] font-bold tabular-nums"
+                  className="text-[14px] font-bold tabular-nums leading-none"
                   style={{ color: netColor }}
                 >
                   {net >= 0 ? "+" : "−"}{fmt(net)} €
                 </span>
                 <span
-                  className="text-[10px] font-semibold px-[7px] py-[3px] rounded-full tabular-nums"
+                  className="inline-flex items-center h-[20px] px-[8px] rounded-full text-[11px] font-semibold tabular-nums shrink-0"
                   style={{ background: evolBg, border: `1px solid ${evolBorder}`, color: evolColor }}
                 >
                   {evol === null
@@ -252,7 +252,7 @@ export default function DashboardContent({
                     : `${evol >= 0 ? "+" : ""}${evol.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}%`}
                 </span>
                 <span
-                  className="text-[var(--text3)] text-[10px] transition-transform duration-200"
+                  className="text-[var(--text3)] text-[10px] leading-none transition-transform duration-200 shrink-0"
                   style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
                 >
                   ▼
