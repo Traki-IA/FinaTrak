@@ -91,14 +91,6 @@ export default function DashboardContent({
       ? (periodNet / Math.abs(soldeDebutPeriode)) * 100
       : null;
 
-  const PERIOD_LABEL: Record<TPeriodTab, string> = {
-    "1m": "ce mois",
-    "7j": "7 jours",
-    "3m": "3 mois",
-    "6m": "6 mois",
-    "1a": "1 an",
-  };
-
   return (
     <Shell>
       <LogoHeader />
@@ -145,7 +137,6 @@ export default function DashboardContent({
                 {evolutionPct >= 0 ? "+" : "−"}
                 {Math.abs(evolutionPct).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
               </span>
-              <span style={{ opacity: 0.7 }}>{PERIOD_LABEL[activePeriod]}</span>
             </div>
           )}
         </div>

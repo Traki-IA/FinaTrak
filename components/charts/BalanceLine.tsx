@@ -5,6 +5,7 @@ import {
   AreaChart,
   Area,
   XAxis,
+  YAxis,
   Tooltip,
   ReferenceLine,
   ReferenceDot,
@@ -60,6 +61,16 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
     data.reduce((acc, d) => acc + d.solde, 0) / data.length
   );
 
+  const values = data.map((d) => d.solde);
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+  const range = maxVal - minVal;
+  const padding = Math.max(range * 0.1, 200);
+  const yDomain: [number, number] = [
+    Math.floor(minVal - padding),
+    Math.ceil(maxVal + padding),
+  ];
+
   const isDaily = data.length > 12;
   const xInterval = isDaily
     ? Math.max(1, Math.floor(data.length / 5))
@@ -75,6 +86,8 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
               <stop offset="100%" stopColor="var(--orange)" stopOpacity={0} />
             </linearGradient>
           </defs>
+
+          <YAxis domain={yDomain} hide />
 
           <XAxis
             dataKey="mois"
