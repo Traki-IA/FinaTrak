@@ -99,11 +99,11 @@ export default function DashboardContent({
 
       {/* Carte Chart + Period tabs */}
       <div
-        className="mx-[2px] rounded-[14px] overflow-hidden"
+        className="rounded-[14px] overflow-hidden"
         style={{ background: "var(--bg2)", border: "1px solid var(--border)" }}
       >
         <BalanceLine data={history} />
-        <div className="px-[8px] pb-[10px]">
+        <div className="px-[6px] pb-[6px]">
           <TabBar
             tabs={PERIOD_TABS}
             active={activePeriod}
@@ -114,7 +114,7 @@ export default function DashboardContent({
 
       {/* Carte KPI principale */}
       <div
-        className="mx-[2px] mt-[6px] rounded-[14px] overflow-hidden"
+        className="mt-[6px] rounded-[14px] overflow-hidden"
         style={{ background: "var(--bg2)", border: "1px solid var(--border)" }}
       >
         {/* Solde courant */}
