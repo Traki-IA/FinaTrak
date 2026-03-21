@@ -109,7 +109,7 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
   return (
     <div className="h-[210px] relative">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 14, right: 42, left: 0, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 14, right: 40, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="soldeGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--orange)" stopOpacity={0.3} />
@@ -146,7 +146,7 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
                 fill: "#555",
                 fontSize: 9,
                 dy: 4,
-                dx: 38,
+                dx: 30,
                 textAnchor: "end",
               }}
             />
