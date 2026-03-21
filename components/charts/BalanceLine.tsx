@@ -35,7 +35,7 @@ function CustomXTick({ x, y, payload, index, visibleTicksCount }: {
     : raw;                                      // "mars 25" inchangé
 
   return (
-    <text x={xPos} y={(y ?? 0) + 4} textAnchor={anchor} fill="#444" fontSize={10}>
+    <text x={xPos} y={(y ?? 0) + 4} textAnchor={anchor} fill="#999" fontSize={10}>
       {label}
     </text>
   );
@@ -137,13 +137,13 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
             <ReferenceLine
               key={level}
               y={level}
-              stroke="#2a2a2a"
+              stroke="#3a3a3a"
               strokeDasharray="4 4"
               strokeWidth={1}
               label={{
                 value: formatY(level),
                 position: "right",
-                fill: "#555",
+                fill: "#999",
                 fontSize: 9,
                 dy: 4,
                 dx: 30,
