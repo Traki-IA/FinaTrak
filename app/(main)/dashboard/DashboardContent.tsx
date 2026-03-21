@@ -91,14 +91,6 @@ export default function DashboardContent({
       ? (periodNet / Math.abs(soldeDebutPeriode)) * 100
       : null;
 
-  const PERIOD_LABEL: Record<TPeriodTab, string> = {
-    "1m": "ce mois",
-    "7j": "7 jours",
-    "3m": "3 mois",
-    "6m": "6 mois",
-    "1a": "1 an",
-  };
-
   return (
     <Shell>
       <LogoHeader />
