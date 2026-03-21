@@ -209,7 +209,7 @@ export default function DashboardContent({
                   return next;
                 })}
               >
-                <span className="text-[11px] font-semibold text-[var(--text3)] tracking-[0.06em]">
+                <span className="text-[11px] font-semibold text-[var(--text3)] tracking-[0.06em] leading-none">
                   {year}
                 </span>
                 <div className="flex-1 h-[1px]" style={{ background: "var(--border)" }} />
