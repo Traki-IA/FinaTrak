@@ -22,13 +22,21 @@ function CustomXTick({ x, y, payload, index, visibleTicksCount }: {
   index?: number;
   visibleTicksCount?: number;
 }) {
-  const anchor =
-    index === 0 ? "start"
-    : index === (visibleTicksCount ?? 1) - 1 ? "end"
-    : "middle";
+  const isFirst = index === 0;
+  const isLast = index === (visibleTicksCount ?? 1) - 1;
+  const anchor = isFirst ? "start" : isLast ? "end" : "middle";
+  const xPos = isFirst ? (x ?? 0) + 6 : isLast ? (x ?? 0) - 6 : x ?? 0;
+
+  // Format court : "1 mars" → "1 mars", "mars 25" → "mars 25"
+  const raw = payload?.value ?? "";
+  const parts = raw.split(" ");
+  const label = parts.length === 2 && !isNaN(Number(parts[0]))
+    ? `${parts[0]} ${parts[1].slice(0, 3)}.`  // "1 mars" → "1 mar."
+    : raw;                                      // "mars 25" inchangé
+
   return (
-    <text x={x} y={(y ?? 0) + 4} textAnchor={anchor} fill="#444" fontSize={10}>
-      {payload?.value}
+    <text x={xPos} y={(y ?? 0) + 4} textAnchor={anchor} fill="#444" fontSize={10}>
+      {label}
     </text>
   );
 }
@@ -90,8 +98,8 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
     return `${k}k`;
   };
 
-  const yStep = (yDomain[1] - yDomain[0]) / 4;
-  const yLevels = [1, 2, 3].map((i) => Math.round(yDomain[0] + yStep * i));
+  const yStep = (yDomain[1] - yDomain[0]) / 5;
+  const yLevels = [1, 2, 3, 4].map((i) => Math.round(yDomain[0] + yStep * i));
 
   const isDaily = data.length > 12;
   const xInterval = isDaily
@@ -134,10 +142,11 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
               strokeWidth={1}
               label={{
                 value: formatY(level),
-                position: "insideTopLeft",
+                position: "insideTopRight",
                 fill: "#444",
                 fontSize: 9,
                 dy: -2,
+                dx: -4,
               }}
             />
           ))}
