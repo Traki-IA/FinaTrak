@@ -244,7 +244,7 @@ export default function DashboardContent({
                   {net >= 0 ? "+" : "−"}{fmt(net)} €
                 </span>
                 <span
-                  className="inline-flex items-center h-[20px] px-[8px] rounded-full text-[11px] font-semibold tabular-nums shrink-0"
+                  className="inline-flex items-center justify-center h-[20px] w-[60px] rounded-full text-[11px] font-semibold tabular-nums shrink-0"
                   style={{ background: evolBg, border: `1px solid ${evolBorder}`, color: evolColor }}
                 >
                   {evol === null
