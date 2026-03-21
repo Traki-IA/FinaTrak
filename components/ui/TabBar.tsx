@@ -19,7 +19,7 @@ export default function TabBar<T extends string>({
         <button
           key={tab.key}
           onClick={() => onChange(tab.key)}
-          className={`flex-1 py-[5px] text-[11px] font-medium cursor-pointer rounded-lg border transition-all bg-transparent ${
+          className={`flex-1 py-[3px] text-[11px] font-medium cursor-pointer rounded-lg border transition-all bg-transparent ${
             active === tab.key
               ? "border-[var(--orange)] text-[var(--orange)] bg-[rgba(249,115,22,0.10)]"
               : "border-[var(--border)] text-[var(--text2)] hover:border-[var(--border2)] hover:text-[var(--text)]"

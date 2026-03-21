@@ -167,7 +167,7 @@ export default function DashboardContent({
         {/* KPI 3 colonnes : valeurs */}
         <div className="flex">
           <div className="flex-1 text-center py-[7px] px-1" style={{ borderRight: "1px solid var(--border)" }}>
-            <div className="text-[16px] font-semibold text-[var(--green)] tracking-[-0.02em]">
+            <div className={`text-[16px] font-semibold tracking-[-0.02em] ${stats.revenus === 0 ? "text-[var(--text3)]" : "text-[var(--green)]"}`}>
               {fmt(stats.revenus)} €
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function DashboardContent({
       </div>
 
       {/* Historique mensuel — accordion groupé par année */}
-      <div className="flex flex-col gap-[6px] px-[2px] pb-4">
+      <div className="flex flex-col gap-[6px] px-[2px] pb-4 mt-[10px]">
 
 
         {(() => {
