@@ -108,14 +108,14 @@ function SortableObjectifRow({
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="border-b border-[var(--bg2)]">
+    <div ref={setNodeRef} style={style} className="border-b border-[var(--border)]">
       <motion.div
         layout
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.3) }}
-        className="group py-2.5"
+        className="group py-2.5 px-[14px]"
         style={{ cursor: "pointer" }}
         onClick={() => setExpanded(!expanded)}
       >
@@ -140,8 +140,8 @@ function SortableObjectifRow({
                 {objectif.montant_actuel.toLocaleString("fr")} / {objectif.montant_cible.toLocaleString("fr")} €
               </p>
             </div>
-            <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-              {!isConfirming && <button onClick={() => onEdit(objectif)} className="p-1 text-white/30 hover:text-white"><Pencil size={12} /></button>}
+            <div className="flex gap-0.5" onClick={(e) => e.stopPropagation()}>
+              {!isConfirming && <button onClick={() => onEdit(objectif)} className="p-1 text-[var(--text3)] hover:text-white"><Pencil size={12} /></button>}
               <ConfirmDeleteButton isConfirming={isConfirming} onDeleteRequest={() => onDeleteRequest(objectif.id)} onDeleteConfirm={handleDeleteConfirm} onDeleteCancel={onDeleteCancel} size={12} />
             </div>
           </div>
@@ -251,51 +251,61 @@ function Objectifs({
     <Shell>
       <LogoHeader />
 
-      {/* Header KPI */}
+      {/* KPI card */}
       {localObjectifs.length > 0 && (
-        <div className="flex items-start justify-between py-[10px]">
-          <div className="text-[24px] font-bold text-[var(--text)] tracking-[-0.02em]">Objectifs</div>
-          <div className="text-right">
-            <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em] mb-0.5">Total épargné</div>
-            <div className="text-[18px] font-semibold text-[var(--green)] tracking-[-0.02em]">{formatEur(totalEpargne)}</div>
+        <div className="mt-[10px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
+          {/* Header */}
+          <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+            <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Objectifs</span>
+          </div>
+          {/* Colonnes */}
+          <div className="flex">
+            <div className="flex-1 text-center py-[8px] px-2 min-w-0" style={{ borderRight: "1px solid var(--border)" }}>
+              <div className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Total épargné</div>
+              <div className="text-[16px] font-semibold text-[var(--green)] tracking-tight mt-[2px] tabular-nums truncate">{formatEur(totalEpargne)}</div>
+            </div>
+            <div className="flex-1 text-center py-[8px] px-2 min-w-0">
+              <div className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Atteints</div>
+              <div className="text-[16px] font-semibold text-[var(--text)] tracking-tight mt-[2px]">{done} / {localObjectifs.length}</div>
+            </div>
+          </div>
+          {/* Barre progression globale */}
+          <div className="px-[14px] py-[8px]" style={{ borderTop: "1px solid var(--border)" }}>
+            <div className="flex justify-between items-center mb-[6px]">
+              <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Progression globale</span>
+              <span className="text-[9px] font-semibold text-[var(--text2)]">{globalPct}%</span>
+            </div>
+            <Bar pct={globalPct} color="#22c55e" height={3} />
           </div>
         </div>
       )}
 
-      {/* Global progress */}
-      {localObjectifs.length > 0 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }} className="mt-3 pb-3 border-b border-[var(--bg2)]">
-          <div className="flex justify-between items-center mb-1.5">
-            <p className="text-[11px] text-[var(--text3)] uppercase tracking-[0.14em] font-semibold">Progression globale</p>
-            <span className="text-[13px] font-bold text-emerald-400">{done} / {localObjectifs.length} atteints</span>
-          </div>
-          <Bar pct={globalPct} color="#22c55e" height={2} className="opacity-60" />
-        </motion.div>
-      )}
-
-      <div className="border-b border-[var(--bg2)] mb-0" />
-
       {localObjectifs.length === 0 ? (
         <EmptyState onAdd={() => {}} />
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-          <SortableContext items={localObjectifs.map((o) => o.id)} strategy={verticalListSortingStrategy}>
-            <AnimatePresence>
-              {localObjectifs.map((o, i) => (
-                <SortableObjectifRow
-                  key={o.id}
-                  objectif={o}
-                  index={i}
-                  confirmingDeleteId={confirmingDeleteId}
-                  onEdit={onEdit}
-                  onDeleteRequest={onDeleteRequest}
-                  onDeleteConfirm={onDeleteConfirm}
-                  onDeleteCancel={onDeleteCancel}
-                />
-              ))}
-            </AnimatePresence>
-          </SortableContext>
-        </DndContext>
+        <div
+          className="mt-[10px] rounded-[14px] overflow-hidden"
+          style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}
+        >
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+            <SortableContext items={localObjectifs.map((o) => o.id)} strategy={verticalListSortingStrategy}>
+              <AnimatePresence>
+                {localObjectifs.map((o, i) => (
+                  <SortableObjectifRow
+                    key={o.id}
+                    objectif={o}
+                    index={i}
+                    confirmingDeleteId={confirmingDeleteId}
+                    onEdit={onEdit}
+                    onDeleteRequest={onDeleteRequest}
+                    onDeleteConfirm={onDeleteConfirm}
+                    onDeleteCancel={onDeleteCancel}
+                  />
+                ))}
+              </AnimatePresence>
+            </SortableContext>
+          </DndContext>
+        </div>
       )}
     </Shell>
   );
