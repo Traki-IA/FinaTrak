@@ -199,10 +199,18 @@ export default function DashboardContent({
           <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em] tabular-nums text-right w-[64px]">Revenu</span>
           <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em] tabular-nums text-right w-[64px]">Dépense</span>
           <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em] tabular-nums text-right w-[72px]">Solde</span>
+          <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em] tabular-nums text-right w-[46px]">Évol.</span>
         </div>
 
-        {allParMois.map((m) => {
+        {allParMois.map((m, i) => {
           const net = m.revenus - m.depenses;
+
+          // % progression vs mois précédent (index i+1 = mois antérieur dans tableau inversé)
+          const prevNet = i < allParMois.length - 1 ? allParMois[i + 1].revenus - allParMois[i + 1].depenses : null;
+          const evol =
+            prevNet !== null && prevNet !== 0
+              ? ((net - prevNet) / Math.abs(prevNet)) * 100
+              : null;
 
           // Bornes du mois pour la navigation vers Transactions
           const [y, mo] = m.moisKey.split("-").map(Number);
@@ -231,6 +239,19 @@ export default function DashboardContent({
                 }`}
               >
                 {net >= 0 ? "+" : "−"}{fmt(net)} €
+              </span>
+              <span
+                className={`text-[10px] font-medium tabular-nums text-right w-[46px] ${
+                  evol === null
+                    ? "text-[var(--text3)]"
+                    : evol >= 0
+                    ? "text-[var(--green)]"
+                    : "text-[var(--red)]"
+                }`}
+              >
+                {evol === null
+                  ? "—"
+                  : `${evol >= 0 ? "+" : ""}${evol.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`}
               </span>
             </div>
           );
