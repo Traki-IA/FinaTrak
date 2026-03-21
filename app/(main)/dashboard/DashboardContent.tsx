@@ -114,12 +114,12 @@ export default function DashboardContent({
 
       {/* Carte KPI principale */}
       <div
-        className="mt-[6px] rounded-[14px] overflow-hidden"
+        className="mt-[10px] rounded-[14px] overflow-hidden"
         style={{ background: "var(--bg2)", border: "1px solid var(--border)" }}
       >
         {/* Solde courant */}
         {/* Header */}
-        <div className="px-[12px] py-[5px]" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+        <div className="py-[5px] text-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
           <span className="text-[9px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em]">Solde courant</span>
         </div>
         {/* Valeur */}
