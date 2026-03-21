@@ -50,7 +50,7 @@ function CustomTooltip({
 export default function BalanceLine({ data }: IBalanceLineProps) {
   if (data.length === 0) {
     return (
-      <div className="h-[190px] flex items-center justify-center text-[12px] text-[var(--text3)]">
+      <div className="h-[260px] flex items-center justify-center text-[12px] text-[var(--text3)]">
         Aucune donnée
       </div>
     );
@@ -65,7 +65,7 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
   const xInterval = isDaily ? Math.max(1, Math.floor(data.length / 5)) : "preserveStartEnd";
 
   return (
-    <div className="h-[190px]">
+    <div className="h-[260px]">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
           <defs>

@@ -99,6 +99,9 @@ export default function DashboardContent({
     <Shell>
       <LogoHeader />
 
+      {/* Chart */}
+      <BalanceLine data={history} />
+
       {/* Period tabs */}
       <div className="px-0 py-[6px]">
         <TabBar
@@ -107,9 +110,6 @@ export default function DashboardContent({
           onChange={handlePeriodChange}
         />
       </div>
-
-      {/* Chart */}
-      <BalanceLine data={history} />
 
       {/* Légende */}
       <div className="flex justify-center gap-4 py-[5px]">

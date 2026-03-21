@@ -9,15 +9,15 @@ export default function DashboardSkeleton() {
         <Skeleton className="h-4 w-24" />
       </div>
 
+      {/* Chart */}
+      <Skeleton className="h-[260px] w-full rounded-lg mt-2" />
+
       {/* Period tabs */}
       <div className="flex gap-[6px] py-[6px]">
         {Array.from({ length: 5 }).map((_, i) => (
           <Skeleton key={i} className="flex-1 h-[28px] rounded-lg" />
         ))}
       </div>
-
-      {/* Chart */}
-      <Skeleton className="h-[190px] w-full rounded-lg mt-2" />
 
       {/* Legend */}
       <div className="flex justify-center gap-4 py-2">
