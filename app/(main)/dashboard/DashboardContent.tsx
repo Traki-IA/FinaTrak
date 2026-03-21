@@ -131,25 +131,25 @@ export default function DashboardContent({
         </div>
         {/* Valeur */}
         <div className="py-[6px] flex items-center justify-center gap-[10px]" style={{ borderBottom: "1px solid var(--border)" }}>
-            <div className="text-[26px] font-bold tracking-[-0.03em] leading-none text-[var(--text)]">
-              {soldeCourant >= 0 ? "" : "−"}{fmt(soldeCourant)} €
+          <div className="text-[26px] font-bold tracking-[-0.03em] leading-none text-[var(--text)]">
+            {soldeCourant >= 0 ? "" : "−"}{fmt(soldeCourant)} €
+          </div>
+          {evolutionPct !== null && (
+            <div
+              className="inline-flex items-center gap-[3px] px-[8px] py-[4px] rounded-full text-[10px] font-semibold"
+              style={{
+                background: evolutionPct >= 0 ? "rgba(74,222,128,0.10)" : "rgba(248,113,113,0.10)",
+                border: `1px solid ${evolutionPct >= 0 ? "rgba(74,222,128,0.25)" : "rgba(248,113,113,0.25)"}`,
+                color: evolutionPct >= 0 ? "var(--green)" : "var(--red)",
+              }}
+            >
+              <span>{evolutionPct >= 0 ? "↑" : "↓"}</span>
+              <span>
+                {evolutionPct >= 0 ? "+" : "−"}
+                {Math.abs(evolutionPct).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
+              </span>
             </div>
-            {evolutionPct !== null && (
-              <div
-                className="inline-flex items-center gap-[3px] px-[8px] py-[4px] rounded-full text-[10px] font-semibold"
-                style={{
-                  background: evolutionPct >= 0 ? "rgba(74,222,128,0.10)" : "rgba(248,113,113,0.10)",
-                  border: `1px solid ${evolutionPct >= 0 ? "rgba(74,222,128,0.25)" : "rgba(248,113,113,0.25)"}`,
-                  color: evolutionPct >= 0 ? "var(--green)" : "var(--red)",
-                }}
-              >
-                <span>{evolutionPct >= 0 ? "↑" : "↓"}</span>
-                <span>
-                  {evolutionPct >= 0 ? "+" : "−"}
-                  {Math.abs(evolutionPct).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
-                </span>
-              </div>
-            )}
+          )}
         </div>
 
         {/* Header colonnes */}

@@ -95,7 +95,7 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
 
   const formatY = (v: number): string => {
     const k = Math.round(v / 100) / 10;
-    return `${k}k`;
+    return `${k.toFixed(1)}k`;
   };
 
   const yStep = (yDomain[1] - yDomain[0]) / 5;
@@ -109,7 +109,7 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
   return (
     <div className="h-[210px] relative">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 14, right: 8, left: 0, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 14, right: 42, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="soldeGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--orange)" stopOpacity={0.3} />
@@ -142,11 +142,12 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
               strokeWidth={1}
               label={{
                 value: formatY(level),
-                position: "insideTopRight",
-                fill: "#444",
+                position: "right",
+                fill: "#555",
                 fontSize: 9,
-                dy: -2,
-                dx: -4,
+                dy: 4,
+                dx: 38,
+                textAnchor: "end",
               }}
             />
           ))}
