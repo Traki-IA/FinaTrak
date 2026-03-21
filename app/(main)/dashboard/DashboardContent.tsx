@@ -123,8 +123,7 @@ export default function DashboardContent({
           <span className="text-[9px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em]">Solde courant</span>
         </div>
         {/* Valeur */}
-        <div className="py-[8px] flex items-center justify-center gap-[10px]" style={{ borderBottom: "1px solid var(--border)" }}>
-          <div className="flex items-center gap-[10px]">
+        <div className="py-[6px] flex items-center justify-center gap-[10px]" style={{ borderBottom: "1px solid var(--border)" }}>
             <div
               className={`text-[26px] font-bold tracking-[-0.03em] leading-none ${
                 soldeCourant >= 0 ? "text-[var(--orange)]" : "text-[var(--red)]"
@@ -148,7 +147,6 @@ export default function DashboardContent({
                 </span>
               </div>
             )}
-          </div>
         </div>
 
         {/* Header colonnes */}
