@@ -74,9 +74,6 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
   }
 
   const lastPoint = data[data.length - 1];
-  const moyenne = Math.round(
-    data.reduce((acc, d) => acc + d.solde, 0) / data.length
-  );
 
   const values = data.map((d) => d.solde);
   const minVal = Math.min(...values);
@@ -87,6 +84,14 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
     Math.floor(minVal - padding),
     Math.ceil(maxVal + padding),
   ];
+
+  const formatY = (v: number): string => {
+    const k = Math.round(v / 100) / 10;
+    return `${k}k`;
+  };
+
+  const yStep = (yDomain[1] - yDomain[0]) / 4;
+  const yLevels = [1, 2, 3].map((i) => Math.round(yDomain[0] + yStep * i));
 
   const isDaily = data.length > 12;
   const xInterval = isDaily
@@ -119,13 +124,23 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
             cursor={{ stroke: "rgba(255,255,255,0.08)", strokeWidth: 1 }}
           />
 
-          {/* Ligne moyenne */}
-          <ReferenceLine
-            y={moyenne}
-            stroke="#333"
-            strokeDasharray="4 4"
-            strokeWidth={1}
-          />
+          {/* Lignes de grille avec valeurs */}
+          {yLevels.map((level) => (
+            <ReferenceLine
+              key={level}
+              y={level}
+              stroke="#2a2a2a"
+              strokeDasharray="4 4"
+              strokeWidth={1}
+              label={{
+                value: formatY(level),
+                position: "insideTopLeft",
+                fill: "#444",
+                fontSize: 9,
+                dy: -2,
+              }}
+            />
+          ))}
 
           <Area
             type="monotone"
