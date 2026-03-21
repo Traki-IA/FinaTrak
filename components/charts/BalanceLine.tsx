@@ -16,6 +16,23 @@ interface IBalanceLineProps {
   data: TBalancePoint[];
 }
 
+function CustomXTick({ x, y, payload, index, visibleTicksCount }: {
+  x?: number; y?: number;
+  payload?: { value: string };
+  index?: number;
+  visibleTicksCount?: number;
+}) {
+  const anchor =
+    index === 0 ? "start"
+    : index === (visibleTicksCount ?? 1) - 1 ? "end"
+    : "middle";
+  return (
+    <text x={x} y={(y ?? 0) + 4} textAnchor={anchor} fill="#444" fontSize={10}>
+      {payload?.value}
+    </text>
+  );
+}
+
 function CustomTooltip({
   active,
   payload,
@@ -93,7 +110,7 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
             dataKey="mois"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#444", fontSize: 10 }}
+            tick={<CustomXTick />}
             interval={xInterval}
           />
 
