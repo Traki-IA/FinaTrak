@@ -32,6 +32,11 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
+/* ── Recharts focus ring fix ───────────────────────────────────────── */
+.recharts-surface:focus {
+  outline: none;
+}
+
 /* ── Hide scrollbar everywhere ─────────────────────────────────────── */
 *,
 *::before,
