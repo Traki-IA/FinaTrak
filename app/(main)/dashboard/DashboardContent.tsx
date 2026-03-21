@@ -97,21 +97,24 @@ export default function DashboardContent({
     <Shell>
       <LogoHeader />
 
-      {/* Chart */}
-      <BalanceLine data={history} />
-
-      {/* Period tabs */}
-      <div className="px-0 py-[6px]">
-        <TabBar
-          tabs={PERIOD_TABS}
-          active={activePeriod}
-          onChange={handlePeriodChange}
-        />
+      {/* Carte Chart + Period tabs */}
+      <div
+        className="mx-[2px] rounded-[14px] overflow-hidden"
+        style={{ background: "var(--bg2)", border: "1px solid var(--border)" }}
+      >
+        <BalanceLine data={history} />
+        <div className="px-[8px] pb-[10px]">
+          <TabBar
+            tabs={PERIOD_TABS}
+            active={activePeriod}
+            onChange={handlePeriodChange}
+          />
+        </div>
       </div>
 
       {/* Carte KPI principale */}
       <div
-        className="mx-[2px] rounded-[14px] overflow-hidden"
+        className="mx-[2px] mt-[6px] rounded-[14px] overflow-hidden"
         style={{ background: "var(--bg2)", border: "1px solid var(--border)" }}
       >
         {/* Solde courant */}
