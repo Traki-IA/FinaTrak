@@ -130,37 +130,37 @@ export default function DashboardContent({
         </div>
       </div>
 
-      {/* Hero Solde courant */}
-      <div className="text-center py-[14px] border-b border-[var(--border)]" style={{ background: "var(--bg2)" }}>
-        <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.1em] mb-[6px]">
-          Solde courant
-        </div>
-        <div
-          className={`text-[32px] font-bold tracking-[-0.03em] leading-none ${
-            soldeCourant >= 0 ? "text-[var(--orange)]" : "text-[var(--red)]"
-          }`}
-        >
-          {soldeCourant >= 0 ? "" : "−"}{fmt(soldeCourant)} €
+      {/* Hero Solde courant — une ligne */}
+      <div className="px-3 py-[10px] border-b border-[var(--border)] flex items-center justify-between" style={{ background: "var(--bg2)" }}>
+        <div>
+          <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.1em] mb-[2px]">
+            Solde courant
+          </div>
+          <div
+            className={`text-[24px] font-bold tracking-[-0.03em] leading-none ${
+              soldeCourant >= 0 ? "text-[var(--orange)]" : "text-[var(--red)]"
+            }`}
+          >
+            {soldeCourant >= 0 ? "" : "−"}{fmt(soldeCourant)} €
+          </div>
         </div>
 
         {/* Badge % évolution */}
         {evolutionPct !== null && (
-          <div className="flex justify-center mt-[10px]">
-            <div
-              className="inline-flex items-center gap-[4px] px-[10px] py-[4px] rounded-full text-[11px] font-semibold"
-              style={{
-                background: evolutionPct >= 0 ? "rgba(74,222,128,0.10)" : "rgba(248,113,113,0.10)",
-                border: `1px solid ${evolutionPct >= 0 ? "rgba(74,222,128,0.25)" : "rgba(248,113,113,0.25)"}`,
-                color: evolutionPct >= 0 ? "var(--green)" : "var(--red)",
-              }}
-            >
-              <span>{evolutionPct >= 0 ? "↑" : "↓"}</span>
-              <span>
-                {evolutionPct >= 0 ? "+" : "−"}
-                {Math.abs(evolutionPct).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
-              </span>
-              <span style={{ opacity: 0.7 }}>{PERIOD_LABEL[activePeriod]}</span>
-            </div>
+          <div
+            className="inline-flex items-center gap-[4px] px-[10px] py-[5px] rounded-full text-[11px] font-semibold"
+            style={{
+              background: evolutionPct >= 0 ? "rgba(74,222,128,0.10)" : "rgba(248,113,113,0.10)",
+              border: `1px solid ${evolutionPct >= 0 ? "rgba(74,222,128,0.25)" : "rgba(248,113,113,0.25)"}`,
+              color: evolutionPct >= 0 ? "var(--green)" : "var(--red)",
+            }}
+          >
+            <span>{evolutionPct >= 0 ? "↑" : "↓"}</span>
+            <span>
+              {evolutionPct >= 0 ? "+" : "−"}
+              {Math.abs(evolutionPct).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
+            </span>
+            <span style={{ opacity: 0.7 }}>{PERIOD_LABEL[activePeriod]}</span>
           </div>
         )}
       </div>
