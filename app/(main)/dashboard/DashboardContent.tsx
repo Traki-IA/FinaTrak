@@ -119,7 +119,7 @@ export default function DashboardContent({
       >
         {/* Solde courant */}
         {/* Header */}
-        <div className="py-[5px] text-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+        <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
           <span className="text-[9px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em]">Solde courant</span>
         </div>
         {/* Valeur */}
@@ -153,13 +153,13 @@ export default function DashboardContent({
 
         {/* Header colonnes */}
         <div className="flex" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
-          <div className="flex-1 text-center px-1 py-[4px]" style={{ borderRight: "1px solid var(--border)" }}>
+          <div className="flex-1 flex items-center justify-center px-1 py-[2px]" style={{ borderRight: "1px solid var(--border)" }}>
             <span className="text-[9px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em]">Revenus</span>
           </div>
-          <div className="flex-1 text-center px-1 py-[4px]" style={{ borderRight: "1px solid var(--border)" }}>
+          <div className="flex-1 flex items-center justify-center px-1 py-[2px]" style={{ borderRight: "1px solid var(--border)" }}>
             <span className="text-[9px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em]">Dépenses</span>
           </div>
-          <div className="flex-1 text-center px-1 py-[4px]">
+          <div className="flex-1 flex items-center justify-center px-1 py-[2px]">
             <span className="text-[9px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em]">Flux net</span>
           </div>
         </div>
