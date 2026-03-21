@@ -29,7 +29,7 @@ interface IDashboardContentProps {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const MOIS_COMPLETS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+const MOIS_COMPLETS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
 
 function moisComplet(moisKey: string): string {
   const month = Number(moisKey.split("-")[1]);
