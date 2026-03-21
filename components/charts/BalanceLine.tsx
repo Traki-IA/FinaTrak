@@ -5,18 +5,14 @@ import {
   AreaChart,
   Area,
   XAxis,
-  YAxis,
   Tooltip,
   ReferenceLine,
+  ReferenceDot,
 } from "recharts";
 import type { TBalancePoint } from "@/types";
 
 interface IBalanceLineProps {
   data: TBalancePoint[];
-}
-
-function formatTooltipValue(value: number): string {
-  return value.toLocaleString("fr-FR") + " €";
 }
 
 function CustomTooltip({
@@ -41,7 +37,7 @@ function CustomTooltip({
     >
       <div className="text-[10px] text-[var(--text3)] mb-0.5">{label}</div>
       <div className="text-[13px] font-medium text-[var(--text)]">
-        {formatTooltipValue(val)}
+        {val.toLocaleString("fr-FR")} €
       </div>
     </div>
   );
@@ -56,16 +52,37 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
     );
   }
 
+  const lastPoint = data[data.length - 1];
   const moyenne = Math.round(
     data.reduce((acc, d) => acc + d.solde, 0) / data.length
   );
 
-  // Granularité journalière si > 12 points → espacer les labels pour éviter l'entassement
   const isDaily = data.length > 12;
-  const xInterval = isDaily ? Math.max(1, Math.floor(data.length / 5)) : "preserveStartEnd";
+  const xInterval = isDaily
+    ? Math.max(1, Math.floor(data.length / 5))
+    : "preserveStartEnd";
 
   return (
-    <div className="h-[260px]">
+    <div className="h-[260px] relative">
+      {/* Carte valeur courante — toujours visible, ancrée haut droite */}
+      <div
+        className="absolute top-[6px] right-[6px] z-10 rounded-[14px] px-[12px] py-[8px] text-right pointer-events-none"
+        style={{
+          background: "rgba(28,28,30,0.92)",
+          border: "1px solid var(--border)",
+        }}
+      >
+        <div className="text-[11px] text-[var(--text3)] mb-[3px]">
+          {lastPoint.mois}
+        </div>
+        <div
+          className="text-[18px] font-bold leading-none"
+          style={{ color: "var(--orange)" }}
+        >
+          {lastPoint.solde.toLocaleString("fr-FR")} €
+        </div>
+      </div>
+
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
           <defs>
@@ -74,6 +91,7 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
               <stop offset="100%" stopColor="var(--orange)" stopOpacity={0} />
             </linearGradient>
           </defs>
+
           <XAxis
             dataKey="mois"
             axisLine={false}
@@ -81,29 +99,28 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
             tick={{ fill: "#444", fontSize: 10 }}
             interval={xInterval}
           />
-          <YAxis
-            orientation="right"
-            axisLine={false}
-            tickLine={false}
-            width={42}
-            domain={["dataMin - 300", "dataMax + 300"]}
-            tick={{ fill: "#555", fontSize: 10 }}
-            tickFormatter={(v: number) => {
-              if (Math.abs(v) >= 1000) return `${Math.round(v / 1000)} k€`;
-              return `${v} €`;
-            }}
-            tickCount={4}
-          />
+
           <Tooltip
             content={<CustomTooltip />}
             cursor={{ stroke: "rgba(255,255,255,0.08)", strokeWidth: 1 }}
           />
+
+          {/* Ligne moyenne */}
           <ReferenceLine
             y={moyenne}
             stroke="#333"
             strokeDasharray="4 4"
             strokeWidth={1}
           />
+
+          {/* Ligne verticale pointillée au dernier point */}
+          <ReferenceLine
+            x={lastPoint.mois}
+            stroke="rgba(249,115,22,0.25)"
+            strokeDasharray="3 3"
+            strokeWidth={1}
+          />
+
           <Area
             type="monotone"
             dataKey="solde"
@@ -117,6 +134,16 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
               stroke: "#111",
               strokeWidth: 2,
             }}
+          />
+
+          {/* Point fixe sur le dernier solde */}
+          <ReferenceDot
+            x={lastPoint.mois}
+            y={lastPoint.solde}
+            r={5}
+            fill="var(--orange)"
+            stroke="#111111"
+            strokeWidth={2}
           />
         </AreaChart>
       </ResponsiveContainer>
