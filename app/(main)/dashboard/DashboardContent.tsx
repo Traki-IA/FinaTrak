@@ -118,10 +118,12 @@ export default function DashboardContent({
         style={{ background: "var(--bg2)", border: "1px solid var(--border)" }}
       >
         {/* Solde courant */}
-        <div className="py-[14px] flex flex-col items-center gap-[8px]" style={{ borderBottom: "1px solid var(--border)" }}>
-          <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.1em]">
-            Solde courant
-          </div>
+        {/* Header */}
+        <div className="px-[12px] py-[5px]" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+          <span className="text-[9px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em]">Solde courant</span>
+        </div>
+        {/* Valeur */}
+        <div className="py-[8px] flex items-center justify-center gap-[10px]" style={{ borderBottom: "1px solid var(--border)" }}>
           <div className="flex items-center gap-[10px]">
             <div
               className={`text-[26px] font-bold tracking-[-0.03em] leading-none ${
@@ -149,23 +151,33 @@ export default function DashboardContent({
           </div>
         </div>
 
-        {/* KPI 3 colonnes : Revenus / Dépenses / Flux net */}
+        {/* Header colonnes */}
+        <div className="flex" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+          <div className="flex-1 text-center px-1 py-[4px]" style={{ borderRight: "1px solid var(--border)" }}>
+            <span className="text-[9px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em]">Revenus</span>
+          </div>
+          <div className="flex-1 text-center px-1 py-[4px]" style={{ borderRight: "1px solid var(--border)" }}>
+            <span className="text-[9px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em]">Dépenses</span>
+          </div>
+          <div className="flex-1 text-center px-1 py-[4px]">
+            <span className="text-[9px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em]">Flux net</span>
+          </div>
+        </div>
+
+        {/* KPI 3 colonnes : valeurs */}
         <div className="flex">
-          <div className="flex-1 text-center py-[10px] px-1" style={{ borderRight: "1px solid var(--border)" }}>
-            <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em] mb-[3px]">Revenus</div>
-            <div className="text-[17px] font-semibold text-[var(--green)] tracking-[-0.02em]">
+          <div className="flex-1 text-center py-[7px] px-1" style={{ borderRight: "1px solid var(--border)" }}>
+            <div className="text-[16px] font-semibold text-[var(--green)] tracking-[-0.02em]">
               {fmt(stats.revenus)} €
             </div>
           </div>
-          <div className="flex-1 text-center py-[10px] px-1" style={{ borderRight: "1px solid var(--border)" }}>
-            <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em] mb-[3px]">Dépenses</div>
-            <div className="text-[17px] font-semibold text-[var(--red)] tracking-[-0.02em]">
+          <div className="flex-1 text-center py-[7px] px-1" style={{ borderRight: "1px solid var(--border)" }}>
+            <div className="text-[16px] font-semibold text-[var(--red)] tracking-[-0.02em]">
               {fmt(stats.depenses)} €
             </div>
           </div>
-          <div className="flex-1 text-center py-[10px] px-1">
-            <div className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em] mb-[3px]">Flux net</div>
-            <div className={`text-[17px] font-semibold tracking-[-0.02em] ${periodNet >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"}`}>
+          <div className="flex-1 text-center py-[7px] px-1">
+            <div className={`text-[16px] font-semibold tracking-[-0.02em] ${periodNet >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"}`}>
               {periodNet >= 0 ? "+" : "−"}{fmt(periodNet)} €
             </div>
           </div>
