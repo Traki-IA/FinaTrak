@@ -189,6 +189,14 @@ export default function DashboardContent({
 
       {/* Historique mensuel — toujours complet, indépendant de la période */}
       <div className="flex flex-col px-0 pb-4">
+        {/* En-tête colonnes */}
+        <div className="flex items-center pb-[6px] pt-[2px] border-b border-[var(--border)]">
+          <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em] flex-1">Mois</span>
+          <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em] tabular-nums text-right w-[64px]">Revenu</span>
+          <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em] tabular-nums text-right w-[64px]">Dépense</span>
+          <span className="text-[10px] text-[var(--text3)] uppercase tracking-[0.07em] tabular-nums text-right w-[72px]">Solde</span>
+        </div>
+
         {allParMois.map((m) => {
           const net = m.revenus - m.depenses;
 
