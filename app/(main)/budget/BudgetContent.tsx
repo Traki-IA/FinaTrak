@@ -97,7 +97,7 @@ function BudgetRow({
       style={{
         padding: "8px 14px",
         gap: "9px",
-        opacity: item.actif ? 1 : 0.4,
+        opacity: 1,
       }}
     >
       {/* Nom */}
