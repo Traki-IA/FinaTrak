@@ -3,11 +3,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Receipt } from "lucide-react";
+import { Receipt, Plus } from "lucide-react";
 import { toast } from "sonner";
 import Shell from "@/components/layout/Shell";
 import LogoHeader from "@/components/ui/LogoHeader";
-import Fab from "@/components/ui/Fab";
 import BudgetModal from "./BudgetModal";
 import { toggleBudgetItem, deleteBudgetItem } from "./actions";
 import { formatEur } from "@/lib/format";
@@ -234,7 +233,16 @@ export default function BudgetContent({
   return (
     <>
       <Shell>
-        <LogoHeader />
+        <LogoHeader
+          rightSlot={
+            <button
+              onClick={openAddModal}
+              className="w-[28px] h-[28px] rounded-lg bg-[var(--bg3)] border-none cursor-pointer flex items-center justify-center text-[var(--text2)]"
+            >
+              <Plus size={14} />
+            </button>
+          }
+        />
 
         {localItems.length === 0 ? (
           <EmptyState onAdd={openAddModal} />
@@ -298,12 +306,7 @@ export default function BudgetContent({
             </AnimatePresence>
           </>
         )}
-        {/* Spacer to avoid FAB overlap */}
-        <div className="h-[72px]" />
       </Shell>
-
-      {/* FAB */}
-      <Fab label="Charge" onClick={openAddModal} />
 
       {/* Modal */}
       <BudgetModal
