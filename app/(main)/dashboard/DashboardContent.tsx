@@ -197,6 +197,14 @@ export default function DashboardContent({
 
 
         {(() => {
+          // Calculer le solde à la fin de chaque mois (allParMois[0] = mois le plus récent)
+          // soldeParMois[0] = soldeCourant, soldeParMois[i+1] = soldeParMois[i] - flux[i]
+          const soldeParMois: number[] = [soldeCourant];
+          for (let i = 0; i < allParMois.length; i++) {
+            const flux = allParMois[i].revenus - allParMois[i].depenses;
+            soldeParMois.push(soldeParMois[i] - flux);
+          }
+
           // Grouper par année
           const byYear: Record<string, number[]> = {};
           allParMois.forEach((m, i) => {
@@ -234,11 +242,11 @@ export default function DashboardContent({
               {!isYearCollapsed && byYear[year].map(i => {
                 const m = allParMois[i];
                 const net = m.revenus - m.depenses;
-                const prevNet = i < allParMois.length - 1 ? allParMois[i + 1].revenus - allParMois[i + 1].depenses : null;
-                const evol =
-                  prevNet !== null && prevNet !== 0
-                    ? ((net - prevNet) / Math.abs(prevNet)) * 100
-                    : null;
+                // Évolution du solde : flux du mois / solde début de mois
+                const soldeDebut = soldeParMois[i + 1]; // solde avant ce mois
+                const evol = soldeDebut !== 0
+                  ? (net / Math.abs(soldeDebut)) * 100
+                  : null;
                 const tauxEpargne =
                   m.revenus > 0 ? Math.round(((m.revenus - m.depenses) / m.revenus) * 100) : null;
 
@@ -271,13 +279,9 @@ export default function DashboardContent({
                     {/* Header row */}
                     <div
                       className="grid items-center px-[14px] py-[12px] cursor-pointer active:opacity-70 transition-opacity"
-                      style={{ gridTemplateColumns: "7px 90px 1fr 90px 60px 14px", columnGap: "10px" }}
+                      style={{ gridTemplateColumns: "90px 1fr 90px 60px 14px", columnGap: "10px" }}
                       onClick={() => setOpenMonth(isOpen ? null : m.moisKey)}
                     >
-                      <span
-                        className="w-[7px] h-[7px] rounded-full"
-                        style={{ background: dotColor }}
-                      />
                       <span className="text-[15px] font-semibold text-[var(--text)] leading-none whitespace-nowrap overflow-hidden">
                         {moisComplet(m.moisKey)}
                       </span>

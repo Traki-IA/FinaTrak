@@ -105,13 +105,15 @@ export async function updateTransaction(
     return { error: firstIssue?.message ?? "Données invalides" };
   }
 
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
   const { id, ...updateData } = parsed.data;
 
   const { error } = await supabase
     .from("transactions")
     .update(updateData)
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) return { error: error.message };
 
@@ -133,7 +135,8 @@ export async function upsertCategorie(input: {
     const { error } = await supabase
       .from("categories")
       .update({ nom: input.nom, couleur: input.couleur })
-      .eq("id", input.id);
+      .eq("id", input.id)
+      .eq("user_id", userId);
     if (error) return { error: error.message };
   } else {
     const { error } = await supabase
@@ -150,8 +153,13 @@ export async function upsertCategorie(input: {
 export async function deleteCategorie(
   id: string
 ): Promise<{ success: true } | { error: string }> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
-  const { error } = await supabase.from("categories").delete().eq("id", id);
+  const { error } = await supabase
+    .from("categories")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
   if (error) return { error: error.message };
   revalidatePath("/transactions");
   revalidatePath("/dashboard");
@@ -165,12 +173,14 @@ export async function deleteTransaction(
     return { error: "Identifiant invalide" };
   }
 
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   const { error } = await supabase
     .from("transactions")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) return { error: error.message };
 

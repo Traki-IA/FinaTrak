@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { getUser } from "@/lib/auth";
 import AuthForm from "./AuthForm";
 
 export default async function AuthPage() {
-  const session = await getSession();
+  const user = await getUser();
 
-  if (session) {
+  if (user) {
     redirect("/dashboard");
   }
 

@@ -297,10 +297,8 @@ function MobileTxRow({
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.2, delay: Math.min(index * 0.01, 0.1) }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: 0.15 }}
       className="border-b border-[var(--bg2)] last:border-0"
     >
       {/* Ligne principale */}
@@ -399,12 +397,13 @@ function CategoriesChart({ transactions }: { transactions: TTransactionWithCateg
 
   return (
     <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
-      <div className="flex justify-between px-[14px] py-[8px]" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+      <div className="flex justify-center py-[2px]" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
         <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Catégories</span>
       </div>
       <div className="flex flex-col gap-[10px] px-[14px] py-[10px]">
         {sorted.map((cat) => {
           const pct = Math.round((cat.total / total) * 100);
+          if (pct === 0) return null;
           return (
             <div key={cat.nom} className="flex items-center gap-[8px]">
               <span className="w-[7px] h-[7px] rounded-full flex-shrink-0" style={{ background: cat.couleur }} />
@@ -646,7 +645,7 @@ export default function TransactionsContent({
                           className="flex items-center justify-between px-[14px] py-[6px]"
                           style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}
                         >
-                          <span className="text-[11px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{moisNom}</span>
+                          <span className="text-[11px] font-semibold text-[var(--text2)] tracking-[0.06em]">{moisNom}</span>
                           <span className="text-[12px] font-semibold tabular-nums" style={{ color: netColor }}>
                             {net >= 0 ? "+" : "−"}{fmt(Math.abs(net))} €
                           </span>

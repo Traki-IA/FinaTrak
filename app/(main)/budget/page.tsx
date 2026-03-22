@@ -9,7 +9,7 @@ import { getActiveCompteId } from "@/lib/active-compte";
 export const revalidate = 30;
 
 async function BudgetData() {
-  const compteId = await getActiveCompteId();
+  const compteId = (await getActiveCompteId()) ?? "";
 
   const [items, categories, objectifs] = await Promise.all([
     fetchBudgetItems(compteId),

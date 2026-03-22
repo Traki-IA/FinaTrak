@@ -48,10 +48,11 @@ async function TransactionsData({
 }: {
   searchParams: Promise<TRawSearchParams>;
 }) {
-  const [compteId, rawParams] = await Promise.all([
+  const [rawCompteId, rawParams] = await Promise.all([
     getActiveCompteId(),
     searchParams,
   ]);
+  const compteId = rawCompteId ?? "";
 
   const filters = parseFilters(rawParams);
 

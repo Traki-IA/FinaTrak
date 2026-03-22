@@ -110,10 +110,8 @@ function SortableObjectifRow({
     <div ref={setNodeRef} style={style} className="border-b border-[var(--border)]">
       <motion.div
         layout
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.25, delay: Math.min(index * 0.01, 0.1) }}
+        transition={{ duration: 0.15 }}
         className="group py-2.5 px-[14px]"
         style={{ cursor: "pointer" }}
         onClick={() => setExpanded(!expanded)}
@@ -123,7 +121,6 @@ function SortableObjectifRow({
             <button {...attributes} {...listeners} onClick={(e) => e.stopPropagation()} className="text-white/20 cursor-grab flex-shrink-0 touch-none">
               <GripVertical size={13} />
             </button>
-            <div className="w-2 h-2 rounded-full flex-shrink-0 mt-0.5" style={{ background: couleur }} />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="text-[15px] font-[600] leading-none text-white">{objectif.nom}</p>
@@ -296,7 +293,7 @@ function Objectifs({
           <div className="flex">
             <div className="flex-1 text-center py-[8px] px-2 min-w-0" style={{ borderRight: "1px solid var(--border)" }}>
               <div className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Total épargné</div>
-              <div className="text-[17px] font-semibold text-[var(--green)] tracking-tight mt-[2px] tabular-nums truncate">{formatEur(totalEpargne)}</div>
+              <div className="text-[17px] font-semibold text-[var(--green)] tracking-tight mt-[2px] tabular-nums truncate">{totalEpargne.toLocaleString("fr-FR")} €</div>
             </div>
             <div className="flex-1 text-center py-[8px] px-2 min-w-0">
               <div className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Atteints</div>
@@ -341,6 +338,7 @@ function Objectifs({
           </DndContext>
         </div>
       )}
+      <div className="h-[72px]" />
     </Shell>
   );
 }
