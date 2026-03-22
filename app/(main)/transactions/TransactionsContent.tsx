@@ -300,7 +300,7 @@ function MobileTxRow({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
+      transition={{ duration: 0.2, delay: Math.min(index * 0.01, 0.1) }}
       className="border-b border-[var(--bg2)] last:border-0"
     >
       {/* Ligne principale */}
