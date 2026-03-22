@@ -57,13 +57,15 @@ export async function updateObjectif(
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
   }
 
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
   const { id, ...updateData } = parsed.data;
 
   const { error } = await supabase
     .from("objectifs")
     .update(updateData)
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) return { error: error.message };
 
@@ -77,12 +79,14 @@ export async function updateObjectifMontant(
 ): Promise<TActionResult> {
   if (montant_actuel < 0) return { error: "Montant invalide" };
 
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   const { error } = await supabase
     .from("objectifs")
     .update({ montant_actuel })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) return { error: error.message };
 
@@ -91,9 +95,14 @@ export async function updateObjectifMontant(
 }
 
 export async function deleteObjectif(id: string): Promise<TActionResult> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
-  const { error } = await supabase.from("objectifs").delete().eq("id", id);
+  const { error } = await supabase
+    .from("objectifs")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
   if (error) return { error: error.message };
 
   revalidatePath("/objectifs");
@@ -103,13 +112,15 @@ export async function deleteObjectif(id: string): Promise<TActionResult> {
 export async function reorderObjectifs(
   orderedIds: string[]
 ): Promise<TActionResult> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   for (let i = 0; i < orderedIds.length; i++) {
     const { error } = await supabase
       .from("objectifs")
       .update({ sort_order: i })
-      .eq("id", orderedIds[i]);
+      .eq("id", orderedIds[i])
+      .eq("user_id", userId);
 
     if (error) return { error: error.message };
   }

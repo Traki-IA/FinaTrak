@@ -42,13 +42,15 @@ type TActionResult = { success: true } | { error: string };
 export async function reorderCategories(
   orderedIds: string[]
 ): Promise<TActionResult> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   for (let i = 0; i < orderedIds.length; i++) {
     const { error } = await supabase
       .from("categories")
       .update({ sort_order: i })
-      .eq("id", orderedIds[i]);
+      .eq("id", orderedIds[i])
+      .eq("user_id", userId);
 
     if (error) return { error: error.message };
   }

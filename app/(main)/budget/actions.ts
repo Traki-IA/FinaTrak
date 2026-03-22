@@ -97,12 +97,14 @@ export async function toggleBudgetItem(
   id: string,
   actif: boolean
 ): Promise<TActionResult> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   const { error } = await supabase
     .from("budget_items")
     .update({ actif })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) return { error: error.message };
 
@@ -115,12 +117,14 @@ export async function toggleBudgetItem(
 // ── Suppression ───────────────────────────────────────────────────────────────
 
 export async function deleteBudgetItem(id: string): Promise<TActionResult> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   const { error } = await supabase
     .from("budget_items")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) return { error: error.message };
 
@@ -140,13 +144,15 @@ export async function updateBudgetItem(
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
   }
 
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
   const { id, ...updateData } = parsed.data;
 
   const { error } = await supabase
     .from("budget_items")
     .update(updateData)
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) return { error: error.message };
 
@@ -161,13 +167,15 @@ export async function updateBudgetItem(
 export async function reorderBudgetItems(
   orderedIds: string[]
 ): Promise<TActionResult> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   for (let i = 0; i < orderedIds.length; i++) {
     const { error } = await supabase
       .from("budget_items")
       .update({ sort_order: i })
-      .eq("id", orderedIds[i]);
+      .eq("id", orderedIds[i])
+      .eq("user_id", userId);
 
     if (error) return { error: error.message };
   }

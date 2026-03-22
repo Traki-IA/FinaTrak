@@ -68,13 +68,15 @@ export async function updateCompte(
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
   }
 
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
   const { id, ...updateData } = parsed.data;
 
   const { error } = await supabase
     .from("comptes")
     .update(updateData)
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) return { error: error.message };
 
@@ -102,7 +104,11 @@ export async function deleteCompte(id: string): Promise<TActionResult> {
     return { error: "Impossible de supprimer le dernier compte" };
   }
 
-  const { error } = await supabase.from("comptes").delete().eq("id", id);
+  const { error } = await supabase
+    .from("comptes")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
   if (error) return { error: error.message };
 
   revalidatePath("/");
@@ -114,13 +120,15 @@ export async function deleteCompte(id: string): Promise<TActionResult> {
 export async function reorderComptes(
   orderedIds: string[]
 ): Promise<TActionResult> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   for (let i = 0; i < orderedIds.length; i++) {
     const { error } = await supabase
       .from("comptes")
       .update({ sort_order: i })
-      .eq("id", orderedIds[i]);
+      .eq("id", orderedIds[i])
+      .eq("user_id", userId);
 
     if (error) return { error: error.message };
   }
@@ -135,6 +143,18 @@ export async function switchCompte(compteId: string): Promise<TActionResult> {
   if (!z.string().uuid().safeParse(compteId).success) {
     return { error: "Identifiant invalide" };
   }
+
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
+  const { data: compte } = await supabase
+    .from("comptes")
+    .select("id")
+    .eq("id", compteId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!compte) return { error: "Compte introuvable" };
 
   await setActiveCompteId(compteId);
   revalidatePath("/", "layout");
