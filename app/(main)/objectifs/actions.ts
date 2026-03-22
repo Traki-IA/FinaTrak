@@ -39,6 +39,16 @@ export async function insertObjectif(
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
+  // Vérifier que le compte appartient à l'utilisateur
+  const { data: compte } = await supabase
+    .from("comptes")
+    .select("id")
+    .eq("id", parsed.data.compte_id)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!compte) return { error: "Compte invalide" };
+
   const { error } = await supabase
     .from("objectifs")
     .insert([{ ...parsed.data, user_id: userId }]);
@@ -57,13 +67,15 @@ export async function updateObjectif(
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
   }
 
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
   const { id, ...updateData } = parsed.data;
 
   const { error } = await supabase
     .from("objectifs")
     .update(updateData)
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) return { error: error.message };
 
@@ -75,14 +87,19 @@ export async function updateObjectifMontant(
   id: string,
   montant_actuel: number
 ): Promise<TActionResult> {
+  if (!z.string().uuid().safeParse(id).success) {
+    return { error: "Identifiant invalide" };
+  }
   if (montant_actuel < 0) return { error: "Montant invalide" };
 
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   const { error } = await supabase
     .from("objectifs")
     .update({ montant_actuel })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) return { error: error.message };
 
@@ -91,9 +108,17 @@ export async function updateObjectifMontant(
 }
 
 export async function deleteObjectif(id: string): Promise<TActionResult> {
+  if (!z.string().uuid().safeParse(id).success) {
+    return { error: "Identifiant invalide" };
+  }
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
-  const { error } = await supabase.from("objectifs").delete().eq("id", id);
+  const { error } = await supabase
+    .from("objectifs")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
   if (error) return { error: error.message };
 
   revalidatePath("/objectifs");
@@ -103,13 +128,15 @@ export async function deleteObjectif(id: string): Promise<TActionResult> {
 export async function reorderObjectifs(
   orderedIds: string[]
 ): Promise<TActionResult> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   for (let i = 0; i < orderedIds.length; i++) {
     const { error } = await supabase
       .from("objectifs")
       .update({ sort_order: i })
-      .eq("id", orderedIds[i]);
+      .eq("id", orderedIds[i])
+      .eq("user_id", userId);
 
     if (error) return { error: error.message };
   }

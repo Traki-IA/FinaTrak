@@ -42,13 +42,15 @@ type TActionResult = { success: true } | { error: string };
 export async function reorderCategories(
   orderedIds: string[]
 ): Promise<TActionResult> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   for (let i = 0; i < orderedIds.length; i++) {
     const { error } = await supabase
       .from("categories")
       .update({ sort_order: i })
-      .eq("id", orderedIds[i]);
+      .eq("id", orderedIds[i])
+      .eq("user_id", userId);
 
     if (error) return { error: error.message };
   }
@@ -146,13 +148,14 @@ export async function deleteCategorie(id: string): Promise<TActionResult> {
 export async function updateNavOrder(
   orderedKeys: string[]
 ): Promise<TActionResult> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   const { error } = await supabase
     .from("settings")
     .upsert(
-      { cle: "nav_order", valeur: JSON.stringify(orderedKeys) },
-      { onConflict: "cle" }
+      { cle: "nav_order", valeur: JSON.stringify(orderedKeys), user_id: userId },
+      { onConflict: "cle,user_id" }
     );
 
   if (error) return { error: error.message };
@@ -227,9 +230,14 @@ export async function deleteUserAccount(
   }
 
   // Suppression en cascade des données (ordre FK : budget_items → transactions → objectifs → comptes)
-  const admin = createAdminSupabaseClient();
+  let admin;
+  try {
+    admin = createAdminSupabaseClient();
+  } catch {
+    return { error: "Erreur de configuration serveur" };
+  }
 
-  const tables = ["budget_items", "transactions", "objectifs", "comptes", "categories"] as const;
+  const tables = ["budget_items", "transactions", "objectifs", "comptes", "categories", "settings"] as const;
 
   for (const table of tables) {
     const { error } = await admin.from(table).delete().eq("user_id", userId);
@@ -237,8 +245,6 @@ export async function deleteUserAccount(
       return { error: `Erreur lors de la suppression (${table}) : ${error.message}` };
     }
   }
-
-  // Supprimer les settings liés (pas de user_id sur settings)
 
   // Supprimer le compte auth via l'API admin
   const { error: deleteAuthError } = await admin.auth.admin.deleteUser(userId);

@@ -17,12 +17,14 @@ export async function fetchComptes(): Promise<TCompte[]> {
 }
 
 export async function fetchNavOrder(): Promise<string[]> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("settings")
     .select("valeur")
     .eq("cle", "nav_order")
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (error) {

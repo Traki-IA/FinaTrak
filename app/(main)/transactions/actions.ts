@@ -46,6 +46,16 @@ export async function insertTransaction(
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
+  // Vérifier que le compte appartient à l'utilisateur
+  const { data: compte } = await supabase
+    .from("comptes")
+    .select("id")
+    .eq("id", parsed.data.compte_id)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!compte) return { error: "Compte invalide" };
+
   const { objectif_id, budget_item_id, ...baseData } = parsed.data;
 
   // Construire les données à insérer (budget_item_id est stocké en base)
@@ -82,7 +92,8 @@ export async function insertTransaction(
       await supabase
         .from("objectifs")
         .update({ montant_actuel: nouveauMontant })
-        .eq("id", objectif_id);
+        .eq("id", objectif_id)
+        .eq("user_id", userId);
       objectifUpdated = true;
     }
 
