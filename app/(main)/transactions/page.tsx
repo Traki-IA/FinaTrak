@@ -7,7 +7,7 @@ import TransactionsSkeleton from "./TransactionsSkeleton";
 import { getActiveCompteId } from "@/lib/active-compte";
 import type { TTransactionFilters } from "@/types";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

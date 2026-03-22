@@ -2,7 +2,7 @@ import MainLayoutShell from "@/components/MainLayoutShell";
 import { fetchComptes } from "@/lib/comptes";
 import { getActiveCompteId, DEFAULT_COMPTE_ID } from "@/lib/active-compte";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export default async function MainLayout({
   children,
