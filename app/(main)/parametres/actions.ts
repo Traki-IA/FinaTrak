@@ -230,9 +230,14 @@ export async function deleteUserAccount(
   }
 
   // Suppression en cascade des données (ordre FK : budget_items → transactions → objectifs → comptes)
-  const admin = createAdminSupabaseClient();
+  let admin;
+  try {
+    admin = createAdminSupabaseClient();
+  } catch {
+    return { error: "Erreur de configuration serveur" };
+  }
 
-  const tables = ["budget_items", "transactions", "objectifs", "comptes", "categories"] as const;
+  const tables = ["budget_items", "transactions", "objectifs", "comptes", "categories", "settings"] as const;
 
   for (const table of tables) {
     const { error } = await admin.from(table).delete().eq("user_id", userId);
@@ -240,8 +245,6 @@ export async function deleteUserAccount(
       return { error: `Erreur lors de la suppression (${table}) : ${error.message}` };
     }
   }
-
-  // Supprimer les settings liés (pas de user_id sur settings)
 
   // Supprimer le compte auth via l'API admin
   const { error: deleteAuthError } = await admin.auth.admin.deleteUser(userId);

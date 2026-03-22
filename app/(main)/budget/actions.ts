@@ -47,6 +47,16 @@ export async function insertBudgetItem(
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
+  // Vérifier que le compte appartient à l'utilisateur
+  const { data: compte } = await supabase
+    .from("comptes")
+    .select("id")
+    .eq("id", parsed.data.compte_id)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!compte) return { error: "Compte invalide" };
+
   const {
     creer_objectif,
     objectif_nom,
