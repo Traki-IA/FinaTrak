@@ -271,13 +271,9 @@ export default function DashboardContent({
                     {/* Header row */}
                     <div
                       className="grid items-center px-[14px] py-[12px] cursor-pointer active:opacity-70 transition-opacity"
-                      style={{ gridTemplateColumns: "7px 90px 1fr 90px 60px 14px", columnGap: "10px" }}
+                      style={{ gridTemplateColumns: "90px 1fr 90px 60px 14px", columnGap: "10px" }}
                       onClick={() => setOpenMonth(isOpen ? null : m.moisKey)}
                     >
-                      <span
-                        className="w-[7px] h-[7px] rounded-full"
-                        style={{ background: dotColor }}
-                      />
                       <span className="text-[15px] font-semibold text-[var(--text)] leading-none whitespace-nowrap overflow-hidden">
                         {moisComplet(m.moisKey)}
                       </span>

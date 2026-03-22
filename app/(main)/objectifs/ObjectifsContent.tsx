@@ -110,10 +110,8 @@ function SortableObjectifRow({
     <div ref={setNodeRef} style={style} className="border-b border-[var(--border)]">
       <motion.div
         layout
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.25, delay: Math.min(index * 0.01, 0.1) }}
+        transition={{ duration: 0.15 }}
         className="group py-2.5 px-[14px]"
         style={{ cursor: "pointer" }}
         onClick={() => setExpanded(!expanded)}

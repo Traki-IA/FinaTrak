@@ -91,10 +91,8 @@ function BudgetRow({
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -12 }}
-      transition={{ duration: 0.2, delay: Math.min(index * 0.01, 0.1) }}
+      transition={{ duration: 0.15 }}
       onClick={() => onEdit(item)}
       className="flex items-center cursor-pointer"
       style={{
@@ -103,12 +101,6 @@ function BudgetRow({
         opacity: item.actif ? 1 : 0.4,
       }}
     >
-      {/* Dot couleur */}
-      <div
-        className="rounded-full flex-shrink-0"
-        style={{ width: 7, height: 7, background: couleur }}
-      />
-
       {/* Nom */}
       <div
         className="flex-1 min-w-0 text-[14px] font-[500] text-[var(--text)] truncate"
@@ -306,6 +298,8 @@ export default function BudgetContent({
             </AnimatePresence>
           </>
         )}
+        {/* Spacer to avoid FAB overlap */}
+        <div className="h-[72px]" />
       </Shell>
 
       {/* FAB */}
