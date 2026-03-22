@@ -13,6 +13,8 @@ import type { TTransactionWithCategorie, TCategorie, TObjectif, TBudgetItem } fr
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+const MOIS_COMPLETS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+
 function fmt(n: number): string {
   return Math.abs(n).toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
@@ -66,18 +68,16 @@ function filterByPeriod(
       break;
     }
     case "3m": {
-      from = new Date(now);
-      from.setMonth(from.getMonth() - 3);
+      // 3 mois calendaires complets incluant le mois courant
+      from = new Date(now.getFullYear(), now.getMonth() - 2, 1);
       break;
     }
     case "6m": {
-      from = new Date(now);
-      from.setMonth(from.getMonth() - 6);
+      from = new Date(now.getFullYear(), now.getMonth() - 5, 1);
       break;
     }
     case "1a": {
-      from = new Date(now);
-      from.setFullYear(from.getFullYear() - 1);
+      from = new Date(now.getFullYear(), now.getMonth() - 11, 1);
       break;
     }
     case "custom": {
@@ -448,6 +448,7 @@ export default function TransactionsContent({
   const [editingTransaction, setEditingTransaction] = useState<TTransactionWithCategorie | undefined>(undefined);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
+  const [collapsedYears, setCollapsedYears] = useState<Set<string>>(new Set());
   const [typeFilter, setTypeFilter] = useState<TTypeFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -474,6 +475,24 @@ export default function TransactionsContent({
     }
     return result;
   }, [transactions, typeFilter, searchQuery, periodFilter, customFrom, customTo]);
+
+  // Group filtered transactions by year → month (desc)
+  const byYearMonth = useMemo(() => {
+    const groups: Record<string, Record<string, TTransactionWithCategorie[]>> = {};
+    for (const t of filtered) {
+      const [y, m] = t.date.split("-");
+      if (!groups[y]) groups[y] = {};
+      const monthKey = `${y}-${m}`;
+      if (!groups[y][monthKey]) groups[y][monthKey] = [];
+      groups[y][monthKey].push(t);
+    }
+    return groups;
+  }, [filtered]);
+
+  const years = useMemo(
+    () => Object.keys(byYearMonth).sort((a, b) => Number(b) - Number(a)),
+    [byYearMonth]
+  );
 
   function openAddModal() {
     setEditingTransaction(undefined);
@@ -512,7 +531,6 @@ export default function TransactionsContent({
   }
 
   const isPeriodActive = periodFilter !== "all";
-  let rowIndex = 0;
 
   return (
     <>
@@ -579,48 +597,86 @@ export default function TransactionsContent({
         {/* Categories chart */}
         <CategoriesChart transactions={filtered} />
 
-        {/* Transaction list */}
-        <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
-          <AnimatePresence mode="popLayout">
-            {filtered.length === 0 ? (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center py-8 gap-2"
-              >
-                <div className="w-11 h-11 rounded-[14px] bg-[var(--bg2)] flex items-center justify-center">
-                  <Search size={20} className="text-[var(--text3)]" />
+        {/* Transaction list — grouped by year / month */}
+        {filtered.length === 0 ? (
+          <div className="mt-[8px] rounded-[14px] overflow-hidden flex flex-col items-center justify-center py-8 gap-2" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
+            <div className="w-11 h-11 rounded-[14px] bg-[var(--bg3)] flex items-center justify-center">
+              <Search size={20} className="text-[var(--text3)]" />
+            </div>
+            <span className="text-[14px] text-[var(--text3)]">Aucune transaction trouvée</span>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-[6px] pb-4 mt-[8px]">
+            {years.map((year) => {
+              const isYearCollapsed = collapsedYears.has(year);
+              const months = Object.keys(byYearMonth[year]).sort((a, b) => b.localeCompare(a));
+              return (
+                <div key={year} className="flex flex-col gap-[6px]">
+                  {/* Year separator */}
+                  <div
+                    className="flex items-center gap-[8px] px-[2px] pt-[6px] pb-[2px] cursor-pointer select-none"
+                    onClick={() =>
+                      setCollapsedYears((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(year)) next.delete(year); else next.add(year);
+                        return next;
+                      })
+                    }
+                  >
+                    <span className="text-[12px] font-semibold text-[var(--text3)] tracking-[0.06em] leading-none">{year}</span>
+                    <div className="flex-1 h-[1px]" style={{ background: "var(--border)" }} />
+                    <span
+                      className="text-[var(--text3)] text-[11px] leading-none transition-transform duration-200 shrink-0"
+                      style={{ transform: isYearCollapsed ? "rotate(-90deg)" : "rotate(0deg)" }}
+                    >▼</span>
+                  </div>
+
+                  {!isYearCollapsed && months.map((monthKey) => {
+                    const monthTxs = byYearMonth[year][monthKey];
+                    const [, mo] = monthKey.split("-");
+                    const moisNom = MOIS_COMPLETS[Number(mo) - 1];
+                    const net = monthTxs.reduce((s, t) => s + (t.type === "revenu" ? t.montant : -t.montant), 0);
+                    const netColor = net >= 0 ? "var(--green)" : "var(--red)";
+
+                    return (
+                      <div key={monthKey} className="rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
+                        {/* Month header */}
+                        <div
+                          className="flex items-center justify-between px-[14px] py-[6px]"
+                          style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}
+                        >
+                          <span className="text-[11px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{moisNom}</span>
+                          <span className="text-[12px] font-semibold tabular-nums" style={{ color: netColor }}>
+                            {net >= 0 ? "+" : "−"}{fmt(Math.abs(net))} €
+                          </span>
+                        </div>
+                        {/* Rows */}
+                        <AnimatePresence mode="popLayout">
+                          <div className="divide-y divide-[var(--border)]">
+                            {monthTxs.map((t, idx) => (
+                              <MobileTxRow
+                                key={t.id}
+                                transaction={t}
+                                index={idx}
+                                isActive={activeRowId === t.id}
+                                confirmingDeleteId={confirmingDeleteId}
+                                onEdit={openEditModal}
+                                onDeleteRequest={setConfirmingDeleteId}
+                                onDeleteConfirm={handleDeleteConfirm}
+                                onDeleteCancel={() => { setConfirmingDeleteId(null); setActiveRowId(null); }}
+                                onRowTap={() => handleRowTap(t.id)}
+                              />
+                            ))}
+                          </div>
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
                 </div>
-                <span className="text-[14px] text-[var(--text3)]">
-                  Aucune transaction trouvée
-                </span>
-              </motion.div>
-            ) : (
-              <div className="divide-y divide-[var(--border)]">{filtered.map((t) => {
-                const idx = rowIndex++;
-                return (
-                  <MobileTxRow
-                    key={t.id}
-                    transaction={t}
-                    index={idx}
-                    isActive={activeRowId === t.id}
-                    confirmingDeleteId={confirmingDeleteId}
-                    onEdit={openEditModal}
-                    onDeleteRequest={setConfirmingDeleteId}
-                    onDeleteConfirm={handleDeleteConfirm}
-                    onDeleteCancel={() => {
-                      setConfirmingDeleteId(null);
-                      setActiveRowId(null);
-                    }}
-                    onRowTap={() => handleRowTap(t.id)}
-                  />
-                );
-              })}</div>
-            )}
-          </AnimatePresence>
-        </div>
+              );
+            })}
+          </div>
+        )}
       </Shell>
 
       {/* Period sheet */}
