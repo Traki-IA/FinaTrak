@@ -401,18 +401,18 @@ function CategoriesChart({ transactions }: { transactions: TTransactionWithCateg
     <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
       <div className="flex justify-between px-[14px] py-[8px]" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
         <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Catégories</span>
-        <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{fmt(total)} € total</span>
       </div>
-      <div className="flex flex-col gap-[8px] px-[14px] py-[10px]">
+      <div className="flex flex-col gap-[10px] px-[14px] py-[10px]">
         {sorted.map((cat) => {
           const pct = Math.round((cat.total / total) * 100);
           return (
-            <div key={cat.nom} className="flex items-center gap-2">
-              <span className="text-[11px] text-[var(--text2)] w-[70px] truncate">{cat.nom}</span>
-              <div className="flex-1 h-[3px] bg-[var(--bg3)] rounded-[2px] overflow-hidden">
-                <div className="h-full rounded-[2px] transition-all" style={{ width: `${pct}%`, background: cat.couleur }} />
+            <div key={cat.nom} className="flex items-center gap-[8px]">
+              <span className="w-[7px] h-[7px] rounded-full flex-shrink-0" style={{ background: cat.couleur }} />
+              <span className="text-[12px] text-[var(--text)] w-[90px] flex-shrink-0 truncate">{cat.nom}</span>
+              <div className="flex-1 h-[5px] bg-[var(--bg3)] rounded-full overflow-hidden">
+                <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: cat.couleur }} />
               </div>
-              <span className="text-[11px] text-[var(--text2)] w-[32px] text-right">{pct}%</span>
+              <span className="text-[12px] font-semibold w-[32px] text-right tabular-nums" style={{ color: cat.couleur }}>{pct}%</span>
             </div>
           );
         })}
