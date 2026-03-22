@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import ParametresContent from "./ParametresContent";
 import { requireAuth } from "@/lib/auth";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 async function ParametresData() {
   const session = await requireAuth();

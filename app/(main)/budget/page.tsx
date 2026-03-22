@@ -6,7 +6,7 @@ import BudgetContent from "./BudgetContent";
 import BudgetSkeleton from "./BudgetSkeleton";
 import { getActiveCompteId } from "@/lib/active-compte";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 async function BudgetData() {
   const compteId = await getActiveCompteId();

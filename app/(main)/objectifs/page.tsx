@@ -5,7 +5,7 @@ import ObjectifsContent from "./ObjectifsContent";
 import ObjectifsSkeleton from "./ObjectifsSkeleton";
 import { getActiveCompteId } from "@/lib/active-compte";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 type TSearchParams = Promise<Record<string, string | string[] | undefined>>;
 

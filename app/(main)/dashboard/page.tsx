@@ -11,7 +11,7 @@ import {
 import { getActiveCompteId } from "@/lib/active-compte";
 import type { TPeriod } from "@/types";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 const VALID_PERIODS: TPeriod[] = ["1m", "3m", "6m", "1a"];
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
