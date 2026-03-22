@@ -78,7 +78,7 @@ export default function BudgetDistribution({ items }: IBudgetDistributionProps) 
   return (
     <Card>
       <CardContent>
-        <p className="text-[10px] text-white/40 uppercase tracking-widest mb-4">
+        <p className="text-[11px] text-white/40 uppercase tracking-widest mb-4">
           Répartition par catégorie
         </p>
 
@@ -116,7 +116,7 @@ export default function BudgetDistribution({ items }: IBudgetDistributionProps) 
                 <p className="text-lg font-bold text-white tabular-nums leading-none">
                   {formatEur(total)}
                 </p>
-                <p className="text-[10px] text-white/35 mt-1">/ mois</p>
+                <p className="text-[11px] text-white/35 mt-1">/ mois</p>
               </div>
             </div>
           </div>
@@ -139,7 +139,7 @@ export default function BudgetDistribution({ items }: IBudgetDistributionProps) 
                     <span className="text-xs text-white font-medium tabular-nums">
                       {formatEur(entry.montant)}
                     </span>
-                    <span className="text-[10px] text-white/30 tabular-nums w-10 text-right">
+                    <span className="text-[11px] text-white/30 tabular-nums w-10 text-right">
                       {entry.pourcentage.toFixed(0)}%
                     </span>
                   </div>

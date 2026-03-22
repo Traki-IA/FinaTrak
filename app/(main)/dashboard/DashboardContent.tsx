@@ -121,29 +121,29 @@ export default function DashboardContent({
 
       {/* Carte KPI principale */}
       <div
-        className="mt-[10px] rounded-[14px] overflow-hidden"
+        className="mt-[8px] rounded-[14px] overflow-hidden"
         style={{ background: "var(--bg2)", border: "1px solid var(--border)" }}
       >
         {/* Solde courant */}
         {/* Header */}
         <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
-          <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Solde courant</span>
+          <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Solde courant</span>
         </div>
         {/* Valeur */}
         <div className="py-[6px] flex items-center justify-center gap-[10px]" style={{ borderBottom: "1px solid var(--border)" }}>
           {/* Miroir invisible pour équilibrer le badge et centrer optiquement le solde */}
           {evolutionPct !== null && (
-            <div className="invisible pointer-events-none inline-flex items-center gap-[3px] px-[8px] py-[4px] rounded-full text-[10px] font-semibold" aria-hidden="true">
+            <div className="invisible pointer-events-none inline-flex items-center gap-[3px] px-[8px] py-[4px] rounded-full text-[11px] font-semibold" aria-hidden="true">
               <span>{evolutionPct >= 0 ? "↑" : "↓"}</span>
               <span>{evolutionPct >= 0 ? "+" : "−"}{Math.abs(evolutionPct).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</span>
             </div>
           )}
-          <div className="text-[26px] font-bold tracking-[-0.03em] leading-none text-[var(--text)]">
+          <div className="text-[28px] font-bold tracking-[-0.03em] leading-none text-[var(--text)]">
             {soldeCourant >= 0 ? "" : "−"}{fmt(soldeCourant)} €
           </div>
           {evolutionPct !== null && (
             <div
-              className="inline-flex items-center gap-[3px] px-[8px] py-[4px] rounded-full text-[10px] font-semibold"
+              className="inline-flex items-center gap-[3px] px-[8px] py-[4px] rounded-full text-[11px] font-semibold"
               style={{
                 background: evolutionPct >= 0 ? "rgba(74,222,128,0.10)" : "rgba(248,113,113,0.10)",
                 border: `1px solid ${evolutionPct >= 0 ? "rgba(74,222,128,0.25)" : "rgba(248,113,113,0.25)"}`,
@@ -162,30 +162,30 @@ export default function DashboardContent({
         {/* Header colonnes */}
         <div className="flex" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
           <div className="flex-1 flex items-center justify-center px-1 py-[2px]" style={{ borderRight: "1px solid var(--border)" }}>
-            <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Revenus</span>
+            <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Revenus</span>
           </div>
           <div className="flex-1 flex items-center justify-center px-1 py-[2px]" style={{ borderRight: "1px solid var(--border)" }}>
-            <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Dépenses</span>
+            <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Dépenses</span>
           </div>
           <div className="flex-1 flex items-center justify-center px-1 py-[2px]">
-            <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Flux net</span>
+            <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Flux net</span>
           </div>
         </div>
 
         {/* KPI 3 colonnes : valeurs */}
         <div className="flex">
           <div className="flex-1 text-center py-[7px] px-1" style={{ borderRight: "1px solid var(--border)" }}>
-            <div className={`text-[16px] font-semibold tracking-[-0.02em] ${stats.revenus === 0 ? "text-[var(--text2)]" : "text-[var(--green)]"}`}>
+            <div className={`text-[17px] font-semibold tracking-[-0.02em] ${stats.revenus === 0 ? "text-[var(--text2)]" : "text-[var(--green)]"}`}>
               {fmt(stats.revenus)} €
             </div>
           </div>
           <div className="flex-1 text-center py-[7px] px-1" style={{ borderRight: "1px solid var(--border)" }}>
-            <div className="text-[16px] font-semibold text-[var(--red)] tracking-[-0.02em]">
+            <div className="text-[17px] font-semibold text-[var(--red)] tracking-[-0.02em]">
               {fmt(stats.depenses)} €
             </div>
           </div>
           <div className="flex-1 text-center py-[7px] px-1">
-            <div className={`text-[16px] font-semibold tracking-[-0.02em] ${periodNet >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"}`}>
+            <div className={`text-[17px] font-semibold tracking-[-0.02em] ${periodNet >= 0 ? "text-[var(--green)]" : "text-[var(--red)]"}`}>
               {periodNet >= 0 ? "+" : "−"}{fmt(periodNet)} €
             </div>
           </div>
@@ -193,7 +193,7 @@ export default function DashboardContent({
       </div>
 
       {/* Historique mensuel — accordion groupé par année */}
-      <div className="flex flex-col gap-[6px] px-[2px] pb-4 mt-[10px]">
+      <div className="flex flex-col gap-[6px] px-[2px] pb-4 mt-[8px]">
 
 
         {(() => {
@@ -219,12 +219,12 @@ export default function DashboardContent({
                   return next;
                 })}
               >
-                <span className="text-[11px] font-semibold text-[var(--text3)] tracking-[0.06em] leading-none">
+                <span className="text-[12px] font-semibold text-[var(--text3)] tracking-[0.06em] leading-none">
                   {year}
                 </span>
                 <div className="flex-1 h-[1px]" style={{ background: "var(--border)" }} />
                 <span
-                  className="text-[var(--text3)] text-[10px] leading-none transition-transform duration-200 shrink-0"
+                  className="text-[var(--text3)] text-[11px] leading-none transition-transform duration-200 shrink-0"
                   style={{ transform: isYearCollapsed ? "rotate(-90deg)" : "rotate(0deg)" }}
                 >
                   ▼
@@ -278,18 +278,18 @@ export default function DashboardContent({
                         className="w-[7px] h-[7px] rounded-full"
                         style={{ background: dotColor }}
                       />
-                      <span className="text-[14px] font-semibold text-[var(--text)] leading-none whitespace-nowrap overflow-hidden">
+                      <span className="text-[15px] font-semibold text-[var(--text)] leading-none whitespace-nowrap overflow-hidden">
                         {moisComplet(m.moisKey)}
                       </span>
                       <div />
                       <span
-                        className="text-[14px] font-bold tabular-nums leading-none text-right"
+                        className="text-[15px] font-bold tabular-nums leading-none text-right"
                         style={{ color: netColor }}
                       >
                         {net >= 0 ? "+" : "−"}{fmt(net)} €
                       </span>
                       <span
-                        className="inline-flex items-center justify-center h-[20px] rounded-full text-[11px] font-semibold tabular-nums"
+                        className="inline-flex items-center justify-center h-[20px] rounded-full text-[12px] font-semibold tabular-nums"
                         style={{ background: evolBg, border: `1px solid ${evolBorder}`, color: evolColor }}
                       >
                         {evol === null
@@ -297,7 +297,7 @@ export default function DashboardContent({
                           : `${evol >= 0 ? "+" : ""}${evol.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}%`}
                       </span>
                       <span
-                        className="text-[var(--text3)] text-[10px] leading-none transition-transform duration-200 text-center"
+                        className="text-[var(--text3)] text-[11px] leading-none transition-transform duration-200 text-center"
                         style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
                       >
                         ▼
@@ -311,21 +311,21 @@ export default function DashboardContent({
                         style={{ borderTop: "1px solid var(--border)" }}
                       >
                         <div className="flex justify-between pt-[10px]">
-                          <span className="text-[13px] text-[var(--text3)]">Revenus</span>
-                          <span className="text-[13px] font-medium text-[var(--green)] tabular-nums">
+                          <span className="text-[14px] text-[var(--text3)]">Revenus</span>
+                          <span className="text-[14px] font-medium text-[var(--green)] tabular-nums">
                             {fmt(m.revenus)} €
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-[13px] text-[var(--text3)]">Dépenses</span>
-                          <span className="text-[13px] font-medium text-[var(--red)] tabular-nums">
+                          <span className="text-[14px] text-[var(--text3)]">Dépenses</span>
+                          <span className="text-[14px] font-medium text-[var(--red)] tabular-nums">
                             {fmt(m.depenses)} €
                           </span>
                         </div>
                         {tauxEpargne !== null && (
                           <div className="flex justify-between">
-                            <span className="text-[13px] text-[var(--text3)]">Taux d&apos;épargne</span>
-                            <span className="text-[13px] font-medium text-[var(--text)] tabular-nums">
+                            <span className="text-[14px] text-[var(--text3)]">Taux d&apos;épargne</span>
+                            <span className="text-[14px] font-medium text-[var(--text)] tabular-nums">
                               {tauxEpargne}%
                             </span>
                           </div>
@@ -335,9 +335,9 @@ export default function DashboardContent({
                             className="flex justify-between pt-[6px]"
                             style={{ borderTop: "1px solid var(--border)" }}
                           >
-                            <span className="text-[12px] text-[var(--text3)]">vs mois précédent</span>
+                            <span className="text-[13px] text-[var(--text3)]">vs mois précédent</span>
                             <span
-                              className="text-[12px] font-semibold tabular-nums"
+                              className="text-[13px] font-semibold tabular-nums"
                               style={{ color: evolColor }}
                             >
                               {evol >= 0 ? "+" : ""}{evol.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
@@ -345,7 +345,7 @@ export default function DashboardContent({
                           </div>
                         )}
                         <button
-                          className="mt-[4px] text-[11px] text-[var(--text3)] underline text-left"
+                          className="mt-[4px] text-[12px] text-[var(--text3)] underline text-left"
                           onClick={() => router.push(`/transactions?dateFrom=${dateFrom}&dateTo=${dateTo}`)}
                         >
                           Voir les transactions →
@@ -361,7 +361,7 @@ export default function DashboardContent({
         })()}
 
         {allParMois.length === 0 && (
-          <p className="text-[13px] text-[var(--text3)] text-center py-8">
+          <p className="text-[14px] text-[var(--text3)] text-center py-8">
             Aucune donnée
           </p>
         )}

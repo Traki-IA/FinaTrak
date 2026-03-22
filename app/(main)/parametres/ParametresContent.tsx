@@ -34,7 +34,7 @@ function Toggle({ checked, disabled }: { checked: boolean; disabled?: boolean })
 
 function SoonBadge() {
   return (
-    <span className="text-[10px] font-semibold text-[var(--text3)] bg-white/[0.05] px-2 py-0.5 rounded-full">
+    <span className="text-[11px] font-semibold text-[var(--text3)] bg-white/[0.05] px-2 py-0.5 rounded-full">
       Bientôt
     </span>
   );
@@ -45,14 +45,14 @@ function SoonBadge() {
 function SectionCard({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div
-      className="mt-[10px] rounded-[14px] overflow-hidden"
+      className="mt-[8px] rounded-[14px] overflow-hidden"
       style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}
     >
       <div
         className="py-[2px] flex items-center justify-center"
         style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}
       >
-        <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{label}</span>
+        <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{label}</span>
       </div>
       <div className="divide-y divide-[var(--border)]">{children}</div>
     </div>
@@ -94,11 +94,11 @@ function SettingRow({
         <span className={danger ? "text-red-400" : "text-[var(--text2)]"}>{icon}</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-[14px] font-[500] leading-none ${danger ? "text-red-400" : "text-[var(--text)]"} ${disabled ? "opacity-50" : ""}`}>
+        <p className={`text-[15px] font-[500] leading-none ${danger ? "text-red-400" : "text-[var(--text)]"} ${disabled ? "opacity-50" : ""}`}>
           {label}
         </p>
         {subtitle && (
-          <p className={`text-[12px] text-[var(--text3)] mt-[3px] ${disabled ? "opacity-50" : ""}`}>{subtitle}</p>
+          <p className={`text-[13px] text-[var(--text3)] mt-[3px] ${disabled ? "opacity-50" : ""}`}>{subtitle}</p>
         )}
       </div>
       {right && <div className="flex-shrink-0">{right}</div>}
@@ -145,7 +145,7 @@ function PasswordForm({ onClose }: { onClose: () => void }) {
               onChange={(e) => setNewPwd(e.target.value)}
               placeholder="Nouveau mot de passe"
               autoFocus
-              className="w-full bg-white/[0.05] border border-[var(--border)] rounded-xl px-3 pr-10 py-2 text-[13px] text-[var(--text)] outline-none focus:border-orange-500/60 transition-colors placeholder:text-[var(--text3)]"
+              className="w-full bg-white/[0.05] border border-[var(--border)] rounded-xl px-3 pr-10 py-2 text-[14px] text-[var(--text)] outline-none focus:border-orange-500/60 transition-colors placeholder:text-[var(--text3)]"
             />
             <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text3)]">
               {showNew ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -159,7 +159,7 @@ function PasswordForm({ onClose }: { onClose: () => void }) {
               value={confirmPwd}
               onChange={(e) => setConfirmPwd(e.target.value)}
               placeholder="Confirmer le mot de passe"
-              className="w-full bg-white/[0.05] border border-[var(--border)] rounded-xl px-3 pr-10 py-2 text-[13px] text-[var(--text)] outline-none focus:border-orange-500/60 transition-colors placeholder:text-[var(--text3)]"
+              className="w-full bg-white/[0.05] border border-[var(--border)] rounded-xl px-3 pr-10 py-2 text-[14px] text-[var(--text)] outline-none focus:border-orange-500/60 transition-colors placeholder:text-[var(--text3)]"
             />
             <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text3)]">
               {showConfirm ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -172,14 +172,14 @@ function PasswordForm({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-2 rounded-xl text-[13px] text-[var(--text2)] bg-white/[0.03] hover:bg-white/[0.07] transition-all"
+            className="flex-1 py-2 rounded-xl text-[14px] text-[var(--text2)] bg-white/[0.03] hover:bg-white/[0.07] transition-all"
           >
             Annuler
           </button>
           <button
             type="submit"
             disabled={isPending || !newPwd || !confirmPwd}
-            className="flex-1 py-2 rounded-xl text-[13px] text-white bg-orange-500 hover:bg-orange-600 transition-all disabled:opacity-40 flex items-center justify-center gap-1.5"
+            className="flex-1 py-2 rounded-xl text-[14px] text-white bg-orange-500 hover:bg-orange-600 transition-all disabled:opacity-40 flex items-center justify-center gap-1.5"
           >
             {isPending && <Loader2 size={12} className="animate-spin" />}
             Enregistrer

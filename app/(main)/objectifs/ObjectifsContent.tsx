@@ -126,16 +126,16 @@ function SortableObjectifRow({
             <div className="w-2 h-2 rounded-full flex-shrink-0 mt-0.5" style={{ background: couleur }} />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <p className="text-[14px] font-[600] leading-none text-white">{objectif.nom}</p>
-                {atteint && <span className="text-[11px] px-1.5 py-0.5 rounded font-bold bg-emerald-500/15 text-emerald-400">✓ Atteint</span>}
+                <p className="text-[15px] font-[600] leading-none text-white">{objectif.nom}</p>
+                {atteint && <span className="text-[12px] px-1.5 py-0.5 rounded font-bold bg-emerald-500/15 text-emerald-400">✓ Atteint</span>}
               </div>
-              {objectif.date_fin && <span className="text-[12px] text-[var(--text2)] mt-0.5 block">→ {formatDate(objectif.date_fin)}</span>}
+              {objectif.date_fin && <span className="text-[13px] text-[var(--text2)] mt-0.5 block">→ {formatDate(objectif.date_fin)}</span>}
             </div>
           </div>
           <div className="flex items-center flex-shrink-0 ml-2">
             <div className="text-right">
-              <p className="text-[17px] font-[800] leading-none" style={{ color: couleur }}>{pct}%</p>
-              <p className="text-[13px] text-[var(--text2)] mt-0.5 whitespace-nowrap">
+              <p className="text-[18px] font-[800] leading-none" style={{ color: couleur }}>{pct}%</p>
+              <p className="text-[14px] text-[var(--text2)] mt-0.5 whitespace-nowrap">
                 {objectif.montant_actuel.toLocaleString("fr")} / {objectif.montant_cible.toLocaleString("fr")} €
               </p>
             </div>
@@ -156,12 +156,12 @@ function SortableObjectifRow({
             >
               <div className="mt-2.5 px-3 py-2.5 rounded-[10px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
                 <div className="flex justify-between mb-1">
-                  <span className="text-[13px] text-[var(--text2)]">Restant</span>
-                  <span className="text-[13px] font-[800]" style={{ color: couleur }}>{formatEur(restant)}</span>
+                  <span className="text-[14px] text-[var(--text2)]">Restant</span>
+                  <span className="text-[14px] font-[800]" style={{ color: couleur }}>{formatEur(restant)}</span>
                 </div>
                 <div className="flex justify-between mb-2.5">
-                  <span className="text-[13px] text-[var(--text2)]">Effort mensuel (6m)</span>
-                  <span className="text-[13px] font-[800] text-white">~{formatEur(effortMensuel)}</span>
+                  <span className="text-[14px] text-[var(--text2)]">Effort mensuel (6m)</span>
+                  <span className="text-[14px] font-[800] text-white">~{formatEur(effortMensuel)}</span>
                 </div>
                 <AnimatePresence mode="wait">
                   {showInput ? (
@@ -173,7 +173,7 @@ function SortableObjectifRow({
                       <button onClick={() => setShowInput(false)} className="px-2 py-1.5 bg-white/[0.05] text-[var(--text2)] rounded-xl text-xs">✕</button>
                     </motion.div>
                   ) : (
-                    <motion.button key="btn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setInputValue(objectif.montant_actuel.toString()); setShowInput(true); }} className="w-full py-1.5 rounded-lg text-[13px] text-[var(--text2)] bg-white/[0.03] hover:bg-white/[0.07] transition-all">
+                    <motion.button key="btn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setInputValue(objectif.montant_actuel.toString()); setShowInput(true); }} className="w-full py-1.5 rounded-lg text-[14px] text-[var(--text2)] bg-white/[0.03] hover:bg-white/[0.07] transition-all">
                       Mettre à jour la progression
                     </motion.button>
                   )}
@@ -189,13 +189,13 @@ function SortableObjectifRow({
                     <>
                       <button
                         onClick={handleDeleteConfirm}
-                        className="flex-1 py-1.5 rounded-lg text-[13px] bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-all flex items-center justify-center gap-1.5"
+                        className="flex-1 py-1.5 rounded-lg text-[14px] bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-all flex items-center justify-center gap-1.5"
                       >
                         <Check size={11} />Confirmer
                       </button>
                       <button
                         onClick={onDeleteCancel}
-                        className="flex-1 py-1.5 rounded-lg text-[13px] text-[var(--text2)] bg-white/[0.03] hover:bg-white/[0.07] transition-all flex items-center justify-center gap-1.5"
+                        className="flex-1 py-1.5 rounded-lg text-[14px] text-[var(--text2)] bg-white/[0.03] hover:bg-white/[0.07] transition-all flex items-center justify-center gap-1.5"
                       >
                         <X size={11} />Annuler
                       </button>
@@ -204,13 +204,13 @@ function SortableObjectifRow({
                     <>
                       <button
                         onClick={() => onEdit(objectif)}
-                        className="flex-1 py-1.5 rounded-lg text-[13px] text-[var(--text2)] bg-white/[0.03] hover:bg-white/[0.07] transition-all flex items-center justify-center gap-1.5"
+                        className="flex-1 py-1.5 rounded-lg text-[14px] text-[var(--text2)] bg-white/[0.03] hover:bg-white/[0.07] transition-all flex items-center justify-center gap-1.5"
                       >
                         <Pencil size={11} />Modifier
                       </button>
                       <button
                         onClick={() => onDeleteRequest(objectif.id)}
-                        className="flex-1 py-1.5 rounded-lg text-[13px] text-red-400/70 bg-white/[0.03] hover:bg-red-500/[0.08] hover:text-red-400 transition-all flex items-center justify-center gap-1.5"
+                        className="flex-1 py-1.5 rounded-lg text-[14px] text-red-400/70 bg-white/[0.03] hover:bg-red-500/[0.08] hover:text-red-400 transition-all flex items-center justify-center gap-1.5"
                       >
                         <Trash2 size={11} />Supprimer
                       </button>
@@ -287,27 +287,27 @@ function Objectifs({
 
       {/* KPI card */}
       {localObjectifs.length > 0 && (
-        <div className="mt-[10px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
+        <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
           {/* Header */}
           <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
-            <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Objectifs</span>
+            <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Objectifs</span>
           </div>
           {/* Colonnes */}
           <div className="flex">
             <div className="flex-1 text-center py-[8px] px-2 min-w-0" style={{ borderRight: "1px solid var(--border)" }}>
-              <div className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Total épargné</div>
-              <div className="text-[16px] font-semibold text-[var(--green)] tracking-tight mt-[2px] tabular-nums truncate">{formatEur(totalEpargne)}</div>
+              <div className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Total épargné</div>
+              <div className="text-[17px] font-semibold text-[var(--green)] tracking-tight mt-[2px] tabular-nums truncate">{formatEur(totalEpargne)}</div>
             </div>
             <div className="flex-1 text-center py-[8px] px-2 min-w-0">
-              <div className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Atteints</div>
-              <div className="text-[16px] font-semibold text-[var(--text)] tracking-tight mt-[2px]">{done} / {localObjectifs.length}</div>
+              <div className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Atteints</div>
+              <div className="text-[17px] font-semibold text-[var(--text)] tracking-tight mt-[2px]">{done} / {localObjectifs.length}</div>
             </div>
           </div>
           {/* Barre progression globale */}
           <div className="px-[14px] py-[8px]" style={{ borderTop: "1px solid var(--border)" }}>
             <div className="flex justify-between items-center mb-[6px]">
-              <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Progression globale</span>
-              <span className="text-[9px] font-semibold text-[var(--text2)]">{globalPct}%</span>
+              <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Progression globale</span>
+              <span className="text-[10px] font-semibold text-[var(--text2)]">{globalPct}%</span>
             </div>
             <Bar pct={globalPct} color="#22c55e" height={3} />
           </div>
@@ -318,7 +318,7 @@ function Objectifs({
         <EmptyState onAdd={() => {}} />
       ) : (
         <div
-          className="mt-[10px] rounded-[14px] overflow-hidden"
+          className="mt-[8px] rounded-[14px] overflow-hidden"
           style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}
         >
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>

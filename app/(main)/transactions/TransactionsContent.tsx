@@ -171,7 +171,7 @@ function PeriodSheet({
             <div className="w-10 h-1 rounded-full bg-[var(--border2)] mx-auto mb-5" />
 
             {/* Title */}
-            <h3 className="text-[17px] font-semibold text-[var(--text)] mb-4">
+            <h3 className="text-[18px] font-semibold text-[var(--text)] mb-4">
               Choisir une période
             </h3>
 
@@ -181,7 +181,7 @@ function PeriodSheet({
                 <button
                   key={preset.key}
                   onClick={() => setPending(preset.key)}
-                  className={`px-4 py-2 rounded-full border text-[13px] font-medium transition-all ${
+                  className={`px-4 py-2 rounded-full border text-[14px] font-medium transition-all ${
                     pending === preset.key
                       ? "border-[var(--orange)] text-[var(--orange)] bg-[rgba(249,115,22,0.10)]"
                       : "border-[var(--border)] text-[var(--text2)] bg-transparent"
@@ -204,14 +204,14 @@ function PeriodSheet({
                 >
                   <div className="flex gap-3 pt-1">
                     <div className="flex-1">
-                      <label className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em] mb-1.5 block">
+                      <label className="text-[11px] text-[var(--text3)] uppercase tracking-[0.08em] mb-1.5 block">
                         DU
                       </label>
                       <input
                         type="date"
                         value={from}
                         onChange={(e) => setFrom(e.target.value)}
-                        className="w-full py-3 px-3 rounded-[10px] border text-[13px] outline-none transition-colors"
+                        className="w-full py-3 px-3 rounded-[10px] border text-[14px] outline-none transition-colors"
                         style={{
                           background: "var(--bg3)",
                           borderColor: "var(--border)",
@@ -220,14 +220,14 @@ function PeriodSheet({
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="text-[10px] text-[var(--text3)] uppercase tracking-[0.08em] mb-1.5 block">
+                      <label className="text-[11px] text-[var(--text3)] uppercase tracking-[0.08em] mb-1.5 block">
                         AU
                       </label>
                       <input
                         type="date"
                         value={to}
                         onChange={(e) => setTo(e.target.value)}
-                        className="w-full py-3 px-3 rounded-[10px] border text-[13px] outline-none transition-colors"
+                        className="w-full py-3 px-3 rounded-[10px] border text-[14px] outline-none transition-colors"
                         style={{
                           background: "var(--bg3)",
                           borderColor: "var(--border)",
@@ -244,13 +244,13 @@ function PeriodSheet({
             <div className="flex gap-3">
               <button
                 onClick={handleReset}
-                className="flex-1 py-3 rounded-[12px] border border-[var(--border)] text-[var(--text2)] text-[14px] font-medium"
+                className="flex-1 py-3 rounded-[12px] border border-[var(--border)] text-[var(--text2)] text-[15px] font-medium"
               >
                 Réinitialiser
               </button>
               <button
                 onClick={handleApply}
-                className="flex-1 py-3 rounded-[12px] text-white text-[14px] font-semibold"
+                className="flex-1 py-3 rounded-[12px] text-white text-[15px] font-semibold"
                 style={{ background: "var(--orange)" }}
               >
                 Appliquer
@@ -309,20 +309,20 @@ function MobileTxRow({
         style={{ gridTemplateColumns: "54px 76px 1fr 68px" }}
         onClick={onRowTap}
       >
-        <span className="text-[12px] text-[var(--text2)] tabular-nums whitespace-nowrap">
+        <span className="text-[13px] text-[var(--text2)] tabular-nums whitespace-nowrap">
           {formatDate(transaction.date)}
         </span>
         <span
-          className="text-[10px] font-medium text-center block overflow-hidden truncate"
+          className="text-[11px] font-medium text-center block overflow-hidden truncate"
           style={{ borderRadius: "20px", background: bgColor, border: `1px solid ${borderCat}`, color: catTextColor, padding: "2px 0" }}
         >
           {transaction.categories?.nom ?? "—"}
         </span>
-        <span className="text-[13px] font-medium text-[var(--text)] truncate">
+        <span className="text-[14px] font-medium text-[var(--text)] truncate">
           {transaction.description ?? "—"}
         </span>
         <span
-          className="text-[13px] font-semibold tabular-nums text-right whitespace-nowrap"
+          className="text-[14px] font-semibold tabular-nums text-right whitespace-nowrap"
           style={{ color, letterSpacing: "-0.01em" }}
         >
           {isRevenu ? "+" : "−"}{fmt(transaction.montant)} €
@@ -344,13 +344,13 @@ function MobileTxRow({
                 <>
                   <button
                     onClick={() => onDeleteConfirm(transaction.id)}
-                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-bold text-[var(--red)]"
+                    className="rounded-[7px] px-3 py-[5px] text-[11px] font-bold text-[var(--red)]"
                   >
                     Confirmer la suppression
                   </button>
                   <button
                     onClick={onDeleteCancel}
-                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-bold text-[var(--text3)]"
+                    className="rounded-[7px] px-3 py-[5px] text-[11px] font-bold text-[var(--text3)]"
                   >
                     Annuler
                   </button>
@@ -359,13 +359,13 @@ function MobileTxRow({
                 <>
                   <button
                     onClick={() => { onEdit(transaction); onRowTap(); }}
-                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-bold text-[var(--text3)]"
+                    className="rounded-[7px] px-3 py-[5px] text-[11px] font-bold text-[var(--text3)]"
                   >
                     Modifier
                   </button>
                   <button
                     onClick={() => onDeleteRequest(transaction.id)}
-                    className="rounded-[7px] px-3 py-[5px] text-[10px] font-bold"
+                    className="rounded-[7px] px-3 py-[5px] text-[11px] font-bold"
                     style={{ color: "rgba(248,113,113,0.6)" }}
                   >
                     Supprimer
@@ -398,21 +398,21 @@ function CategoriesChart({ transactions }: { transactions: TTransactionWithCateg
   if (sorted.length === 0) return null;
 
   return (
-    <div className="mt-[10px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
+    <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
       <div className="flex justify-between px-[14px] py-[8px]" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
-        <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Catégories</span>
-        <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{fmt(total)} € total</span>
+        <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Catégories</span>
+        <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{fmt(total)} € total</span>
       </div>
       <div className="flex flex-col gap-[8px] px-[14px] py-[10px]">
         {sorted.map((cat) => {
           const pct = Math.round((cat.total / total) * 100);
           return (
             <div key={cat.nom} className="flex items-center gap-2">
-              <span className="text-[10px] text-[var(--text2)] w-[70px] truncate">{cat.nom}</span>
+              <span className="text-[11px] text-[var(--text2)] w-[70px] truncate">{cat.nom}</span>
               <div className="flex-1 h-[3px] bg-[var(--bg3)] rounded-[2px] overflow-hidden">
                 <div className="h-full rounded-[2px] transition-all" style={{ width: `${pct}%`, background: cat.couleur }} />
               </div>
-              <span className="text-[10px] text-[var(--text2)] w-[32px] text-right">{pct}%</span>
+              <span className="text-[11px] text-[var(--text2)] w-[32px] text-right">{pct}%</span>
             </div>
           );
         })}
@@ -537,7 +537,7 @@ export default function TransactionsContent({
               placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-2 pl-8 pr-3 bg-[var(--bg2)] rounded-[10px] border border-[var(--border)] text-[var(--text)] text-[12px] font-[inherit] outline-none transition-colors focus:border-[var(--orange)] placeholder:text-[var(--text2)]"
+              className="w-full py-2 pl-8 pr-3 bg-[var(--bg2)] rounded-[10px] border border-[var(--border)] text-[var(--text)] text-[13px] font-[inherit] outline-none transition-colors focus:border-[var(--orange)] placeholder:text-[var(--text2)]"
             />
           </div>
         </div>
@@ -547,7 +547,7 @@ export default function TransactionsContent({
           {/* Période button */}
           <button
             onClick={() => setPeriodSheetOpen(true)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-[5px] text-[11px] font-medium rounded-lg border transition-all whitespace-nowrap ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-[5px] text-[12px] font-medium rounded-lg border transition-all whitespace-nowrap ${
               isPeriodActive
                 ? "border-[var(--orange)] text-[var(--orange)] bg-[rgba(249,115,22,0.10)]"
                 : "border-[var(--border)] text-[var(--text2)] bg-transparent"
@@ -562,7 +562,7 @@ export default function TransactionsContent({
             <button
               key={tab.key}
               onClick={() => setTypeFilter(tab.key)}
-              className={`flex-1 py-[5px] text-[11px] font-medium cursor-pointer rounded-lg border transition-all bg-transparent ${
+              className={`flex-1 py-[5px] text-[12px] font-medium cursor-pointer rounded-lg border transition-all bg-transparent ${
                 typeFilter === tab.key
                   ? "border-[var(--orange)] text-[var(--orange)] bg-[rgba(249,115,22,0.10)]"
                   : "border-[var(--border)] text-[var(--text2)] hover:border-[var(--border2)] hover:text-[var(--text)]"
@@ -580,7 +580,7 @@ export default function TransactionsContent({
         <CategoriesChart transactions={filtered} />
 
         {/* Transaction list */}
-        <div className="mt-[10px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
+        <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
           <AnimatePresence mode="popLayout">
             {filtered.length === 0 ? (
               <motion.div
@@ -593,7 +593,7 @@ export default function TransactionsContent({
                 <div className="w-11 h-11 rounded-[14px] bg-[var(--bg2)] flex items-center justify-center">
                   <Search size={20} className="text-[var(--text3)]" />
                 </div>
-                <span className="text-[13px] text-[var(--text3)]">
+                <span className="text-[14px] text-[var(--text3)]">
                   Aucune transaction trouvée
                 </span>
               </motion.div>
