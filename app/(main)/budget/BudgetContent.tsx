@@ -94,7 +94,7 @@ function BudgetRow({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -12 }}
-      transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.25) }}
+      transition={{ duration: 0.2, delay: Math.min(index * 0.01, 0.1) }}
       onClick={() => onEdit(item)}
       className="flex items-center cursor-pointer"
       style={{
