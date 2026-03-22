@@ -80,12 +80,10 @@ function BudgetRow({
   const badgeBg = isAnnual ? "var(--green-bg, rgba(74,222,128,0.1))" : "var(--orange-bg, rgba(249,115,22,0.1))";
   const badgeColor = isAnnual ? "var(--green, #4ADE80)" : "var(--orange, #F97316)";
   const badgeLabel = isAnnual ? "annuel" : "mensuel";
-  const mainAmount = isAnnual
-    ? `${formatEur(annual)}/an`
-    : `${formatEur(monthly)}/mois`;
-  const subAmount = isAnnual
-    ? `${formatEur(monthly)}/mois`
-    : `${formatEur(annual)}/an`;
+  const mainValue = isAnnual ? formatEur(annual) : formatEur(monthly);
+  const mainSuffix = isAnnual ? "/an" : "/mois";
+  const subValue = isAnnual ? formatEur(monthly) : formatEur(annual);
+  const subSuffix = isAnnual ? "/mois" : "/an";
 
   return (
     <motion.div
@@ -110,20 +108,21 @@ function BudgetRow({
 
       {/* Montants */}
       <div
-        className="text-right flex-shrink-0"
-        style={{ width: 92, minWidth: 72 }}
+        className="text-right flex-shrink-0 whitespace-nowrap"
       >
         <div
-          className="text-[var(--text)]"
+          className="text-[var(--text)] flex items-baseline justify-end"
           style={{ fontSize: 13, fontWeight: 500, letterSpacing: "-0.01em" }}
         >
-          {mainAmount}
+          <span className="tabular-nums">{mainValue}</span>
+          <span className="inline-block w-[34px] text-left text-[11px]">{mainSuffix}</span>
         </div>
         <div
-          className="text-[var(--text3)]"
+          className="text-[var(--text3)] flex items-baseline justify-end"
           style={{ fontSize: 10 }}
         >
-          {subAmount}
+          <span className="tabular-nums">{subValue}</span>
+          <span className="inline-block w-[34px] text-left text-[9px]">{subSuffix}</span>
         </div>
       </div>
 
