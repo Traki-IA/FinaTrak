@@ -3,11 +3,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Receipt } from "lucide-react";
+import { Receipt, Plus } from "lucide-react";
 import { toast } from "sonner";
 import Shell from "@/components/layout/Shell";
 import LogoHeader from "@/components/ui/LogoHeader";
-import Fab from "@/components/ui/Fab";
 import BudgetModal from "./BudgetModal";
 import { toggleBudgetItem, deleteBudgetItem } from "./actions";
 import { formatEur } from "@/lib/format";
@@ -40,12 +39,12 @@ function Toggle({
       disabled={disabled}
       onClick={(e) => { e.stopPropagation(); onChange(!checked); }}
       className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${
-        checked ? "bg-orange-500" : "bg-[var(--bg3)] border border-[var(--border)]"
+        checked ? "bg-orange-500" : "bg-white/20"
       } disabled:opacity-50 disabled:cursor-not-allowed`}
     >
       <span
         className={`inline-block h-3.5 w-3.5 rounded-full shadow transition-transform ${
-          checked ? "translate-x-[18px] bg-white" : "translate-x-[2px] bg-[var(--text3)]"
+          checked ? "translate-x-[18px] bg-white" : "translate-x-[2px] bg-[var(--text2)]"
         }`}
       />
     </button>
@@ -98,7 +97,7 @@ function BudgetRow({
       style={{
         padding: "8px 14px",
         gap: "9px",
-        opacity: item.actif ? 1 : 0.4,
+        opacity: 1,
       }}
     >
       {/* Nom */}
@@ -234,7 +233,16 @@ export default function BudgetContent({
   return (
     <>
       <Shell>
-        <LogoHeader />
+        <LogoHeader
+          rightSlot={
+            <button
+              onClick={openAddModal}
+              className="w-[28px] h-[28px] rounded-lg bg-[var(--bg3)] border-none cursor-pointer flex items-center justify-center text-[var(--text2)]"
+            >
+              <Plus size={14} />
+            </button>
+          }
+        />
 
         {localItems.length === 0 ? (
           <EmptyState onAdd={openAddModal} />
@@ -298,12 +306,7 @@ export default function BudgetContent({
             </AnimatePresence>
           </>
         )}
-        {/* Spacer to avoid FAB overlap */}
-        <div className="h-[72px]" />
       </Shell>
-
-      {/* FAB */}
-      <Fab label="Charge" onClick={openAddModal} />
 
       {/* Modal */}
       <BudgetModal

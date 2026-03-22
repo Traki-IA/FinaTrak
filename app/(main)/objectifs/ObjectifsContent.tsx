@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Loader2, Target, GripVertical, Trash2, Check, X } from "lucide-react";
+import { Pencil, Loader2, Target, GripVertical, Trash2, Check, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -24,7 +24,6 @@ import { CSS } from "@dnd-kit/utilities";
 import Shell from "@/components/layout/Shell";
 import LogoHeader from "@/components/ui/LogoHeader";
 import Bar from "@/components/ui/Bar";
-import Fab from "@/components/ui/Fab";
 import ObjectifModal from "./ObjectifModal";
 import {
   deleteObjectif,
@@ -272,6 +271,7 @@ function Objectifs({
   onDeleteConfirm,
   onDeleteCancel,
   onDragEnd,
+  onAdd,
 }: ISharedObjectifsProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -280,7 +280,16 @@ function Objectifs({
 
   return (
     <Shell>
-      <LogoHeader />
+      <LogoHeader
+        rightSlot={
+          <button
+            onClick={onAdd}
+            className="w-[28px] h-[28px] rounded-lg bg-[var(--bg3)] border-none cursor-pointer flex items-center justify-center text-[var(--text2)]"
+          >
+            <Plus size={14} />
+          </button>
+        }
+      />
 
       {/* KPI card */}
       {localObjectifs.length > 0 && (
@@ -338,7 +347,6 @@ function Objectifs({
           </DndContext>
         </div>
       )}
-      <div className="h-[72px]" />
     </Shell>
   );
 }
@@ -428,9 +436,6 @@ export default function ObjectifsContent({
   return (
     <>
       <Objectifs {...sharedProps} />
-
-      {/* FAB — rendered once */}
-      <Fab label="Objectif" onClick={openAddModal} />
 
       {/* Modal — rendered once */}
       <ObjectifModal
