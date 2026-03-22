@@ -39,12 +39,12 @@ function Toggle({
       disabled={disabled}
       onClick={(e) => { e.stopPropagation(); onChange(!checked); }}
       className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${
-        checked ? "bg-orange-500" : "bg-[var(--bg3)] border border-[var(--border)]"
+        checked ? "bg-orange-500" : "bg-white/20"
       } disabled:opacity-50 disabled:cursor-not-allowed`}
     >
       <span
         className={`inline-block h-3.5 w-3.5 rounded-full shadow transition-transform ${
-          checked ? "translate-x-[18px] bg-white" : "translate-x-[2px] bg-[var(--text3)]"
+          checked ? "translate-x-[18px] bg-white" : "translate-x-[2px] bg-[var(--text2)]"
         }`}
       />
     </button>
