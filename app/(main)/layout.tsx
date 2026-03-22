@@ -1,6 +1,7 @@
 import MainLayoutShell from "@/components/MainLayoutShell";
 import { fetchComptes } from "@/lib/comptes";
 import { getActiveCompteId } from "@/lib/active-compte";
+import type { TCompte } from "@/types";
 
 export const revalidate = 30;
 
@@ -11,9 +12,10 @@ export default async function MainLayout({
 }>) {
   let activeCompteId = "";
   let needsAccountFix = false;
+  let comptes: TCompte[] = [];
 
   try {
-    const comptes = await fetchComptes();
+    comptes = await fetchComptes();
     const cookieCompteId = await getActiveCompteId();
 
     if (cookieCompteId && comptes.find((c) => c.id === cookieCompteId)) {
@@ -30,6 +32,7 @@ export default async function MainLayout({
     <MainLayoutShell
       activeCompteId={activeCompteId}
       needsAccountFix={needsAccountFix}
+      comptes={comptes}
     >
       {children}
     </MainLayoutShell>
