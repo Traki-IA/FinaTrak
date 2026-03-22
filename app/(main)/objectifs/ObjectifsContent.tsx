@@ -338,6 +338,7 @@ function Objectifs({
           </DndContext>
         </div>
       )}
+      <div className="h-[72px]" />
     </Shell>
   );
 }
