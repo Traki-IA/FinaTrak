@@ -134,26 +134,37 @@ export async function updateTransaction(
   return { success: true, objectifUpdated: false };
 }
 
+const UpsertCategorieSchema = z.object({
+  id: z.string().uuid().optional(),
+  nom: z.string().min(1, "Le nom est requis").max(50),
+  couleur: z.string().min(1, "La couleur est requise"),
+});
+
 export async function upsertCategorie(input: {
   id?: string;
   nom: string;
   couleur: string;
 }): Promise<{ success: true } | { error: string }> {
+  const parsed = UpsertCategorieSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
+  }
+
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
-  if (input.id) {
+  if (parsed.data.id) {
     const { error } = await supabase
       .from("categories")
-      .update({ nom: input.nom, couleur: input.couleur })
-      .eq("id", input.id)
+      .update({ nom: parsed.data.nom, couleur: parsed.data.couleur })
+      .eq("id", parsed.data.id)
       .eq("user_id", userId);
-    if (error) return { error: error.message };
+    if (error) return { error: "Erreur lors de la mise à jour" };
   } else {
     const { error } = await supabase
       .from("categories")
-      .insert([{ nom: input.nom, couleur: input.couleur, user_id: userId }]);
-    if (error) return { error: error.message };
+      .insert([{ nom: parsed.data.nom, couleur: parsed.data.couleur, user_id: userId }]);
+    if (error) return { error: "Erreur lors de la création" };
   }
 
   revalidatePath("/transactions");

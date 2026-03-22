@@ -120,6 +120,9 @@ export async function deleteCompte(id: string): Promise<TActionResult> {
 export async function reorderComptes(
   orderedIds: string[]
 ): Promise<TActionResult> {
+  if (!z.array(z.string().uuid()).max(100).safeParse(orderedIds).success) {
+    return { error: "Données invalides" };
+  }
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 

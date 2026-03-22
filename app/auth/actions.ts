@@ -51,7 +51,8 @@ export async function signUp(input: TAuthInput): Promise<TAuthResult> {
   });
 
   if (error) {
-    return { error: error.message };
+    console.error("[auth] signUp error:", error.message);
+    return { error: "Erreur lors de la création du compte" };
   }
 
   return {

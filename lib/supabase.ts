@@ -6,12 +6,6 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 /**
- * Client Supabase sans gestion de session (usage legacy).
- * Préférer createServerSupabaseClient() pour les opérations authentifiées.
- */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-/**
  * Client Supabase admin avec SERVICE_ROLE_KEY.
  * Contourne le RLS — à utiliser UNIQUEMENT côté serveur pour les
  * opérations d'administration (suppression de compte, etc.).
