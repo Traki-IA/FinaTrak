@@ -94,8 +94,12 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
   ];
 
   const formatY = (v: number): string => {
-    const k = Math.round(v / 100) / 10;
-    return `${k.toFixed(1)}k`;
+    const abs = Math.abs(v);
+    if (abs >= 10000) {
+      const k = Math.round(v / 1000);
+      return `${k.toLocaleString("fr-FR")} k€`;
+    }
+    return `${Math.round(v).toLocaleString("fr-FR")} €`;
   };
 
   const yStep = (yDomain[1] - yDomain[0]) / 5;
