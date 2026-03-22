@@ -145,10 +145,11 @@ export default function TransactionModal({
     setIsSubmitting(true);
 
     if (isEditMode && transaction) {
+      const editType = form.type === "virement" ? transaction.type as "depense" | "revenu" : form.type;
       const result = await updateTransaction({
         id: transaction.id,
         montant: parseFloat(form.montant),
-        type: form.type,
+        type: editType,
         categorie_id: form.categorie_id || null,
         description: form.description || null,
         date: form.date,

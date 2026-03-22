@@ -11,6 +11,7 @@ import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 import { deleteCompte } from "@/app/(main)/comptes/actions";
 import { useCompte } from "@/lib/compte-context";
 import type { ReactNode } from "react";
+import type { TCompte } from "@/types";
 
 interface ILogoHeaderProps {
   rightSlot?: ReactNode;
