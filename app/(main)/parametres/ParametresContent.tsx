@@ -217,7 +217,7 @@ export default function ParametresContent({ userEmail, userDisplayName }: IParam
             <SettingRow
               icon={<Key size={15} />}
               label="Modifier le mot de passe"
-              subtitle="••••••••"
+              subtitle="Changer votre mot de passe"
               right={
                 <ChevronRight
                   size={14}

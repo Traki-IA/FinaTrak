@@ -293,7 +293,7 @@ function Objectifs({
           <div className="flex">
             <div className="flex-1 text-center py-[8px] px-2 min-w-0" style={{ borderRight: "1px solid var(--border)" }}>
               <div className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Total épargné</div>
-              <div className="text-[17px] font-semibold text-[var(--green)] tracking-tight mt-[2px] tabular-nums truncate">{formatEur(totalEpargne)}</div>
+              <div className="text-[17px] font-semibold text-[var(--green)] tracking-tight mt-[2px] tabular-nums truncate">{totalEpargne.toLocaleString("fr-FR")} €</div>
             </div>
             <div className="flex-1 text-center py-[8px] px-2 min-w-0">
               <div className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Atteints</div>
