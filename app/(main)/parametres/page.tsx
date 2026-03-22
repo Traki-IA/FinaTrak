@@ -9,8 +9,8 @@ async function ParametresData() {
 
   return (
     <ParametresContent
-      userEmail={session.user.email ?? ""}
-      userDisplayName={session.user.user_metadata?.display_name ?? ""}
+      userEmail={session.email ?? ""}
+      userDisplayName={session.user_metadata?.display_name ?? ""}
     />
   );
 }

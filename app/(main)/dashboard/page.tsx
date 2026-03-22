@@ -27,7 +27,7 @@ async function DashboardData({
   dateFrom?: string;
   dateTo?: string;
 }) {
-  const compteId = await getActiveCompteId();
+  const compteId = (await getActiveCompteId()) ?? "";
 
   const [stats, categories, history, parMois, allParMois] = await Promise.all([
     fetchDashboardStats(compteId, period, dateFrom, dateTo),

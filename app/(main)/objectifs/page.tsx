@@ -24,10 +24,11 @@ async function ObjectifsData({
 }: {
   searchParams: TSearchParams;
 }) {
-  const [compteId, rawParams] = await Promise.all([
+  const [rawCompteId, rawParams] = await Promise.all([
     getActiveCompteId(),
     searchParams,
   ]);
+  const compteId = rawCompteId ?? "";
 
   const categoryIds = parseCategoryIds(rawParams);
 

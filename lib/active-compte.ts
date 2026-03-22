@@ -1,15 +1,15 @@
 import { cookies } from "next/headers";
 
 const COOKIE_KEY = "active_compte_id";
-const DEFAULT_COMPTE_ID = "00000000-0000-0000-0000-000000000001";
 
 /**
  * Lit le compte actif depuis le cookie (Server Component / Server Action).
- * Retourne l'UUID par défaut si aucun cookie n'est défini.
+ * Retourne null si aucun cookie n'est défini — le layout doit sélectionner
+ * le premier compte de l'utilisateur dans ce cas.
  */
-export async function getActiveCompteId(): Promise<string> {
+export async function getActiveCompteId(): Promise<string | null> {
   const cookieStore = await cookies();
-  return cookieStore.get(COOKIE_KEY)?.value ?? DEFAULT_COMPTE_ID;
+  return cookieStore.get(COOKIE_KEY)?.value ?? null;
 }
 
 /**
@@ -25,5 +25,3 @@ export async function setActiveCompteId(compteId: string): Promise<void> {
     sameSite: "lax",
   });
 }
-
-export { DEFAULT_COMPTE_ID };

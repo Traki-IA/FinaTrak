@@ -22,7 +22,7 @@ export async function updateSoldeInitial(
   }
 
   try {
-    const compteId = await getActiveCompteId();
+    const compteId = (await getActiveCompteId()) ?? "";
     await upsertSoldeInitial(compteId, parsed.data.montant);
     revalidatePath("/parametres");
     revalidatePath("/dashboard");
@@ -106,13 +106,15 @@ export async function updateCategorie(
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
   }
 
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
   const { id, ...updateData } = parsed.data;
 
   const { error } = await supabase
     .from("categories")
     .update(updateData)
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) return { error: error.message };
 
@@ -125,8 +127,13 @@ export async function deleteCategorie(id: string): Promise<TActionResult> {
     return { error: "Identifiant invalide" };
   }
 
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
-  const { error } = await supabase.from("categories").delete().eq("id", id);
+  const { error } = await supabase
+    .from("categories")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) return { error: error.message };
 

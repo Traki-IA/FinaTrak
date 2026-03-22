@@ -1,6 +1,6 @@
 import MainLayoutShell from "@/components/MainLayoutShell";
 import { fetchComptes } from "@/lib/comptes";
-import { getActiveCompteId, DEFAULT_COMPTE_ID } from "@/lib/active-compte";
+import { getActiveCompteId } from "@/lib/active-compte";
 
 export const revalidate = 30;
 
@@ -9,16 +9,18 @@ export default async function MainLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let activeCompteId = DEFAULT_COMPTE_ID;
+  let activeCompteId = "";
   let needsAccountFix = false;
 
   try {
     const comptes = await fetchComptes();
-    activeCompteId = await getActiveCompteId();
+    const cookieCompteId = await getActiveCompteId();
 
-    if (comptes.length > 0 && !comptes.find((c) => c.id === activeCompteId)) {
+    if (cookieCompteId && comptes.find((c) => c.id === cookieCompteId)) {
+      activeCompteId = cookieCompteId;
+    } else if (comptes.length > 0) {
       activeCompteId = comptes[0].id;
-      needsAccountFix = true;
+      needsAccountFix = cookieCompteId !== null;
     }
   } catch (err) {
     console.error("[layout] initialization failed:", err);
