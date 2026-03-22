@@ -87,6 +87,9 @@ export async function updateObjectifMontant(
   id: string,
   montant_actuel: number
 ): Promise<TActionResult> {
+  if (!z.string().uuid().safeParse(id).success) {
+    return { error: "Identifiant invalide" };
+  }
   if (montant_actuel < 0) return { error: "Montant invalide" };
 
   const userId = await requireUserId();
@@ -105,6 +108,9 @@ export async function updateObjectifMontant(
 }
 
 export async function deleteObjectif(id: string): Promise<TActionResult> {
+  if (!z.string().uuid().safeParse(id).success) {
+    return { error: "Identifiant invalide" };
+  }
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 

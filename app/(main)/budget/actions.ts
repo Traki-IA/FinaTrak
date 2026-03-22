@@ -107,6 +107,9 @@ export async function toggleBudgetItem(
   id: string,
   actif: boolean
 ): Promise<TActionResult> {
+  if (!z.string().uuid().safeParse(id).success) {
+    return { error: "Identifiant invalide" };
+  }
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
@@ -127,6 +130,9 @@ export async function toggleBudgetItem(
 // ── Suppression ───────────────────────────────────────────────────────────────
 
 export async function deleteBudgetItem(id: string): Promise<TActionResult> {
+  if (!z.string().uuid().safeParse(id).success) {
+    return { error: "Identifiant invalide" };
+  }
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
