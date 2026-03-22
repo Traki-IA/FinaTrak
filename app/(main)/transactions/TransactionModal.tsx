@@ -7,6 +7,8 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2, Pencil, Plus, ArrowLeft, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { insertTransaction, updateTransaction, upsertCategorie, deleteCategorie } from "./actions";
+import { useCompte } from "@/lib/compte-context";
+import { CompteIcon } from "@/components/compte-icons";
 import type { TCategorie, TObjectif, TBudgetItem, TTransactionWithCategorie } from "@/types";
 
 const COLOR_PALETTE = [
@@ -27,12 +29,13 @@ interface ITransactionModalProps {
 
 const INITIAL_FORM = {
   montant: "",
-  type: "depense" as "revenu" | "depense",
+  type: "depense" as "revenu" | "depense" | "virement",
   categorie_id: "",
   description: "",
   date: new Date().toISOString().split("T")[0],
   objectif_id: "",
   budget_item_id: "",
+  destination_compte_id: "",
 };
 
 export default function TransactionModal({
@@ -45,6 +48,8 @@ export default function TransactionModal({
   compteId,
 }: ITransactionModalProps) {
   const router = useRouter();
+  const { comptes, activeCompteId } = useCompte();
+  const otherComptes = comptes.filter((c) => c.id !== compteId);
   const isEditMode = Boolean(transaction);
 
   // Local categories state (for optimistic updates)
@@ -102,6 +107,8 @@ export default function TransactionModal({
     if (!form.montant || isNaN(montant) || montant <= 0)
       next.montant = "Montant invalide (doit être > 0)";
     if (!form.date) next.date = "La date est requise";
+    if (form.type === "virement" && !form.destination_compte_id)
+      next.destination_compte_id = "Sélectionnez un compte destination";
 
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -155,10 +162,54 @@ export default function TransactionModal({
       }
 
       toast.success("Transaction modifiée !");
+    } else if (form.type === "virement") {
+      // Virement : créer 2 transactions (dépense source + revenu destination)
+      const destinationCompte = comptes.find((c) => c.id === form.destination_compte_id);
+      const sourceCompte = comptes.find((c) => c.id === compteId);
+      const montant = parseFloat(form.montant);
+
+      // Transaction sortante (dépense sur compte source)
+      const resultOut = await insertTransaction({
+        montant,
+        type: "depense",
+        categorie_id: form.categorie_id || null,
+        description: `Virement → ${destinationCompte?.nom ?? "Autre compte"}${form.description ? ` · ${form.description}` : ""}`,
+        date: form.date,
+        compte_id: compteId,
+        objectif_id: null,
+        budget_item_id: null,
+      });
+
+      if ("error" in resultOut) {
+        setIsSubmitting(false);
+        toast.error(resultOut.error);
+        return;
+      }
+
+      // Transaction entrante (revenu sur compte destination)
+      const resultIn = await insertTransaction({
+        montant,
+        type: "revenu",
+        categorie_id: form.categorie_id || null,
+        description: `Virement ← ${sourceCompte?.nom ?? "Autre compte"}${form.description ? ` · ${form.description}` : ""}`,
+        date: form.date,
+        compte_id: form.destination_compte_id,
+        objectif_id: null,
+        budget_item_id: null,
+      });
+
+      setIsSubmitting(false);
+
+      if ("error" in resultIn) {
+        toast.error(resultIn.error);
+        return;
+      }
+
+      toast.success(`Virement de ${montant.toFixed(2)} € vers ${destinationCompte?.nom ?? "Autre compte"}`);
     } else {
       const result = await insertTransaction({
         montant: parseFloat(form.montant),
-        type: form.type,
+        type: form.type as "revenu" | "depense",
         categorie_id: form.categorie_id || null,
         description: form.description || null,
         date: form.date,
@@ -230,24 +281,70 @@ export default function TransactionModal({
             <div className="space-y-1.5">
               <label className="text-sm text-white/60 font-medium">Type</label>
               <div className="flex gap-2">
-                {(["depense", "revenu"] as const).map((t) => (
+                {(["depense", "revenu", "virement"] as const).map((t) => (
                   <button
                     key={t}
                     type="button"
-                    onClick={() => set("type", t)}
+                    onClick={() => {
+                      set("type", t);
+                      if (t !== "virement") set("destination_compte_id", "");
+                    }}
                     className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all border ${
                       form.type === t
                         ? t === "revenu"
                           ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-400"
+                          : t === "virement"
+                          ? "bg-blue-500/15 border-blue-500/40 text-blue-400"
                           : "bg-red-500/15 border-red-500/40 text-red-400"
                         : "bg-white/[0.04] border-white/[0.08] text-white/40 hover:text-white/70"
                     }`}
                   >
-                    {t === "revenu" ? "Revenu" : "Dépense"}
+                    {t === "revenu" ? "Revenu" : t === "virement" ? "Virement" : "Dépense"}
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Compte destination — virement uniquement */}
+            {form.type === "virement" && !isEditMode && (
+              <div className="space-y-1.5">
+                <label className="text-sm text-white/60 font-medium">
+                  Vers quel compte ?
+                </label>
+                {otherComptes.length === 0 ? (
+                  <p className="text-sm text-white/30 italic">Aucun autre compte disponible</p>
+                ) : (
+                  <div className="space-y-1">
+                    {otherComptes.map((compte) => (
+                      <button
+                        key={compte.id}
+                        type="button"
+                        onClick={() => set("destination_compte_id", compte.id)}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all border ${
+                          form.destination_compte_id === compte.id
+                            ? "bg-blue-500/15 border-blue-500/40 text-blue-400"
+                            : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:text-white hover:border-white/20"
+                        }`}
+                      >
+                        <span
+                          className="flex items-center justify-center w-6 h-6 rounded-md flex-shrink-0"
+                          style={{ backgroundColor: `${compte.couleur}20`, color: compte.couleur }}
+                        >
+                          <CompteIcon icone={compte.icone} size={13} strokeWidth={2} />
+                        </span>
+                        <span className="truncate">{compte.nom}</span>
+                        {form.destination_compte_id === compte.id && (
+                          <Check size={14} className="ml-auto text-blue-400 flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {errors.destination_compte_id && (
+                  <p className="text-red-400 text-xs">{errors.destination_compte_id}</p>
+                )}
+              </div>
+            )}
 
             {/* Catégorie */}
             <div className="space-y-1.5">
