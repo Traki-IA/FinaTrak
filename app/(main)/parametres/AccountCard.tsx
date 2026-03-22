@@ -110,7 +110,7 @@ export default function AccountCard({
                 <Mail size={16} />
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-white/35 uppercase tracking-widest font-medium">
+                <p className="text-[11px] text-white/35 uppercase tracking-widest font-medium">
                   Email
                 </p>
                 <p className="text-sm text-white truncate">{userEmail}</p>
@@ -123,7 +123,7 @@ export default function AccountCard({
                 <User size={16} />
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-white/35 uppercase tracking-widest font-medium">
+                <p className="text-[11px] text-white/35 uppercase tracking-widest font-medium">
                   Nom d&apos;utilisateur
                 </p>
                 {isEditingName ? (
@@ -174,7 +174,7 @@ export default function AccountCard({
                   <KeyRound size={16} />
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-white/35 uppercase tracking-widest font-medium">
+                  <p className="text-[11px] text-white/35 uppercase tracking-widest font-medium">
                     Mot de passe
                   </p>
                   {!isChangingPassword ? (

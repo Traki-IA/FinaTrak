@@ -111,7 +111,7 @@ function BudgetRow({
 
       {/* Nom */}
       <div
-        className="flex-1 min-w-0 text-[13px] font-[500] text-[var(--text)] truncate"
+        className="flex-1 min-w-0 text-[14px] font-[500] text-[var(--text)] truncate"
         style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
       >
         {item.nom}
@@ -155,7 +155,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
         <Receipt size={24} className="text-orange-400" />
       </div>
       <p className="text-[var(--text)] font-semibold mb-1">Aucune charge planifiée</p>
-      <p className="text-[var(--text3)] text-[13px] mb-6">
+      <p className="text-[var(--text3)] text-[14px] mb-6">
         Ajoutez vos charges fixes pour visualiser votre budget
       </p>
       <button
@@ -249,22 +249,22 @@ export default function BudgetContent({
         ) : (
           <>
             {/* KPIs — card harmonisée */}
-            <div className="mt-[10px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
+            <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
               {/* Header */}
               <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
-                <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Budget</span>
+                <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Budget</span>
               </div>
               {/* Colonnes */}
               <div className="flex">
                 <div className="flex-1 text-center py-[8px] px-2 min-w-0" style={{ borderRight: "1px solid var(--border)" }}>
-                  <div className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">/ mois</div>
-                  <div className="text-[16px] font-semibold text-[var(--text)] tracking-tight mt-[2px] tabular-nums truncate">
+                  <div className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">/ mois</div>
+                  <div className="text-[17px] font-semibold text-[var(--text)] tracking-tight mt-[2px] tabular-nums truncate">
                     {formatEur(totalMensuel)}
                   </div>
                 </div>
                 <div className="flex-1 text-center py-[8px] px-2 min-w-0">
-                  <div className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">/ an</div>
-                  <div className="text-[16px] font-semibold text-[var(--text)] tracking-tight mt-[2px] tabular-nums truncate">
+                  <div className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">/ an</div>
+                  <div className="text-[17px] font-semibold text-[var(--text)] tracking-tight mt-[2px] tabular-nums truncate">
                     {formatEur(totalAnnuel)}
                   </div>
                 </div>
@@ -279,12 +279,12 @@ export default function BudgetContent({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="mt-[10px] rounded-[14px] overflow-hidden"
+                  className="mt-[8px] rounded-[14px] overflow-hidden"
                   style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}
                 >
                   {/* En-tête catégorie */}
                   <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
-                    <span className="text-[9px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{cat}</span>
+                    <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{cat}</span>
                   </div>
 
                   {/* Rows */}

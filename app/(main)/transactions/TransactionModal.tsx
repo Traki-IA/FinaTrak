@@ -302,7 +302,7 @@ export default function TransactionModal({
                             />
                             {/* Palette couleurs */}
                             <div>
-                              <p className="text-[10px] text-white/40 uppercase tracking-[0.08em] mb-2">Couleur</p>
+                              <p className="text-[11px] text-white/40 uppercase tracking-[0.08em] mb-2">Couleur</p>
                               <div className="grid grid-cols-7 gap-2">
                                 {COLOR_PALETTE.map((col) => (
                                   <button
@@ -333,7 +333,7 @@ export default function TransactionModal({
                             {/* Actions */}
                             <div className="flex gap-2">
                               {catForm.id && (
-                                <button type="button" onClick={() => handleCatDelete(catForm.id!)} className="px-3 py-2 rounded-lg text-[12px] font-medium text-red-400 border border-red-400/20 hover:bg-red-400/10 transition-colors">
+                                <button type="button" onClick={() => handleCatDelete(catForm.id!)} className="px-3 py-2 rounded-lg text-[13px] font-medium text-red-400 border border-red-400/20 hover:bg-red-400/10 transition-colors">
                                   Supprimer
                                 </button>
                               )}
@@ -341,7 +341,7 @@ export default function TransactionModal({
                                 type="button"
                                 onClick={handleCatSave}
                                 disabled={catSaving || !catForm.nom.trim()}
-                                className="flex-1 py-2 rounded-lg text-[12px] font-semibold bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white transition-colors flex items-center justify-center gap-1"
+                                className="flex-1 py-2 rounded-lg text-[13px] font-semibold bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white transition-colors flex items-center justify-center gap-1"
                               >
                                 {catSaving && <Loader2 size={11} className="animate-spin" />}
                                 Enregistrer

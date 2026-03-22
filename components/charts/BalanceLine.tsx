@@ -61,7 +61,7 @@ function CustomTooltip({
         minWidth: 110,
       }}
     >
-      <div className="text-[11px] text-[var(--text3)] mb-[3px]">{label}</div>
+      <div className="text-[12px] text-[var(--text3)] mb-[3px]">{label}</div>
       <div
         className="text-[18px] font-bold leading-none"
         style={{ color: "var(--orange)" }}
@@ -75,7 +75,7 @@ function CustomTooltip({
 export default function BalanceLine({ data }: IBalanceLineProps) {
   if (data.length === 0) {
     return (
-      <div className="h-[260px] flex items-center justify-center text-[12px] text-[var(--text3)]">
+      <div className="h-[260px] flex items-center justify-center text-[13px] text-[var(--text3)]">
         Aucune donnée
       </div>
     );

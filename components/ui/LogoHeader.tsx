@@ -9,7 +9,7 @@ interface ILogoHeaderProps {
 export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
   return (
     <div className="flex items-center justify-center gap-[9px] py-1 border-b border-[var(--bg2)] relative">
-      <div className="w-[26px] h-[26px] rounded-[7px] bg-[var(--orange)] flex items-center justify-center text-[12px] font-semibold text-white">
+      <div className="w-[26px] h-[26px] rounded-[7px] bg-[var(--orange)] flex items-center justify-center text-[13px] font-semibold text-white">
         F
       </div>
       <div className="text-[15px] font-medium tracking-[-0.02em] text-[var(--text)]">
