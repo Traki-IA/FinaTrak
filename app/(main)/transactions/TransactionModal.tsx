@@ -61,12 +61,13 @@ export default function TransactionModal({
   function buildForm(t: TTransactionWithCategorie) {
     return {
       montant: t.montant.toString(),
-      type: t.type,
+      type: t.type as "revenu" | "depense" | "virement",
       categorie_id: t.categorie_id ?? "",
       description: t.description ?? "",
       date: t.date,
       objectif_id: "",
       budget_item_id: t.budget_item_id ?? "",
+      destination_compte_id: "",
     };
   }
 
@@ -163,6 +164,9 @@ export default function TransactionModal({
       }
 
       toast.success("Transaction modifiée !");
+      onOpenChange(false);
+      router.refresh();
+      return;
     } else if (form.type === "virement") {
       // Virement : créer 2 transactions (dépense source + revenu destination)
       const destinationCompte = comptes.find((c) => c.id === form.destination_compte_id);
