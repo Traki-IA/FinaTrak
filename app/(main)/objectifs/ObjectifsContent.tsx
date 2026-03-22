@@ -123,7 +123,6 @@ function SortableObjectifRow({
             <button {...attributes} {...listeners} onClick={(e) => e.stopPropagation()} className="text-white/20 cursor-grab flex-shrink-0 touch-none">
               <GripVertical size={13} />
             </button>
-            <div className="w-2 h-2 rounded-full flex-shrink-0 mt-0.5" style={{ background: couleur }} />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="text-[15px] font-[600] leading-none text-white">{objectif.nom}</p>
