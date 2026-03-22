@@ -39,9 +39,14 @@ export async function updateSoldeInitial(
 
 type TActionResult = { success: true } | { error: string };
 
+const ReorderSchema = z.array(z.string().uuid()).max(100);
+
 export async function reorderCategories(
   orderedIds: string[]
 ): Promise<TActionResult> {
+  if (!ReorderSchema.safeParse(orderedIds).success) {
+    return { error: "Données invalides" };
+  }
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
@@ -242,14 +247,16 @@ export async function deleteUserAccount(
   for (const table of tables) {
     const { error } = await admin.from(table).delete().eq("user_id", userId);
     if (error) {
-      return { error: `Erreur lors de la suppression (${table}) : ${error.message}` };
+      console.error(`[deleteAccount] Error deleting ${table}:`, error.message);
+      return { error: "Erreur lors de la suppression du compte" };
     }
   }
 
   // Supprimer le compte auth via l'API admin
   const { error: deleteAuthError } = await admin.auth.admin.deleteUser(userId);
   if (deleteAuthError) {
-    return { error: `Erreur lors de la suppression du compte : ${deleteAuthError.message}` };
+    console.error("[deleteAccount] Error deleting auth user:", deleteAuthError.message);
+    return { error: "Erreur lors de la suppression du compte" };
   }
 
   // Déconnexion + redirection

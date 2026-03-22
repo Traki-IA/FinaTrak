@@ -183,6 +183,9 @@ export async function updateBudgetItem(
 export async function reorderBudgetItems(
   orderedIds: string[]
 ): Promise<TActionResult> {
+  if (!z.array(z.string().uuid()).max(100).safeParse(orderedIds).success) {
+    return { error: "Données invalides" };
+  }
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
