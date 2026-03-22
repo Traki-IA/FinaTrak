@@ -148,13 +148,14 @@ export async function deleteCategorie(id: string): Promise<TActionResult> {
 export async function updateNavOrder(
   orderedKeys: string[]
 ): Promise<TActionResult> {
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
   const { error } = await supabase
     .from("settings")
     .upsert(
-      { cle: "nav_order", valeur: JSON.stringify(orderedKeys) },
-      { onConflict: "cle" }
+      { cle: "nav_order", valeur: JSON.stringify(orderedKeys), user_id: userId },
+      { onConflict: "cle,user_id" }
     );
 
   if (error) return { error: error.message };
