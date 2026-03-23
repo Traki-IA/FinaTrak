@@ -78,6 +78,7 @@ function labelMoisFromKey(moisKey: string): string {
 // ── Solde initial (depuis la table comptes) ──────────────────────────────────
 
 export async function fetchSoldeInitial(compteId: string): Promise<number> {
+  if (!compteId) return 0;
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
@@ -97,6 +98,7 @@ export async function fetchSoldeInitial(compteId: string): Promise<number> {
 }
 
 export async function fetchSoldeInitialIsSet(compteId: string): Promise<boolean> {
+  if (!compteId) return false;
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
@@ -141,6 +143,7 @@ export async function fetchDashboardStats(
   dateFrom?: string,
   dateTo?: string
 ): Promise<TDashboardStats> {
+  if (!compteId) return { soldeInitial: 0, soldeTotal: 0, revenus: 0, depenses: 0, epargne: 0, tauxEpargne: 0 };
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
   const { debut, fin } = resolveBounds(period, dateFrom, dateTo);
@@ -239,6 +242,7 @@ export async function fetchDepensesParCategorie(
   dateFrom?: string,
   dateTo?: string
 ): Promise<TDepenseCategorie[]> {
+  if (!compteId) return [];
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
   const { debut, fin } = resolveBounds(period, dateFrom, dateTo);
@@ -282,6 +286,7 @@ export async function fetchBalanceHistory(
   dateFrom?: string,
   dateTo?: string
 ): Promise<TBalancePoint[]> {
+  if (!compteId) return [];
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
   const { debut, fin } = resolveBounds(period, dateFrom, dateTo);
@@ -401,6 +406,7 @@ export async function fetchRevenusDepensesParMois(
   dateFrom?: string,
   dateTo?: string
 ): Promise<TBilanMois[]> {
+  if (!compteId) return [];
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
   const { debut, fin } = resolveBounds(period, dateFrom, dateTo);
@@ -443,6 +449,7 @@ export async function fetchRevenusDepensesParMois(
 export async function fetchAllRevenusDepensesParMois(
   compteId: string
 ): Promise<TBilanMois[]> {
+  if (!compteId) return [];
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
