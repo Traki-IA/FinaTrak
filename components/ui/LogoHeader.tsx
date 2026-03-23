@@ -18,7 +18,7 @@ interface ILogoHeaderProps {
 }
 
 export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
-  const { comptes, activeCompteId } = useCompte();
+  const { comptes, activeCompteId, setActiveCompteId } = useCompte();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
@@ -59,8 +59,10 @@ export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
         setSwitching(false);
         setOpen(false);
       } else {
+        setActiveCompteId(compteId);
         setOpen(false);
-        window.location.reload();
+        setSwitching(false);
+        router.refresh();
       }
     } catch {
       toast.error("Erreur lors du changement de compte");
