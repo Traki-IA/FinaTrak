@@ -311,7 +311,7 @@ export default function TransactionModal({
             </div>
 
             {/* Compte destination — virement uniquement */}
-            {form.type === "virement" && !isEditMode && (
+            {form.type === "virement" && (
               <div className="space-y-1.5">
                 <label className="text-sm text-white/60 font-medium">
                   Vers quel compte ?
