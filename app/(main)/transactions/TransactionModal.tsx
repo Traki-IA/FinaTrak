@@ -251,10 +251,10 @@ export default function TransactionModal({
         <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
 
         {/* Content */}
-        <Dialog.Content className="fixed z-50 bg-[#0f0f1a] border-white/[0.1] shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out inset-x-0 bottom-0 border-t rounded-t-2xl p-6 pb-10 max-h-[92dvh] overflow-y-auto data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md sm:border sm:rounded-2xl sm:pb-6 sm:max-h-[90dvh] sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95">
+        <Dialog.Content className="fixed z-50 bg-[#0f0f1a] border-white/[0.1] shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out inset-x-0 bottom-0 border-t rounded-t-2xl px-5 pt-4 pb-8 max-h-[92dvh] overflow-y-auto data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md sm:border sm:rounded-2xl sm:pb-5 sm:max-h-[90dvh] sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <Dialog.Title className="text-lg font-semibold text-white">
+          <div className="flex items-center justify-between mb-4">
+            <Dialog.Title className="text-base font-semibold text-white">
               {isEditMode ? "Modifier la transaction" : "Nouvelle transaction"}
             </Dialog.Title>
             <Dialog.Close className="text-white/40 hover:text-white transition-colors rounded-lg p-1 hover:bg-white/[0.06]">
@@ -262,9 +262,9 @@ export default function TransactionModal({
             </Dialog.Close>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             {/* Montant */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label className="text-sm text-white/60 font-medium">
                 Montant (€)
               </label>
@@ -275,7 +275,7 @@ export default function TransactionModal({
                 placeholder="0,00"
                 value={form.montant}
                 onChange={(e) => set("montant", e.target.value)}
-                className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-500/60 transition-colors"
+                className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors"
               />
               {errors.montant && (
                 <p className="text-red-400 text-xs">{errors.montant}</p>
@@ -283,7 +283,7 @@ export default function TransactionModal({
             </div>
 
             {/* Type */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label className="text-sm text-white/60 font-medium">Type</label>
               <div className="flex gap-2">
                 {(["depense", "revenu", "virement"] as const).map((t) => (
@@ -312,7 +312,7 @@ export default function TransactionModal({
 
             {/* Compte destination — virement uniquement */}
             {form.type === "virement" && (
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <label className="text-sm text-white/60 font-medium">
                   Vers quel compte ?
                 </label>
@@ -352,14 +352,14 @@ export default function TransactionModal({
             )}
 
             {/* Catégorie */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label className="text-sm text-white/60 font-medium">Catégorie</label>
 
               {/* Bouton sélection */}
               <button
                 type="button"
                 onClick={() => { setCatPickerOpen((v) => !v); setCatForm(null); }}
-                className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-4 py-2.5 text-sm flex items-center gap-2 text-left transition-colors hover:border-white/20"
+                className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-3 py-2 text-sm flex items-center gap-2 text-left transition-colors hover:border-white/20"
               >
                 {form.categorie_id ? (
                   <>
@@ -503,7 +503,7 @@ export default function TransactionModal({
             </div>
 
             {/* Description */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label className="text-sm text-white/60 font-medium">
                 Description{" "}
                 <span className="text-white/30 font-normal">(optionnel)</span>
@@ -514,18 +514,18 @@ export default function TransactionModal({
                 value={form.description}
                 onChange={(e) => set("description", e.target.value)}
                 maxLength={255}
-                className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-500/60 transition-colors"
+                className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors"
               />
             </div>
 
             {/* Date */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label className="text-sm text-white/60 font-medium">Date</label>
               <input
                 type="date"
                 value={form.date}
                 onChange={(e) => set("date", e.target.value)}
-                className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer"
+                className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer"
                 style={{ colorScheme: "dark" }}
               />
               {errors.date && (
@@ -535,7 +535,7 @@ export default function TransactionModal({
 
             {/* Objectif lié */}
             {objectifs.length > 0 && (
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <label className="text-sm text-white/60 font-medium">
                   Lier à un objectif{" "}
                   <span className="text-white/30 font-normal">(optionnel)</span>
@@ -546,7 +546,7 @@ export default function TransactionModal({
                     set("objectif_id", e.target.value);
                     set("budget_item_id", "");
                   }}
-                  className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer appearance-none"
+                  className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer appearance-none"
                   style={{ colorScheme: "dark" }}
                 >
                   <option value="" className="bg-[#0f0f1a]">
@@ -579,7 +579,7 @@ export default function TransactionModal({
                     );
                     if (linkedBudgetItems.length === 0) return null;
                     return (
-                      <div className="space-y-1.5">
+                      <div className="space-y-1">
                         <label className="text-sm text-white/60 font-medium">
                           Ligne de budget{" "}
                           <span className="text-white/30 font-normal">
@@ -589,7 +589,7 @@ export default function TransactionModal({
                         <select
                           value={form.budget_item_id}
                           onChange={(e) => set("budget_item_id", e.target.value)}
-                          className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer appearance-none"
+                          className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer appearance-none"
                           style={{ colorScheme: "dark" }}
                         >
                           <option value="" className="bg-[#0f0f1a]">
@@ -626,7 +626,7 @@ export default function TransactionModal({
                       (apres / obj.montant_cible) * 100
                     );
                     return (
-                      <div className="bg-white/[0.03] border border-white/[0.07] rounded-xl px-3 py-2.5 text-xs space-y-1.5">
+                      <div className="bg-white/[0.03] border border-white/[0.07] rounded-xl px-3 py-2.5 text-xs space-y-1">
                         <p className="text-white/50">
                           Progression après ajout :
                         </p>
