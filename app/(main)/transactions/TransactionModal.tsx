@@ -533,8 +533,8 @@ export default function TransactionModal({
               )}
             </div>
 
-            {/* Objectif lié — création uniquement */}
-            {!isEditMode && objectifs.length > 0 && (
+            {/* Objectif lié */}
+            {objectifs.length > 0 && (
               <div className="space-y-1.5">
                 <label className="text-sm text-white/60 font-medium">
                   Lier à un objectif{" "}
