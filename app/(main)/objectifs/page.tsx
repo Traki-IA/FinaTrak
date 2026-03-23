@@ -30,6 +30,16 @@ async function ObjectifsData({
   ]);
   const compteId = rawCompteId ?? "";
 
+  if (!compteId) {
+    return (
+      <ObjectifsContent
+        objectifs={[]}
+        categories={[]}
+        compteId=""
+      />
+    );
+  }
+
   const categoryIds = parseCategoryIds(rawParams);
 
   const [objectifs, categories] = await Promise.all([

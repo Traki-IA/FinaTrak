@@ -29,6 +29,21 @@ async function DashboardData({
 }) {
   const compteId = (await getActiveCompteId()) ?? "";
 
+  if (!compteId) {
+    return (
+      <DashboardContent
+        stats={{ soldeInitial: 0, soldeTotal: 0, revenus: 0, depenses: 0, epargne: 0, tauxEpargne: 0 }}
+        categories={[]}
+        history={[]}
+        parMois={[]}
+        allParMois={[]}
+        period={period}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+      />
+    );
+  }
+
   const [stats, categories, history, parMois, allParMois] = await Promise.all([
     fetchDashboardStats(compteId, period, dateFrom, dateTo),
     fetchDepensesParCategorie(compteId, period, dateFrom, dateTo),

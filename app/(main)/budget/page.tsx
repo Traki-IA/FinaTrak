@@ -11,6 +11,17 @@ export const revalidate = 30;
 async function BudgetData() {
   const compteId = (await getActiveCompteId()) ?? "";
 
+  if (!compteId) {
+    return (
+      <BudgetContent
+        items={[]}
+        categories={[]}
+        objectifs={[]}
+        compteId=""
+      />
+    );
+  }
+
   const [items, categories, objectifs] = await Promise.all([
     fetchBudgetItems(compteId),
     fetchCategories(),

@@ -54,6 +54,18 @@ async function TransactionsData({
   ]);
   const compteId = rawCompteId ?? "";
 
+  if (!compteId) {
+    return (
+      <TransactionsContent
+        transactions={[]}
+        categories={[]}
+        objectifs={[]}
+        budgetItems={[]}
+        compteId=""
+      />
+    );
+  }
+
   const filters = parseFilters(rawParams);
 
   const [transactions, categories, objectifs, budgetItems] = await Promise.all([
