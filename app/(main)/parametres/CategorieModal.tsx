@@ -159,19 +159,19 @@ export default function CategorieModal({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-2rem)] max-w-md bg-[#111122] border border-white/[0.08] rounded-2xl p-6 shadow-2xl">
+        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <Dialog.Content className="fixed z-50 bg-[#0f0f1a] border-white/[0.1] shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out inset-x-0 bottom-0 border-t rounded-t-2xl px-5 pt-4 pb-8 max-h-[92dvh] overflow-y-auto data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md sm:border sm:rounded-2xl sm:pb-5 sm:max-h-[90dvh] sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <Dialog.Title className="text-lg font-semibold text-white">
+          <div className="flex items-center justify-between mb-4">
+            <Dialog.Title className="text-base font-semibold text-white">
               {isEditMode ? "Modifier la catégorie" : "Nouvelle catégorie"}
             </Dialog.Title>
-            <Dialog.Close className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.07] transition-colors">
+            <Dialog.Close className="text-white/40 hover:text-white transition-colors rounded-lg p-1 hover:bg-white/[0.06]">
               <X size={18} />
             </Dialog.Close>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3">
             {/* Nom */}
             <div>
               <label className="block text-sm text-white/60 mb-1.5">Nom</label>
@@ -182,7 +182,7 @@ export default function CategorieModal({
                 placeholder="Ex : Alimentation"
                 className={`w-full bg-white/[0.05] border ${
                   errors.nom ? "border-red-500/60" : "border-white/[0.1]"
-                } text-white rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-orange-500/60 transition-colors placeholder:text-white/20`}
+                } text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors placeholder:text-white/20`}
               />
               {errors.nom && (
                 <p className="text-red-400 text-xs mt-1">{errors.nom}</p>
