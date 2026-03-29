@@ -105,10 +105,8 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
   const yStep = (yDomain[1] - yDomain[0]) / 5;
   const yLevels = [1, 2, 3, 4].map((i) => Math.round(yDomain[0] + yStep * i));
 
-  const isDaily = data.length > 12;
-  const xInterval = isDaily
-    ? Math.max(1, Math.floor(data.length / 5))
-    : "preserveStartEnd";
+  // Toutes les périodes sont journalières — adapter l'intervalle selon la densité
+  const xInterval = Math.max(1, Math.floor(data.length / 5));
 
   return (
     <div className="h-[210px] relative">
@@ -157,7 +155,7 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
           ))}
 
           <Area
-            type={isDaily ? "monotone" : "linear"}
+            type="monotone"
             dataKey="solde"
             stroke="var(--orange)"
             strokeWidth={1.5}

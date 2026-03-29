@@ -319,75 +319,33 @@ export async function fetchBalanceHistory(
     throw new Error(`fetchBalanceHistory: ${error.message}`);
   }
 
-  // ── Granularité journalière pour "1m" ────────────────────────────────────
-  if (period === "1m") {
-    const dayDeltas = new Map<string, { net: number; depenses: number }>();
-
-    for (const row of data ?? []) {
-      const dateKey = (row.date as string).slice(0, 10);
-      const entry = dayDeltas.get(dateKey) ?? { net: 0, depenses: 0 };
-      if (row.type === "revenu") {
-        entry.net += Number(row.montant);
-      } else {
-        entry.net -= Number(row.montant);
-        entry.depenses += Number(row.montant);
-      }
-      dayDeltas.set(dateKey, entry);
-    }
-
-    const result: TBalancePoint[] = [];
-    let cumulative = runningBalance;
-    const todayStr = new Date().toISOString().split("T")[0];
-    const loopEnd = new Date(fin < todayStr ? fin : todayStr);
-    const cur = new Date(debut);
-
-    while (cur <= loopEnd) {
-      const dateKey = cur.toISOString().split("T")[0];
-      const d = dayDeltas.get(dateKey) ?? { net: 0, depenses: 0 };
-      cumulative += d.net;
-      result.push({ mois: labelJour(dateKey), solde: cumulative, depenses: d.depenses });
-      cur.setDate(cur.getDate() + 1);
-    }
-
-    return result;
-  }
-
-  // ── Granularité mensuelle pour 3m, 6m, 1a ────────────────────────────────
-  const deltas = new Map<string, { net: number; depenses: number }>();
+  // ── Granularité journalière pour toutes les périodes ────────────────────
+  const dayDeltas = new Map<string, { net: number; depenses: number }>();
 
   for (const row of data ?? []) {
-    const mois = labelMois(row.date as string);
-    const entry = deltas.get(mois) ?? { net: 0, depenses: 0 };
-
+    const dateKey = (row.date as string).slice(0, 10);
+    const entry = dayDeltas.get(dateKey) ?? { net: 0, depenses: 0 };
     if (row.type === "revenu") {
       entry.net += Number(row.montant);
     } else {
       entry.net -= Number(row.montant);
       entry.depenses += Number(row.montant);
     }
-
-    deltas.set(mois, entry);
+    dayDeltas.set(dateKey, entry);
   }
 
-  // Générer tous les mois de la fenêtre (debut → fin) pour combler les trous
-  const months: string[] = [];
-  const periodStart = new Date(debut);
-  const loopEnd = new Date(fin);
-  let cur = new Date(periodStart.getFullYear(), periodStart.getMonth(), 1);
-
-  while (cur <= loopEnd) {
-    months.push(labelMois(cur.toISOString().split("T")[0]));
-    cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
-  }
-
-  // Convertir en solde cumulatif réel, mois par mois
   const result: TBalancePoint[] = [];
   let cumulative = runningBalance;
+  const todayStr = new Date().toISOString().split("T")[0];
+  const loopEnd = new Date(fin < todayStr ? fin : todayStr);
+  const cur = new Date(debut);
 
-  for (const mois of months) {
-    const d = deltas.get(mois) ?? { net: 0, depenses: 0 };
+  while (cur <= loopEnd) {
+    const dateKey = cur.toISOString().split("T")[0];
+    const d = dayDeltas.get(dateKey) ?? { net: 0, depenses: 0 };
     cumulative += d.net;
-    result.push({ mois, solde: cumulative, depenses: d.depenses });
+    result.push({ mois: labelJour(dateKey), solde: cumulative, depenses: d.depenses });
+    cur.setDate(cur.getDate() + 1);
   }
 
   return result;
