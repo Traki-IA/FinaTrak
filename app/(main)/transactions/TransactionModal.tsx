@@ -48,7 +48,7 @@ export default function TransactionModal({
   compteId,
 }: ITransactionModalProps) {
   const router = useRouter();
-  const { comptes, activeCompteId } = useCompte();
+  const { comptes } = useCompte();
   const otherComptes = comptes.filter((c) => c.id !== compteId);
   const isEditMode = Boolean(transaction);
 
