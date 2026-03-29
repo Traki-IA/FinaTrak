@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -59,15 +59,31 @@ export default function TransactionModal({
   const [catSaving, setCatSaving] = useState(false);
 
   function buildForm(t: TTransactionWithCategorie) {
+    // Détecter les virements par le préfixe de description
+    const isVirementSortant = t.description?.startsWith("Virement →");
+    const isVirementEntrant = t.description?.startsWith("Virement ←");
+    const isVirement = isVirementSortant || isVirementEntrant;
+
+    // Tenter de matcher le compte destination depuis la description "Virement → NomCompte · ..."
+    let destinationCompteId = "";
+    if (isVirementSortant && t.description) {
+      const match = t.description.match(/^Virement → (.+?)(?:\s·|$)/);
+      if (match) {
+        const nomCompte = match[1].trim();
+        const found = comptes.find((c) => c.nom === nomCompte);
+        if (found) destinationCompteId = found.id;
+      }
+    }
+
     return {
       montant: t.montant.toString(),
-      type: t.type as "revenu" | "depense" | "virement",
+      type: isVirement ? ("virement" as const) : (t.type as "revenu" | "depense"),
       categorie_id: t.categorie_id ?? "",
       description: t.description ?? "",
       date: t.date,
       objectif_id: "",
       budget_item_id: t.budget_item_id ?? "",
-      destination_compte_id: "",
+      destination_compte_id: destinationCompteId,
     };
   }
 
@@ -77,13 +93,14 @@ export default function TransactionModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Sync form when transaction prop changes (React render-time adjustment)
-  const [prevTransactionId, setPrevTransactionId] = useState(transaction?.id);
-  if (transaction?.id !== prevTransactionId) {
-    setPrevTransactionId(transaction?.id);
-    setForm(transaction ? buildForm(transaction) : INITIAL_FORM);
-    setErrors({});
-  }
+  // Sync form à chaque ouverture du modal
+  useEffect(() => {
+    if (open) {
+      setForm(transaction ? buildForm(transaction) : INITIAL_FORM);
+      setErrors({});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, transaction?.id]);
 
   function set<K extends keyof typeof INITIAL_FORM>(
     key: K,
@@ -94,10 +111,6 @@ export default function TransactionModal({
   }
 
   function handleOpenChange(nextOpen: boolean) {
-    if (!nextOpen) {
-      setForm(INITIAL_FORM);
-      setErrors({});
-    }
     onOpenChange(nextOpen);
   }
 
