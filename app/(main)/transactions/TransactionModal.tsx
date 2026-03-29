@@ -146,24 +146,66 @@ export default function TransactionModal({
     setIsSubmitting(true);
 
     if (isEditMode && transaction) {
-      const editType = form.type === "virement" ? transaction.type as "depense" | "revenu" : form.type;
-      const result = await updateTransaction({
-        id: transaction.id,
-        montant: parseFloat(form.montant),
-        type: editType,
-        categorie_id: form.categorie_id || null,
-        description: form.description || null,
-        date: form.date,
-      });
+      if (form.type === "virement") {
+        // Modifier la transaction existante en dépense sortante + créer le revenu entrant
+        const destinationCompte = comptes.find((c) => c.id === form.destination_compte_id);
+        const sourceCompte = comptes.find((c) => c.id === compteId);
+        const montant = parseFloat(form.montant);
 
-      setIsSubmitting(false);
+        const resultUpdate = await updateTransaction({
+          id: transaction.id,
+          montant,
+          type: "depense",
+          categorie_id: form.categorie_id || null,
+          description: `Virement → ${destinationCompte?.nom ?? "Autre compte"}${form.description ? ` · ${form.description}` : ""}`,
+          date: form.date,
+        });
 
-      if ("error" in result) {
-        toast.error(result.error);
-        return;
+        if ("error" in resultUpdate) {
+          setIsSubmitting(false);
+          toast.error(resultUpdate.error);
+          return;
+        }
+
+        const resultIn = await insertTransaction({
+          montant,
+          type: "revenu",
+          categorie_id: form.categorie_id || null,
+          description: `Virement ← ${sourceCompte?.nom ?? "Autre compte"}${form.description ? ` · ${form.description}` : ""}`,
+          date: form.date,
+          compte_id: form.destination_compte_id,
+          objectif_id: null,
+          budget_item_id: null,
+        });
+
+        setIsSubmitting(false);
+
+        if ("error" in resultIn) {
+          toast.error(resultIn.error);
+          return;
+        }
+
+        toast.success(`Virement de ${montant.toFixed(2)} € vers ${destinationCompte?.nom ?? "Autre compte"}`);
+      } else {
+        const result = await updateTransaction({
+          id: transaction.id,
+          montant: parseFloat(form.montant),
+          type: form.type,
+          categorie_id: form.categorie_id || null,
+          description: form.description || null,
+          date: form.date,
+        });
+
+        setIsSubmitting(false);
+
+        if ("error" in result) {
+          toast.error(result.error);
+          return;
+        }
+
+        toast.success("Transaction modifiée !");
       }
 
-      toast.success("Transaction modifiée !");
       onOpenChange(false);
       router.refresh();
       return;
@@ -292,7 +334,12 @@ export default function TransactionModal({
                     type="button"
                     onClick={() => {
                       set("type", t);
-                      if (t !== "virement") set("destination_compte_id", "");
+                      if (t !== "virement") {
+                        set("destination_compte_id", "");
+                      } else if (otherComptes.length === 1) {
+                        // Auto-sélectionner le seul compte disponible
+                        set("destination_compte_id", otherComptes[0].id);
+                      }
                     }}
                     className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all border ${
                       form.type === t
