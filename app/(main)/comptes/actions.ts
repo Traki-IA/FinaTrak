@@ -147,20 +147,13 @@ export async function switchCompte(compteId: string): Promise<TActionResult> {
     return { error: "Identifiant invalide" };
   }
 
-  const userId = await requireUserId();
+  // getSession() lit le JWT depuis le cookie sans appel réseau (contrairement à getUser())
+  // Le RLS Supabase protège toutes les requêtes de données suivantes par user_id
   const supabase = await createServerSupabaseClient();
-
-  const { data: compte } = await supabase
-    .from("comptes")
-    .select("id")
-    .eq("id", compteId)
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (!compte) return { error: "Compte introuvable" };
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return { error: "Non authentifié" };
 
   await setActiveCompteId(compteId);
-  revalidatePath("/", "layout");
   return { success: true };
 }
 

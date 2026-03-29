@@ -25,9 +25,10 @@ export default function AccountSwitcher({ comptes, activeCompteId, collapsed }: 
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [compteModalOpen, setCompteModalOpen] = useState(false);
   const [editingCompte, setEditingCompte] = useState<TCompte | undefined>(undefined);
+  const [optimisticActiveId, setOptimisticActiveId] = useState(activeCompteId);
   const ref = useRef<HTMLDivElement>(null);
 
-  const activeCompte = comptes.find((c) => c.id === activeCompteId) ?? comptes[0];
+  const activeCompte = comptes.find((c) => c.id === optimisticActiveId) ?? comptes[0];
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -41,18 +42,21 @@ export default function AccountSwitcher({ comptes, activeCompteId, collapsed }: 
   }, []);
 
   function handleSwitch(compteId: string) {
-    if (compteId === activeCompteId) {
+    if (compteId === optimisticActiveId) {
       setOpen(false);
       return;
     }
 
     setOpen(false);
+    setOptimisticActiveId(compteId); // Mise à jour instantanée de l'UI
+
     startTransition(async () => {
       const result = await switchCompte(compteId);
       if ("error" in result) {
         toast.error(result.error);
+        setOptimisticActiveId(activeCompteId); // Annuler si erreur
       } else {
-        router.refresh();
+        router.refresh(); // Recharger les données en arrière-plan
       }
     });
   }
