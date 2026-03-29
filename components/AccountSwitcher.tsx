@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Check, Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 import CompteModal from "@/components/CompteModal";
 import { CompteIcon, ICON_MAP } from "@/components/compte-icons";
-import { deleteCompte } from "@/app/(main)/comptes/actions";
+import { deleteCompte, switchCompte } from "@/app/(main)/comptes/actions";
 import type { TCompte } from "@/types";
 
 interface IAccountSwitcherProps {
@@ -20,7 +20,8 @@ interface IAccountSwitcherProps {
 export default function AccountSwitcher({ comptes, activeCompteId, collapsed }: IAccountSwitcherProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [switching, setSwitching] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const switching = isPending;
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [compteModalOpen, setCompteModalOpen] = useState(false);
   const [editingCompte, setEditingCompte] = useState<TCompte | undefined>(undefined);
@@ -39,35 +40,21 @@ export default function AccountSwitcher({ comptes, activeCompteId, collapsed }: 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  async function handleSwitch(compteId: string) {
+  function handleSwitch(compteId: string) {
     if (compteId === activeCompteId) {
       setOpen(false);
       return;
     }
 
-    setSwitching(true);
-
-    try {
-      const res = await fetch("/api/switch-compte", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ compteId }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        toast.error(data.error ?? "Erreur lors du changement de compte");
-        setSwitching(false);
-        setOpen(false);
+    setOpen(false);
+    startTransition(async () => {
+      const result = await switchCompte(compteId);
+      if ("error" in result) {
+        toast.error(result.error);
       } else {
-        setOpen(false);
-        window.location.reload();
+        router.refresh();
       }
-    } catch {
-      toast.error("Erreur lors du changement de compte");
-      setSwitching(false);
-      setOpen(false);
-    }
+    });
   }
 
   function openAddModal() {
