@@ -2,14 +2,17 @@ import { Suspense } from "react";
 import { fetchBudgetItems } from "@/lib/budget";
 import { fetchCategories } from "@/lib/transactions";
 import { fetchObjectifs } from "@/lib/objectifs";
+import { fetchComptes } from "@/lib/comptes";
 import BudgetContent from "./BudgetContent";
 import BudgetSkeleton from "./BudgetSkeleton";
-import { getActiveCompteId } from "@/lib/active-compte";
 
-export const revalidate = 30;
+export const revalidate = 0;
 
-async function BudgetData() {
-  const compteId = (await getActiveCompteId()) ?? "";
+type TRawSearchParams = Record<string, string | string[] | undefined>;
+
+async function BudgetData({ searchParams }: { searchParams: Promise<TRawSearchParams> }) {
+  const [comptes, rawParams] = await Promise.all([fetchComptes(), searchParams]);
+  const compteId = comptes.find((c) => c.id === rawParams.compte)?.id ?? comptes[0]?.id ?? "";
 
   const [items, categories, objectifs] = await Promise.all([
     fetchBudgetItems(compteId),
@@ -27,10 +30,10 @@ async function BudgetData() {
   );
 }
 
-export default function BudgetPage() {
+export default function BudgetPage({ searchParams }: { searchParams: Promise<TRawSearchParams> }) {
   return (
     <Suspense fallback={<BudgetSkeleton />}>
-      <BudgetData />
+      <BudgetData searchParams={searchParams} />
     </Suspense>
   );
 }

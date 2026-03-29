@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -20,15 +20,18 @@ const NAV_ITEMS = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const compteId = searchParams.get("compte");
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-[#111111]/95 backdrop-blur border-t border-[#181818] flex z-30 px-1 pb-[max(8px,env(safe-area-inset-bottom))]">
       {NAV_ITEMS.map(({ key, href, label, icon: Icon }) => {
         const isActive = pathname === href;
+        const fullHref = compteId ? `${href}?compte=${compteId}` : href;
         return (
           <Link
             key={key}
-            href={href}
+            href={fullHref}
             prefetch={true}
             className={`flex-1 flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium transition-colors ${
               isActive ? "text-[var(--orange)]" : "text-[var(--text3)]"

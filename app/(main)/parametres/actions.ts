@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase";
 import { upsertSoldeInitial } from "@/lib/dashboard";
-import { getActiveCompteId } from "@/lib/active-compte";
 import { requireUserId } from "@/lib/auth";
 
 const SoldeInitialSchema = z.object({
@@ -13,6 +12,7 @@ const SoldeInitialSchema = z.object({
 });
 
 export async function updateSoldeInitial(
+  compteId: string,
   montant: number
 ): Promise<{ success: boolean; error?: string }> {
   const parsed = SoldeInitialSchema.safeParse({ montant });
@@ -21,8 +21,11 @@ export async function updateSoldeInitial(
     return { success: false, error: "Montant invalide" };
   }
 
+  if (!z.string().uuid().safeParse(compteId).success) {
+    return { success: false, error: "Compte invalide" };
+  }
+
   try {
-    const compteId = (await getActiveCompteId()) ?? "";
     await upsertSoldeInitial(compteId, parsed.data.montant);
     revalidatePath("/parametres");
     revalidatePath("/dashboard");

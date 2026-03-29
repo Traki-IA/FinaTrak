@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import { fetchObjectifsWithBudgetLines } from "@/lib/objectifs";
 import { fetchCategories } from "@/lib/transactions";
+import { fetchComptes } from "@/lib/comptes";
 import ObjectifsContent from "./ObjectifsContent";
 import ObjectifsSkeleton from "./ObjectifsSkeleton";
-import { getActiveCompteId } from "@/lib/active-compte";
 
-export const revalidate = 30;
+export const revalidate = 0;
 
 type TSearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -24,11 +24,8 @@ async function ObjectifsData({
 }: {
   searchParams: TSearchParams;
 }) {
-  const [rawCompteId, rawParams] = await Promise.all([
-    getActiveCompteId(),
-    searchParams,
-  ]);
-  const compteId = rawCompteId ?? "";
+  const [comptes, rawParams] = await Promise.all([fetchComptes(), searchParams]);
+  const compteId = comptes.find((c) => c.id === rawParams.compte)?.id ?? comptes[0]?.id ?? "";
 
   const categoryIds = parseCategoryIds(rawParams);
 
@@ -37,7 +34,6 @@ async function ObjectifsData({
     fetchCategories(),
   ]);
 
-  // Filtrer les objectifs dont au moins 1 budget_item correspond à une catégorie sélectionnée
   const filteredObjectifs =
     categoryIds.length > 0
       ? objectifs.filter((o) =>

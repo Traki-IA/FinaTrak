@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Check, Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { CompteIcon } from "@/components/compte-icons";
 import CompteModal from "@/components/CompteModal";
 import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
@@ -18,17 +18,20 @@ interface ILogoHeaderProps {
 }
 
 export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
-  const { comptes, activeCompteId } = useCompte();
+  const { comptes } = useCompte();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const compteParam = searchParams.get("compte");
+  const activeCompte = comptes.find((c) => c.id === compteParam) ?? comptes[0];
+  const hasComptes = comptes && comptes.length > 0 && activeCompte;
+
   const [open, setOpen] = useState(false);
-  const [switching, setSwitching] = useState(false);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [compteModalOpen, setCompteModalOpen] = useState(false);
   const [editingCompte, setEditingCompte] = useState<TCompte | undefined>(undefined);
   const ref = useRef<HTMLDivElement>(null);
-
-  const activeCompte = comptes?.find((c) => c.id === activeCompteId) ?? comptes?.[0];
-  const hasComptes = comptes && comptes.length > 0 && activeCompte;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -41,32 +44,15 @@ export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  async function handleSwitch(compteId: string) {
-    if (compteId === activeCompteId) {
+  function handleSwitch(compteId: string) {
+    if (compteId === activeCompte?.id) {
       setOpen(false);
       return;
     }
-    setSwitching(true);
-    try {
-      const res = await fetch("/api/switch-compte", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ compteId }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        toast.error(data.error ?? "Erreur lors du changement de compte");
-        setSwitching(false);
-        setOpen(false);
-      } else {
-        setOpen(false);
-        window.location.reload();
-      }
-    } catch {
-      toast.error("Erreur lors du changement de compte");
-      setSwitching(false);
-      setOpen(false);
-    }
+    setOpen(false);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("compte", compteId);
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   function openAddModal() {
@@ -89,11 +75,18 @@ export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
       toast.error(result.error);
     } else {
       toast.success("Compte supprimé");
-      router.refresh();
+      const remaining = comptes.filter((c) => c.id !== id);
+      const fallback = remaining[0];
+      if (fallback) {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("compte", fallback.id);
+        router.push(`${pathname}?${params.toString()}`);
+      } else {
+        router.refresh();
+      }
     }
   }
 
-  // Fallback: pas de comptes passés → afficher le logo classique
   if (!hasComptes) {
     return (
       <div className="flex items-center justify-center gap-[9px] py-1 border-b border-[var(--bg2)] relative">
@@ -104,9 +97,7 @@ export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
           Fina<span className="text-[var(--orange)] font-medium">Trak</span>
         </div>
         {rightSlot && (
-          <div className="absolute right-0 top-1/2 -translate-y-1/2">
-            {rightSlot}
-          </div>
+          <div className="absolute right-0 top-1/2 -translate-y-1/2">{rightSlot}</div>
         )}
       </div>
     );
@@ -115,10 +106,8 @@ export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
   return (
     <div ref={ref} className="relative">
       <div className="flex items-center py-1 border-b border-[var(--bg2)] relative">
-        {/* Compte actif — cliquable */}
         <button
           onClick={() => setOpen((prev) => !prev)}
-          disabled={switching}
           className="flex items-center gap-[8px] px-1 py-0.5 rounded-lg hover:bg-white/[0.04] transition-colors mx-auto"
         >
           <span
@@ -136,15 +125,11 @@ export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
           />
         </button>
 
-        {/* Right slot (bouton +) */}
         {rightSlot && (
-          <div className="absolute right-0 top-1/2 -translate-y-1/2">
-            {rightSlot}
-          </div>
+          <div className="absolute right-0 top-1/2 -translate-y-1/2">{rightSlot}</div>
         )}
       </div>
 
-      {/* Dropdown */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -168,7 +153,6 @@ export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
                 >
                   <button
                     onClick={() => handleSwitch(compte.id)}
-                    disabled={switching}
                     className="flex items-center gap-2.5 flex-1 min-w-0"
                   >
                     <span
@@ -181,7 +165,7 @@ export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
                     {isActive && <Check size={14} className="text-[var(--orange)] flex-shrink-0" />}
                   </button>
 
-                  <div className={`flex items-center gap-0.5 flex-shrink-0 ${isConfirming ? "opacity-100" : "opacity-0 group-hover:opacity-100"} transition-opacity`}>
+                  <div className={`flex items-center gap-0.5 flex-shrink-0 ${isConfirming ? "opacity-100" : "opacity-40 hover:opacity-100"} transition-opacity`}>
                     {!isConfirming && (
                       <button
                         onClick={(e) => openEditModal(compte, e)}
@@ -216,7 +200,6 @@ export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
         )}
       </AnimatePresence>
 
-      {/* Modal Compte */}
       <CompteModal
         key={editingCompte?.id ?? "new"}
         open={compteModalOpen}

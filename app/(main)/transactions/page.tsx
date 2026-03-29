@@ -2,29 +2,20 @@ import { Suspense } from "react";
 import { fetchAllTransactions, fetchCategories } from "@/lib/transactions";
 import { fetchObjectifs } from "@/lib/objectifs";
 import { fetchBudgetItems } from "@/lib/budget";
+import { fetchComptes } from "@/lib/comptes";
 import TransactionsContent from "./TransactionsContent";
 import TransactionsSkeleton from "./TransactionsSkeleton";
-import { getActiveCompteId } from "@/lib/active-compte";
 import type { TTransactionFilters } from "@/types";
 
-export const revalidate = 30;
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
+export const revalidate = 0;
 
 type TRawSearchParams = Record<string, string | string[] | undefined>;
 
 function parseFilters(params: TRawSearchParams): TTransactionFilters {
   const filters: TTransactionFilters = {};
-
-  if (typeof params.dateDebut === "string" && params.dateDebut) {
-    filters.dateDebut = params.dateDebut;
-  }
-  if (typeof params.dateFin === "string" && params.dateFin) {
-    filters.dateFin = params.dateFin;
-  }
-  if (params.type === "depense" || params.type === "revenu") {
-    filters.type = params.type;
-  }
+  if (typeof params.dateDebut === "string" && params.dateDebut) filters.dateDebut = params.dateDebut;
+  if (typeof params.dateFin === "string" && params.dateFin) filters.dateFin = params.dateFin;
+  if (params.type === "depense" || params.type === "revenu") filters.type = params.type;
   if (typeof params.categories === "string" && params.categories) {
     const ids = params.categories.split(",").filter(Boolean);
     if (ids.length > 0) filters.categorie_ids = ids;
@@ -37,22 +28,12 @@ function parseFilters(params: TRawSearchParams): TTransactionFilters {
     const n = Number(params.montantMax);
     if (!Number.isNaN(n)) filters.montant_max = n;
   }
-
   return filters;
 }
 
-// ── Data fetcher (inside Suspense) ───────────────────────────────────────────
-
-async function TransactionsData({
-  searchParams,
-}: {
-  searchParams: Promise<TRawSearchParams>;
-}) {
-  const [rawCompteId, rawParams] = await Promise.all([
-    getActiveCompteId(),
-    searchParams,
-  ]);
-  const compteId = rawCompteId ?? "";
+async function TransactionsData({ searchParams }: { searchParams: Promise<TRawSearchParams> }) {
+  const [comptes, rawParams] = await Promise.all([fetchComptes(), searchParams]);
+  const compteId = comptes.find((c) => c.id === rawParams.compte)?.id ?? comptes[0]?.id ?? "";
 
   const filters = parseFilters(rawParams);
 
@@ -64,8 +45,8 @@ async function TransactionsData({
   ]);
 
   const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-  const initialFrom = DATE_RE.test(rawParams.dateFrom as string ?? "") ? rawParams.dateFrom as string : undefined;
-  const initialTo   = DATE_RE.test(rawParams.dateTo   as string ?? "") ? rawParams.dateTo   as string : undefined;
+  const initialFrom = DATE_RE.test((rawParams.dateFrom as string) ?? "") ? (rawParams.dateFrom as string) : undefined;
+  const initialTo   = DATE_RE.test((rawParams.dateTo   as string) ?? "") ? (rawParams.dateTo   as string) : undefined;
 
   return (
     <TransactionsContent
@@ -80,13 +61,7 @@ async function TransactionsData({
   );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
-
-export default async function TransactionsPage({
-  searchParams,
-}: {
-  searchParams: Promise<TRawSearchParams>;
-}) {
+export default async function TransactionsPage({ searchParams }: { searchParams: Promise<TRawSearchParams> }) {
   return (
     <Suspense fallback={<TransactionsSkeleton />}>
       <TransactionsData searchParams={searchParams} />

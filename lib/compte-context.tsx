@@ -1,31 +1,20 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
 import type { TCompte } from "@/types";
 
 interface ICompteContext {
   comptes: TCompte[];
-  activeCompteId: string;
-  isSwitching: boolean;
-  setIsSwitching: (v: boolean) => void;
 }
 
-const CompteContext = createContext<ICompteContext>({
-  comptes: [],
-  activeCompteId: "",
-  isSwitching: false,
-  setIsSwitching: () => {},
-});
+const CompteContext = createContext<ICompteContext>({ comptes: [] });
 
 export function CompteProvider({
   comptes,
-  activeCompteId,
   children,
-}: Omit<ICompteContext, "isSwitching" | "setIsSwitching"> & { children: React.ReactNode }) {
-  const [isSwitching, setIsSwitching] = useState(false);
-
+}: ICompteContext & { children: React.ReactNode }) {
   return (
-    <CompteContext.Provider value={{ comptes, activeCompteId, isSwitching, setIsSwitching }}>
+    <CompteContext.Provider value={{ comptes }}>
       {children}
     </CompteContext.Provider>
   );

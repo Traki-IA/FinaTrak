@@ -8,34 +8,29 @@ import {
   fetchRevenusDepensesParMois,
   fetchAllRevenusDepensesParMois,
 } from "@/lib/dashboard";
-import { getActiveCompteId } from "@/lib/active-compte";
 import { fetchComptes } from "@/lib/comptes";
 import type { TPeriod } from "@/types";
 
-export const revalidate = 30;
+export const revalidate = 0;
 
 const VALID_PERIODS: TPeriod[] = ["1m", "3m", "6m", "1a"];
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-// ── Chargement des données côté serveur ──────────────────────────────────────
+interface IDashboardPageProps {
+  searchParams: Promise<{ compte?: string; period?: string; dateFrom?: string; dateTo?: string }>;
+}
 
 async function DashboardData({
+  compteId,
   period,
   dateFrom,
   dateTo,
 }: {
+  compteId: string;
   period: TPeriod;
   dateFrom?: string;
   dateTo?: string;
 }) {
-  const cookieCompteId = await getActiveCompteId();
-  let compteId = cookieCompteId ?? "";
-  if (!compteId) {
-    const comptes = await fetchComptes();
-    compteId = comptes[0]?.id ?? "";
-  }
-  if (!compteId) return null;
-
   const [stats, categories, history, parMois, allParMois] = await Promise.all([
     fetchDashboardStats(compteId, period, dateFrom, dateTo),
     fetchDepensesParCategorie(compteId, period, dateFrom, dateTo),
@@ -58,14 +53,13 @@ async function DashboardData({
   );
 }
 
-// ── Page — Suspense affiche le skeleton pendant le fetch ─────────────────────
-
-interface IDashboardPageProps {
-  searchParams: Promise<{ period?: string; dateFrom?: string; dateTo?: string }>;
-}
-
 export default async function DashboardPage({ searchParams }: IDashboardPageProps) {
   const params = await searchParams;
+
+  // Résolution du compte actif depuis l'URL
+  const comptes = await fetchComptes();
+  const compteId = comptes.find((c) => c.id === params.compte)?.id ?? comptes[0]?.id ?? "";
+  if (!compteId) return null;
 
   const dateFrom = DATE_RE.test(params.dateFrom ?? "") ? params.dateFrom : undefined;
   const dateTo   = DATE_RE.test(params.dateTo ?? "")   ? params.dateTo   : undefined;
@@ -81,7 +75,7 @@ export default async function DashboardPage({ searchParams }: IDashboardPageProp
 
   return (
     <Suspense fallback={<DashboardSkeleton />}>
-      <DashboardData period={period} dateFrom={dateFrom} dateTo={dateTo} />
+      <DashboardData compteId={compteId} period={period} dateFrom={dateFrom} dateTo={dateTo} />
     </Suspense>
   );
 }
