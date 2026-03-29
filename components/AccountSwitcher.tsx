@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useTransition, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Check, Pencil, Plus } from "lucide-react";
+import { ChevronDown, Check, Pencil, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
@@ -10,7 +10,6 @@ import CompteModal from "@/components/CompteModal";
 import { CompteIcon, ICON_MAP } from "@/components/compte-icons";
 import { deleteCompte } from "@/app/(main)/comptes/actions";
 import { useCompte } from "@/lib/compte-context";
-import { Loader2 } from "lucide-react";
 import type { TCompte } from "@/types";
 
 const COOKIE_KEY = "active_compte_id";
@@ -31,12 +30,7 @@ export default function AccountSwitcher({ comptes, activeCompteId, collapsed }: 
   const router = useRouter();
   const { setIsSwitching } = useCompte();
   const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const switching = isPending;
-
-  useEffect(() => {
-    setIsSwitching(isPending);
-  }, [isPending, setIsSwitching]);
+  const [switching, setSwitching] = useState(false);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [compteModalOpen, setCompteModalOpen] = useState(false);
   const [editingCompte, setEditingCompte] = useState<TCompte | undefined>(undefined);
@@ -44,6 +38,14 @@ export default function AccountSwitcher({ comptes, activeCompteId, collapsed }: 
   const ref = useRef<HTMLDivElement>(null);
 
   const activeCompte = comptes.find((c) => c.id === optimisticActiveId) ?? comptes[0];
+
+  // Quand le serveur rattrape l'optimiste, on sait que le refresh est terminé
+  useEffect(() => {
+    if (activeCompteId === optimisticActiveId && switching) {
+      setSwitching(false);
+      setIsSwitching(false);
+    }
+  }, [activeCompteId, optimisticActiveId, switching, setIsSwitching]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -65,10 +67,9 @@ export default function AccountSwitcher({ comptes, activeCompteId, collapsed }: 
     setOpen(false);
     setOptimisticActiveId(compteId);
     setActiveCookieClientSide(compteId);
-
-    startTransition(() => {
-      router.refresh();
-    });
+    setSwitching(true);
+    setIsSwitching(true);
+    router.refresh();
   }
 
   function openAddModal() {
