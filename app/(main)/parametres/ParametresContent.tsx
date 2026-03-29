@@ -4,13 +4,14 @@ import { useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User, Key, ShieldCheck, Trash2, Moon, Bell, Fingerprint,
-  ShieldAlert, Download, ChevronRight, Loader2, Eye, EyeOff,
+  ShieldAlert, Download, ChevronRight, Loader2, Eye, EyeOff, LogOut,
 } from "lucide-react";
 import { toast } from "sonner";
 import Shell from "@/components/layout/Shell";
 import LogoHeader from "@/components/ui/LogoHeader";
 import DeleteAccountDialog from "./DeleteAccountDialog";
 import { updateUserPassword } from "./actions";
+import { signOutAction } from "@/app/auth/actions";
 
 // ── Toggle (UI only) ───────────────────────────────────────────────────────────
 
@@ -255,6 +256,15 @@ export default function ParametresContent({ userEmail, userDisplayName }: IParam
             right={<SoonBadge />}
             disabled
           />
+          <form action={signOutAction}>
+            <button type="submit" className="w-full text-left">
+              <SettingRow
+                icon={<LogOut size={15} />}
+                label="Se déconnecter"
+                right={<ChevronRight size={14} className="text-[var(--text3)]" />}
+              />
+            </button>
+          </form>
           <SettingRow
             icon={<Trash2 size={15} />}
             label="Supprimer le compte"
