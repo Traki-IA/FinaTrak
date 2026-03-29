@@ -9,6 +9,7 @@ import {
   fetchAllRevenusDepensesParMois,
 } from "@/lib/dashboard";
 import { getActiveCompteId } from "@/lib/active-compte";
+import { fetchComptes } from "@/lib/comptes";
 import type { TPeriod } from "@/types";
 
 export const revalidate = 30;
@@ -27,7 +28,13 @@ async function DashboardData({
   dateFrom?: string;
   dateTo?: string;
 }) {
-  const compteId = (await getActiveCompteId()) ?? "";
+  const cookieCompteId = await getActiveCompteId();
+  let compteId = cookieCompteId ?? "";
+  if (!compteId) {
+    const comptes = await fetchComptes();
+    compteId = comptes[0]?.id ?? "";
+  }
+  if (!compteId) return null;
 
   const [stats, categories, history, parMois, allParMois] = await Promise.all([
     fetchDashboardStats(compteId, period, dateFrom, dateTo),

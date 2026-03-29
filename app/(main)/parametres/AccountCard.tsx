@@ -28,6 +28,7 @@ export default function AccountCard({
   const [isSavingName, setIsSavingName] = useState(false);
 
   // Password state
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -55,8 +56,13 @@ export default function AccountCard({
   async function handleSavePassword() {
     setPasswordError("");
 
-    if (newPassword.length < 6) {
-      setPasswordError("Le mot de passe doit contenir au moins 6 caractères");
+    if (!currentPassword) {
+      setPasswordError("Veuillez saisir votre mot de passe actuel");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError("Le mot de passe doit contenir au moins 8 caractères");
       return;
     }
 
@@ -66,13 +72,14 @@ export default function AccountCard({
     }
 
     setIsSavingPassword(true);
-    const result = await updateUserPassword(newPassword);
+    const result = await updateUserPassword(currentPassword, newPassword);
     setIsSavingPassword(false);
 
     if ("error" in result) {
       toast.error(result.error);
     } else {
       toast.success("Mot de passe modifié");
+      setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setIsChangingPassword(false);
@@ -200,14 +207,24 @@ export default function AccountCard({
                 >
                   <input
                     type="password"
+                    value={currentPassword}
+                    onChange={(e) => {
+                      setCurrentPassword(e.target.value);
+                      setPasswordError("");
+                    }}
+                    className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-orange-500/50 transition-colors"
+                    placeholder="Mot de passe actuel"
+                    autoFocus
+                  />
+                  <input
+                    type="password"
                     value={newPassword}
                     onChange={(e) => {
                       setNewPassword(e.target.value);
                       setPasswordError("");
                     }}
                     className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-orange-500/50 transition-colors"
-                    placeholder="Nouveau mot de passe"
-                    autoFocus
+                    placeholder="Nouveau mot de passe (8 caractères min.)"
                   />
                   <input
                     type="password"
@@ -217,7 +234,7 @@ export default function AccountCard({
                       setPasswordError("");
                     }}
                     className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-orange-500/50 transition-colors"
-                    placeholder="Confirmer le mot de passe"
+                    placeholder="Confirmer le nouveau mot de passe"
                   />
                   {passwordError && (
                     <p className="text-red-400 text-xs">{passwordError}</p>
@@ -239,6 +256,7 @@ export default function AccountCard({
                     <button
                       onClick={() => {
                         setIsChangingPassword(false);
+                        setCurrentPassword("");
                         setNewPassword("");
                         setConfirmPassword("");
                         setPasswordError("");

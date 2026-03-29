@@ -191,15 +191,34 @@ export async function updateUserDisplayName(
 }
 
 export async function updateUserPassword(
+  currentPassword: string,
   newPassword: string
 ): Promise<TProfileResult> {
-  const parsed = z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères").safeParse(newPassword);
+  // Point 1 — minimum 8 caractères (NIST SP 800-63B / OWASP)
+  const parsed = z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères").safeParse(newPassword);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Mot de passe invalide" };
 
   const supabase = await createServerSupabaseClient();
-  const { error } = await supabase.auth.updateUser({ password: parsed.data });
 
+  // Point 2 — vérifier le mot de passe actuel avant de modifier
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) return { error: "Non authentifié" };
+
+  const { error: reAuthError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  });
+  if (reAuthError) return { error: "Mot de passe actuel incorrect" };
+
+  // Appliquer le nouveau mot de passe
+  const { error } = await supabase.auth.updateUser({ password: parsed.data });
   if (error) return { error: error.message };
+
+  // Point 3 — invalider toutes les autres sessions actives
+  await supabase.auth.signOut({ scope: "others" });
+
+  // Point 4 — l'email de notification est géré par Supabase Auth
+  // (activer dans Dashboard > Auth > Email Templates > "Password change notification")
 
   return { success: true };
 }
