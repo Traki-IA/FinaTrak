@@ -109,17 +109,21 @@ function SettingRow({
 // ── Password Form (inline expandable) ─────────────────────────────────────────
 
 function PasswordForm({ onClose }: { onClose: () => void }) {
+  const [currentPwd, setCurrentPwd] = useState("");
   const [newPwd, setNewPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!currentPwd) { toast.error("Veuillez saisir votre mot de passe actuel"); return; }
+    if (newPwd.length < 8) { toast.error("Le mot de passe doit contenir au moins 8 caractères"); return; }
     if (newPwd !== confirmPwd) { toast.error("Les mots de passe ne correspondent pas"); return; }
     startTransition(async () => {
-      const result = await updateUserPassword(newPwd);
+      const result = await updateUserPassword(currentPwd, newPwd);
       if ("error" in result) { toast.error(result.error); return; }
       toast.success("Mot de passe mis à jour");
       onClose();
@@ -137,14 +141,28 @@ function PasswordForm({ onClose }: { onClose: () => void }) {
     >
       <div className="px-[14px] pb-[14px] space-y-2" style={{ borderTop: "1px solid var(--border)" }}>
         <div className="pt-[10px] space-y-2">
+          {/* Mot de passe actuel */}
+          <div className="relative">
+            <input
+              type={showCurrent ? "text" : "password"}
+              value={currentPwd}
+              onChange={(e) => setCurrentPwd(e.target.value)}
+              placeholder="Mot de passe actuel"
+              autoFocus
+              className="w-full bg-white/[0.05] border border-[var(--border)] rounded-xl px-3 pr-10 py-2 text-[14px] text-[var(--text)] outline-none focus:border-orange-500/60 transition-colors placeholder:text-[var(--text3)]"
+            />
+            <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text3)]">
+              {showCurrent ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
+          </div>
+
           {/* Nouveau mot de passe */}
           <div className="relative">
             <input
               type={showNew ? "text" : "password"}
               value={newPwd}
               onChange={(e) => setNewPwd(e.target.value)}
-              placeholder="Nouveau mot de passe"
-              autoFocus
+              placeholder="Nouveau mot de passe (8 caractères min.)"
               className="w-full bg-white/[0.05] border border-[var(--border)] rounded-xl px-3 pr-10 py-2 text-[14px] text-[var(--text)] outline-none focus:border-orange-500/60 transition-colors placeholder:text-[var(--text3)]"
             />
             <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text3)]">
@@ -158,7 +176,7 @@ function PasswordForm({ onClose }: { onClose: () => void }) {
               type={showConfirm ? "text" : "password"}
               value={confirmPwd}
               onChange={(e) => setConfirmPwd(e.target.value)}
-              placeholder="Confirmer le mot de passe"
+              placeholder="Confirmer le nouveau mot de passe"
               className="w-full bg-white/[0.05] border border-[var(--border)] rounded-xl px-3 pr-10 py-2 text-[14px] text-[var(--text)] outline-none focus:border-orange-500/60 transition-colors placeholder:text-[var(--text3)]"
             />
             <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text3)]">
@@ -178,7 +196,7 @@ function PasswordForm({ onClose }: { onClose: () => void }) {
           </button>
           <button
             type="submit"
-            disabled={isPending || !newPwd || !confirmPwd}
+            disabled={isPending || !currentPwd || !newPwd || !confirmPwd}
             className="flex-1 py-2 rounded-xl text-[14px] text-white bg-orange-500 hover:bg-orange-600 transition-all disabled:opacity-40 flex items-center justify-center gap-1.5"
           >
             {isPending && <Loader2 size={12} className="animate-spin" />}
