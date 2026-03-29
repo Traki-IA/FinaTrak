@@ -7,6 +7,7 @@ import {
   ShieldAlert, Download, ChevronRight, Loader2, Eye, EyeOff, LogOut,
 } from "lucide-react";
 import { toast } from "sonner";
+import * as Dialog from "@radix-ui/react-dialog";
 import Shell from "@/components/layout/Shell";
 import LogoHeader from "@/components/ui/LogoHeader";
 import DeleteAccountDialog from "./DeleteAccountDialog";
@@ -218,6 +219,7 @@ interface IParametresContentProps {
 
 export default function ParametresContent({ userEmail, userDisplayName }: IParametresContentProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [pwdFormOpen, setPwdFormOpen] = useState(false);
 
   return (
@@ -256,15 +258,12 @@ export default function ParametresContent({ userEmail, userDisplayName }: IParam
             right={<SoonBadge />}
             disabled
           />
-          <form action={signOutAction}>
-            <button type="submit" className="w-full text-left">
-              <SettingRow
-                icon={<LogOut size={15} />}
-                label="Se déconnecter"
-                right={<ChevronRight size={14} className="text-[var(--text3)]" />}
-              />
-            </button>
-          </form>
+          <SettingRow
+            icon={<LogOut size={15} />}
+            label="Se déconnecter"
+            right={<ChevronRight size={14} className="text-[var(--text3)]" />}
+            onClick={() => setLogoutDialogOpen(true)}
+          />
           <SettingRow
             icon={<Trash2 size={15} />}
             label="Supprimer le compte"
@@ -316,6 +315,38 @@ export default function ParametresContent({ userEmail, userDisplayName }: IParam
           />
         </SectionCard>
       </Shell>
+
+      {/* Dialog confirmation déconnexion */}
+      <Dialog.Root open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <Dialog.Content className="fixed z-50 bg-[#0f0f1a] border-white/10 shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out inset-x-0 bottom-0 border-t rounded-t-2xl px-5 pt-4 pb-8 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-sm sm:border sm:rounded-2xl sm:pb-5 sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="p-2 rounded-xl bg-white/[0.06] text-white/60">
+                <LogOut size={18} />
+              </span>
+              <Dialog.Title className="text-base font-bold text-white">
+                Se déconnecter
+              </Dialog.Title>
+            </div>
+            <p className="text-sm text-white/50 mb-6">
+              Vous serez redirigé vers la page de connexion.
+            </p>
+            <div className="flex gap-3">
+              <Dialog.Close asChild>
+                <button className="flex-1 py-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white/60 text-sm font-medium transition-colors">
+                  Annuler
+                </button>
+              </Dialog.Close>
+              <form action={signOutAction} className="flex-1">
+                <button type="submit" className="w-full py-3 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-white text-sm font-semibold transition-colors">
+                  Se déconnecter
+                </button>
+              </form>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       <DeleteAccountDialog
         open={deleteDialogOpen}
