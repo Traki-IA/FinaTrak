@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useTransition } from "react";
+import { useState, useRef, useEffect, useTransition, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Check, Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -9,6 +9,8 @@ import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 import CompteModal from "@/components/CompteModal";
 import { CompteIcon, ICON_MAP } from "@/components/compte-icons";
 import { deleteCompte } from "@/app/(main)/comptes/actions";
+import { useCompte } from "@/lib/compte-context";
+import { Loader2 } from "lucide-react";
 import type { TCompte } from "@/types";
 
 const COOKIE_KEY = "active_compte_id";
@@ -27,9 +29,14 @@ interface IAccountSwitcherProps {
 
 export default function AccountSwitcher({ comptes, activeCompteId, collapsed }: IAccountSwitcherProps) {
   const router = useRouter();
+  const { setIsSwitching } = useCompte();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const switching = isPending;
+
+  useEffect(() => {
+    setIsSwitching(isPending);
+  }, [isPending, setIsSwitching]);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [compteModalOpen, setCompteModalOpen] = useState(false);
   const [editingCompte, setEditingCompte] = useState<TCompte | undefined>(undefined);
@@ -57,10 +64,10 @@ export default function AccountSwitcher({ comptes, activeCompteId, collapsed }: 
 
     setOpen(false);
     setOptimisticActiveId(compteId);
-    setActiveCookieClientSide(compteId); // Cookie posé immédiatement côté client
+    setActiveCookieClientSide(compteId);
 
     startTransition(() => {
-      router.refresh(); // Refresh données avec le nouveau compte, sans attendre un server action
+      router.refresh();
     });
   }
 
@@ -120,10 +127,14 @@ export default function AccountSwitcher({ comptes, activeCompteId, collapsed }: 
             <CompteIcon icone={activeCompte.icone} size={15} strokeWidth={2} />
           </span>
           <span className="truncate flex-1 text-left">{activeCompte.nom}</span>
-          <ChevronDown
-            size={14}
-            className={`text-white/30 transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`}
-          />
+          {switching ? (
+            <Loader2 size={14} className="text-white/40 animate-spin flex-shrink-0" />
+          ) : (
+            <ChevronDown
+              size={14}
+              className={`text-white/30 transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`}
+            />
+          )}
         </button>
       )}
 
