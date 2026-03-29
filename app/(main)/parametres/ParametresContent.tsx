@@ -52,7 +52,7 @@ function SectionCard({ label, children }: { label: string; children: React.React
     >
       <div
         className="py-[2px] flex items-center justify-center"
-        style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}
+        style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}
       >
         <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{label}</span>
       </div>

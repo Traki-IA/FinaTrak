@@ -24,7 +24,7 @@ export default function Navbar() {
   const compteId = searchParams.get("compte");
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[#111111]/95 backdrop-blur border-t border-[#181818] flex z-30 px-1 pb-[max(8px,env(safe-area-inset-bottom))]">
+    <nav className="fixed bottom-0 left-0 right-0 bg-[#0d0d0d]/95 backdrop-blur border-t border-[#333333] flex z-30 px-1 pb-[max(8px,env(safe-area-inset-bottom))]">
       {NAV_ITEMS.map(({ key, href, label, icon: Icon }) => {
         const isActive = pathname === href;
         const fullHref = compteId ? `${href}?compte=${compteId}` : href;

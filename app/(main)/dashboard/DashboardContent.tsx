@@ -126,7 +126,7 @@ export default function DashboardContent({
       >
         {/* Solde courant */}
         {/* Header */}
-        <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+        <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}>
           <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Solde courant</span>
         </div>
         {/* Valeur */}
@@ -160,7 +160,7 @@ export default function DashboardContent({
         </div>
 
         {/* Header colonnes */}
-        <div className="flex" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+        <div className="flex" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}>
           <div className="flex-1 flex items-center justify-center px-1 py-[2px]" style={{ borderRight: "1px solid var(--border)" }}>
             <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Revenus</span>
           </div>

@@ -2,9 +2,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardSkeleton() {
   return (
-    <div className="min-h-screen bg-[#111111] px-[14px] pt-4 pb-20">
+    <div className="min-h-screen bg-[#0d0d0d] px-[14px] pt-4 pb-20">
       {/* Logo header */}
-      <div className="flex items-center justify-center gap-2 py-2 border-b border-[#181818] mb-2">
+      <div className="flex items-center justify-center gap-2 py-2 border-b border-[#333333] mb-2">
         <Skeleton className="w-[26px] h-[26px] rounded-[7px]" />
         <Skeleton className="h-4 w-24" />
       </div>
@@ -26,10 +26,10 @@ export default function DashboardSkeleton() {
       </div>
 
       {/* Divider */}
-      <div className="h-px bg-[#181818] my-1" />
+      <div className="h-px bg-[#2a2a2a] my-1" />
 
       {/* Bilan 3 cols */}
-      <div className="flex bg-[#181818] rounded-none">
+      <div className="flex bg-[#2a2a2a] rounded-none">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="flex-1 py-[10px] flex flex-col items-center gap-1">
             <Skeleton className="h-2.5 w-14" />

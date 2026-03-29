@@ -397,7 +397,7 @@ function CategoriesChart({ transactions }: { transactions: TTransactionWithCateg
 
   return (
     <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
-      <div className="flex justify-center py-[2px]" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+      <div className="flex justify-center py-[2px]" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}>
         <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Catégories</span>
       </div>
       <div className="flex flex-col gap-[10px] px-[14px] py-[10px]">
@@ -643,7 +643,7 @@ export default function TransactionsContent({
                         {/* Month header */}
                         <div
                           className="flex items-center justify-between px-[14px] py-[6px]"
-                          style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}
+                          style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}
                         >
                           <span className="text-[11px] font-semibold text-[var(--text2)] tracking-[0.06em]">{moisNom}</span>
                           <span className="text-[12px] font-semibold tabular-nums" style={{ color: netColor }}>

@@ -9,7 +9,7 @@ interface ICategoryChartProps {
 
 const TOOLTIP_STYLE = {
   background: "#13131a",
-  border: "1px solid rgba(255,255,255,0.07)",
+  border: "1px solid rgba(255,255,255,0.12)",
   borderRadius: "12px",
   color: "#fff",
   fontSize: "12px",

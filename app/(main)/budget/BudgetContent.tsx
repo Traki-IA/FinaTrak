@@ -250,7 +250,7 @@ export default function BudgetContent({
             {/* KPIs — card harmonisée */}
             <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
               {/* Header */}
-              <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+              <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}>
                 <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Budget</span>
               </div>
               {/* Colonnes */}
@@ -282,7 +282,7 @@ export default function BudgetContent({
                   style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}
                 >
                   {/* En-tête catégorie */}
-                  <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+                  <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}>
                     <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{cat}</span>
                   </div>
 

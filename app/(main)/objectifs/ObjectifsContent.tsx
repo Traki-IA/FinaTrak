@@ -150,7 +150,7 @@ function SortableObjectifRow({
               className="overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="mt-2.5 px-3 py-2.5 rounded-[10px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="mt-2.5 px-3 py-2.5 rounded-[10px]" style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.10)" }}>
                 <div className="flex justify-between mb-1">
                   <span className="text-[14px] text-[var(--text2)]">Restant</span>
                   <span className="text-[14px] font-[800]" style={{ color: couleur }}>{formatEur(restant)}</span>
@@ -179,7 +179,7 @@ function SortableObjectifRow({
                 <div
                   className="flex gap-2 mt-2"
                   onClick={(e) => e.stopPropagation()}
-                  style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 8 }}
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.10)", paddingTop: 8 }}
                 >
                   {isConfirming ? (
                     <>
@@ -295,7 +295,7 @@ function Objectifs({
       {localObjectifs.length > 0 && (
         <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
           {/* Header */}
-          <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.03)" }}>
+          <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.10)" }}>
             <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Objectifs</span>
           </div>
           {/* Colonnes */}
