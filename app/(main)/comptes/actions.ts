@@ -23,12 +23,13 @@ export type TInsertCompteInput = z.infer<typeof CompteSchema>;
 export type TUpdateCompteInput = z.infer<typeof UpdateCompteSchema>;
 
 type TActionResult = { success: true } | { error: string };
+type TInsertCompteResult = { success: true; id: string } | { error: string };
 
 // ── Insertion ─────────────────────────────────────────────────────────────────
 
 export async function insertCompte(
   input: TInsertCompteInput
-): Promise<TActionResult> {
+): Promise<TInsertCompteResult> {
   const parsed = CompteSchema.safeParse(input);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
@@ -48,14 +49,16 @@ export async function insertCompte(
 
   const nextOrder = (last?.sort_order ?? -1) + 1;
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("comptes")
-    .insert([{ ...parsed.data, sort_order: nextOrder, user_id: userId }]);
+    .insert([{ ...parsed.data, sort_order: nextOrder, user_id: userId }])
+    .select("id")
+    .single();
 
   if (error) { console.error("[comptes] insertCompte:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/");
-  return { success: true };
+  return { success: true, id: data.id };
 }
 
 // ── Mise à jour ──────────────────────────────────────────────────────────────

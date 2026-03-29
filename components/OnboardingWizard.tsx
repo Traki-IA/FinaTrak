@@ -112,6 +112,8 @@ export default function OnboardingWizard() {
   async function handleCreate() {
     setIsSubmitting(true);
 
+    let firstCompteId: string | null = null;
+
     for (const compte of comptes) {
       const result = await insertCompte({
         nom: compte.nom,
@@ -125,12 +127,14 @@ export default function OnboardingWizard() {
         setIsSubmitting(false);
         return;
       }
+
+      if (!firstCompteId) firstCompteId = result.id;
     }
 
     toast.success(
       comptes.length === 1 ? "Compte créé !" : `${comptes.length} comptes créés !`,
     );
-    router.push("/dashboard");
+    router.push(firstCompteId ? `/dashboard?compte=${firstCompteId}` : "/dashboard");
   }
 
   return (
