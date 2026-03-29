@@ -2,10 +2,11 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, Calendar } from "lucide-react";
+import { Search, Plus, Calendar, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import TransactionModal from "./TransactionModal";
+import ImportCSVModal from "./ImportCSVModal";
 import Shell from "@/components/layout/Shell";
 import LogoHeader from "@/components/ui/LogoHeader";
 import { deleteTransaction } from "./actions";
@@ -445,6 +446,7 @@ export default function TransactionsContent({
   const router = useRouter();
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<TTransactionWithCategorie | undefined>(undefined);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
@@ -537,12 +539,21 @@ export default function TransactionsContent({
       <Shell>
         <LogoHeader
           rightSlot={
-            <button
-              onClick={openAddModal}
-              className="w-[28px] h-[28px] rounded-lg bg-[var(--bg3)] border-none cursor-pointer flex items-center justify-center text-[var(--text2)]"
-            >
-              <Plus size={14} />
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setImportModalOpen(true)}
+                className="w-[28px] h-[28px] rounded-lg bg-[var(--bg3)] border-none cursor-pointer flex items-center justify-center text-[var(--text2)]"
+                title="Importer CSV"
+              >
+                <Upload size={13} />
+              </button>
+              <button
+                onClick={openAddModal}
+                className="w-[28px] h-[28px] rounded-lg bg-[var(--bg3)] border-none cursor-pointer flex items-center justify-center text-[var(--text2)]"
+              >
+                <Plus size={14} />
+              </button>
+            </div>
           }
         />
 
@@ -698,6 +709,12 @@ export default function TransactionsContent({
         objectifs={objectifs}
         budgetItems={budgetItems}
         transaction={editingTransaction}
+        compteId={compteId}
+      />
+      <ImportCSVModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        categories={categories}
         compteId={compteId}
       />
     </>

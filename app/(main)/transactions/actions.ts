@@ -211,3 +211,61 @@ export async function deleteTransaction(
   revalidatePath("/", "layout");
   return { success: true };
 }
+
+// ── Import CSV en masse ───────────────────────────────────────────────────────
+
+const BulkRowSchema = z.object({
+  date: z.string().min(1),
+  description: z.string().nullable(),
+  montant: z.number().positive(),
+  type: z.enum(["revenu", "depense"]),
+  categorie_id: z.string().uuid().nullable(),
+  compte_id: z.string().uuid(),
+});
+
+export async function bulkInsertTransactions(
+  rows: z.infer<typeof BulkRowSchema>[]
+): Promise<{ success: true; count: number } | { error: string }> {
+  if (!rows.length) return { error: "Aucune transaction à importer." };
+  if (rows.length > 500) return { error: "Maximum 500 transactions par import." };
+
+  const parsed = z.array(BulkRowSchema).safeParse(rows);
+  if (!parsed.success) return { error: "Données invalides." };
+
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
+  // Vérifier que tous les compte_id appartiennent à l'utilisateur
+  const compteIds = [...new Set(parsed.data.map((r) => r.compte_id))];
+  const { data: comptes } = await supabase
+    .from("comptes")
+    .select("id")
+    .eq("user_id", userId)
+    .in("id", compteIds);
+
+  const validCompteIds = new Set((comptes ?? []).map((c) => c.id));
+  if (compteIds.some((id) => !validCompteIds.has(id))) {
+    return { error: "Compte invalide." };
+  }
+
+  const toInsert = parsed.data.map((r) => ({
+    date: r.date,
+    description: r.description,
+    montant: r.montant,
+    type: r.type,
+    categorie_id: r.categorie_id,
+    compte_id: r.compte_id,
+    user_id: userId,
+  }));
+
+  const { error } = await supabase.from("transactions").insert(toInsert);
+  if (error) {
+    console.error("[transactions] bulkInsertTransactions:", error.message);
+    return { error: "Une erreur est survenue lors de l'import." };
+  }
+
+  revalidatePath("/transactions");
+  revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
+  return { success: true, count: toInsert.length };
+}
