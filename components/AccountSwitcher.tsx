@@ -8,8 +8,16 @@ import { useRouter } from "next/navigation";
 import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 import CompteModal from "@/components/CompteModal";
 import { CompteIcon, ICON_MAP } from "@/components/compte-icons";
-import { deleteCompte, switchCompte } from "@/app/(main)/comptes/actions";
+import { deleteCompte } from "@/app/(main)/comptes/actions";
 import type { TCompte } from "@/types";
+
+const COOKIE_KEY = "active_compte_id";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+function setActiveCookieClientSide(compteId: string) {
+  const secure = location.protocol === "https:" ? "; secure" : "";
+  document.cookie = `${COOKIE_KEY}=${compteId}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax${secure}`;
+}
 
 interface IAccountSwitcherProps {
   comptes: TCompte[];
@@ -48,16 +56,11 @@ export default function AccountSwitcher({ comptes, activeCompteId, collapsed }: 
     }
 
     setOpen(false);
-    setOptimisticActiveId(compteId); // Mise à jour instantanée de l'UI
+    setOptimisticActiveId(compteId);
+    setActiveCookieClientSide(compteId); // Cookie posé immédiatement côté client
 
-    startTransition(async () => {
-      const result = await switchCompte(compteId);
-      if ("error" in result) {
-        toast.error(result.error);
-        setOptimisticActiveId(activeCompteId); // Annuler si erreur
-      } else {
-        router.refresh(); // Recharger les données en arrière-plan
-      }
+    startTransition(() => {
+      router.refresh(); // Refresh données avec le nouveau compte, sans attendre un server action
     });
   }
 
