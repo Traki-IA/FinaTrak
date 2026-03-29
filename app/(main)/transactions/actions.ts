@@ -24,6 +24,7 @@ const UpdateTransactionSchema = z.object({
   categorie_id: z.string().nullable(),
   description: z.string().nullable(),
   date: z.string().min(1, "La date est requise"),
+  objectif_id: z.string().uuid().nullable().optional(),
 });
 
 export type TInsertTransactionInput = z.infer<typeof TransactionSchema>;
@@ -118,7 +119,7 @@ export async function updateTransaction(
 
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
-  const { id, ...updateData } = parsed.data;
+  const { id, objectif_id, ...updateData } = parsed.data;
 
   const { error } = await supabase
     .from("transactions")
@@ -128,10 +129,33 @@ export async function updateTransaction(
 
   if (error) { console.error("[transactions] updateTransaction:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
+  // Mise à jour de la progression de l'objectif lié
+  let objectifUpdated = false;
+  if (objectif_id) {
+    const { data: objectif } = await supabase
+      .from("objectifs")
+      .select("montant_actuel")
+      .eq("id", objectif_id)
+      .single();
+
+    if (objectif) {
+      const delta = parsed.data.type === "depense" ? -parsed.data.montant : parsed.data.montant;
+      const nouveauMontant = Math.max(0, (objectif.montant_actuel as number) + delta);
+      await supabase
+        .from("objectifs")
+        .update({ montant_actuel: nouveauMontant })
+        .eq("id", objectif_id)
+        .eq("user_id", userId);
+      objectifUpdated = true;
+    }
+
+    revalidatePath("/objectifs");
+  }
+
   revalidatePath("/transactions");
   revalidatePath("/dashboard");
   revalidatePath("/", "layout");
-  return { success: true, objectifUpdated: false };
+  return { success: true, objectifUpdated };
 }
 
 const UpsertCategorieSchema = z.object({

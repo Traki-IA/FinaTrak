@@ -194,6 +194,7 @@ export default function TransactionModal({
           categorie_id: form.categorie_id || null,
           description: form.description || null,
           date: form.date,
+          objectif_id: form.objectif_id || null,
         });
 
         setIsSubmitting(false);
@@ -203,7 +204,12 @@ export default function TransactionModal({
           return;
         }
 
-        toast.success("Transaction modifiée !");
+        if (result.objectifUpdated) {
+          const objectif = objectifs.find((o) => o.id === form.objectif_id);
+          toast.success(`Transaction modifiée · Progression de « ${objectif?.nom} » mise à jour`);
+        } else {
+          toast.success("Transaction modifiée !");
+        }
       }
 
       onOpenChange(false);
