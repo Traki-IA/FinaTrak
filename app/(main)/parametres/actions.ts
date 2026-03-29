@@ -57,7 +57,7 @@ export async function reorderCategories(
       .eq("id", orderedIds[i])
       .eq("user_id", userId);
 
-    if (error) return { error: error.message };
+    if (error) { console.error("[parametres] reorderCategories:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
   }
 
   revalidatePath("/");
@@ -98,7 +98,7 @@ export async function insertCategorie(
     .from("categories")
     .insert([{ ...parsed.data, sort_order: nextOrder, user_id: userId }]);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[parametres] insertCategorie:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/");
   return { success: true };
@@ -123,7 +123,7 @@ export async function updateCategorie(
     .eq("id", id)
     .eq("user_id", userId);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[parametres] updateCategorie:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/");
   return { success: true };
@@ -142,7 +142,7 @@ export async function deleteCategorie(id: string): Promise<TActionResult> {
     .eq("id", id)
     .eq("user_id", userId);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[parametres] deleteCategorie:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/");
   return { success: true };
@@ -163,7 +163,7 @@ export async function updateNavOrder(
       { onConflict: "cle,user_id" }
     );
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[parametres] updateNavOrder:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/");
   return { success: true };
@@ -184,7 +184,7 @@ export async function updateUserDisplayName(
     data: { display_name: parsed.data },
   });
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[parametres] updateUserDisplayName:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/parametres");
   return { success: true };
@@ -212,7 +212,7 @@ export async function updateUserPassword(
 
   // Appliquer le nouveau mot de passe
   const { error } = await supabase.auth.updateUser({ password: parsed.data });
-  if (error) return { error: error.message };
+  if (error) { console.error("[parametres] updateUserPassword:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   // Point 3 — invalider toutes les autres sessions actives
   await supabase.auth.signOut({ scope: "others" });

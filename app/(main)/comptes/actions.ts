@@ -52,7 +52,7 @@ export async function insertCompte(
     .from("comptes")
     .insert([{ ...parsed.data, sort_order: nextOrder, user_id: userId }]);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[comptes] insertCompte:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/");
   return { success: true };
@@ -78,7 +78,7 @@ export async function updateCompte(
     .eq("id", id)
     .eq("user_id", userId);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[comptes] updateCompte:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/");
   return { success: true };
@@ -109,7 +109,7 @@ export async function deleteCompte(id: string): Promise<TActionResult> {
     .delete()
     .eq("id", id)
     .eq("user_id", userId);
-  if (error) return { error: error.message };
+  if (error) { console.error("[comptes] deleteCompte:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/");
   return { success: true };
@@ -133,7 +133,7 @@ export async function reorderComptes(
       .eq("id", orderedIds[i])
       .eq("user_id", userId);
 
-    if (error) return { error: error.message };
+    if (error) { console.error("[comptes] reorderComptes:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
   }
 
   revalidatePath("/");

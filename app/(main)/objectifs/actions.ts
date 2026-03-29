@@ -53,7 +53,7 @@ export async function insertObjectif(
     .from("objectifs")
     .insert([{ ...parsed.data, user_id: userId }]);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[objectifs] insertObjectif:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/objectifs");
   return { success: true };
@@ -77,7 +77,7 @@ export async function updateObjectif(
     .eq("id", id)
     .eq("user_id", userId);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[objectifs] updateObjectif:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/objectifs");
   return { success: true };
@@ -101,7 +101,7 @@ export async function updateObjectifMontant(
     .eq("id", id)
     .eq("user_id", userId);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[objectifs] updateObjectifMontant:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/objectifs");
   return { success: true };
@@ -119,7 +119,7 @@ export async function deleteObjectif(id: string): Promise<TActionResult> {
     .delete()
     .eq("id", id)
     .eq("user_id", userId);
-  if (error) return { error: error.message };
+  if (error) { console.error("[objectifs] deleteObjectif:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/objectifs");
   return { success: true };
@@ -141,7 +141,7 @@ export async function reorderObjectifs(
       .eq("id", orderedIds[i])
       .eq("user_id", userId);
 
-    if (error) return { error: error.message };
+    if (error) { console.error("[objectifs] reorderObjectifs:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
   }
 
   revalidatePath("/objectifs");

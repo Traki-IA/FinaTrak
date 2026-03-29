@@ -84,7 +84,7 @@ export async function insertBudgetItem(
       .select("id")
       .single();
 
-    if (objError) return { error: objError.message };
+    if (objError) { console.error("[budget] insertBudgetItem (objectif):", objError.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
     objectif_id = newObjectif.id as string;
     revalidatePath("/objectifs");
   }
@@ -93,7 +93,7 @@ export async function insertBudgetItem(
     .from("budget_items")
     .insert([{ ...itemData, objectif_id, user_id: userId }]);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[budget] insertBudgetItem:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/budget");
   revalidatePath("/dashboard");
@@ -119,7 +119,7 @@ export async function toggleBudgetItem(
     .eq("id", id)
     .eq("user_id", userId);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[budget] toggleBudgetItem:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/budget");
   revalidatePath("/dashboard");
@@ -142,7 +142,7 @@ export async function deleteBudgetItem(id: string): Promise<TActionResult> {
     .eq("id", id)
     .eq("user_id", userId);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[budget] deleteBudgetItem:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/budget");
   revalidatePath("/dashboard");
@@ -170,7 +170,7 @@ export async function updateBudgetItem(
     .eq("id", id)
     .eq("user_id", userId);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[budget] updateBudgetItem:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/budget");
   revalidatePath("/dashboard");
@@ -196,7 +196,7 @@ export async function reorderBudgetItems(
       .eq("id", orderedIds[i])
       .eq("user_id", userId);
 
-    if (error) return { error: error.message };
+    if (error) { console.error("[budget] reorderBudgetItems:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
   }
 
   revalidatePath("/budget");

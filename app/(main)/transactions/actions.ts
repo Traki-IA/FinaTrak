@@ -69,7 +69,7 @@ export async function insertTransaction(
     .from("transactions")
     .insert([transactionData]);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[transactions] insertTransaction:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   // Mise à jour automatique de la progression de l'objectif lié
   let objectifUpdated = false;
@@ -126,7 +126,7 @@ export async function updateTransaction(
     .eq("id", id)
     .eq("user_id", userId);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[transactions] updateTransaction:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/transactions");
   revalidatePath("/dashboard");
@@ -182,7 +182,7 @@ export async function deleteCategorie(
     .delete()
     .eq("id", id)
     .eq("user_id", userId);
-  if (error) return { error: error.message };
+  if (error) { console.error("[transactions] deleteCategorie:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
   revalidatePath("/transactions");
   revalidatePath("/dashboard");
   return { success: true };
@@ -204,7 +204,7 @@ export async function deleteTransaction(
     .eq("id", id)
     .eq("user_id", userId);
 
-  if (error) return { error: error.message };
+  if (error) { console.error("[transactions] deleteTransaction:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/transactions");
   revalidatePath("/dashboard");
