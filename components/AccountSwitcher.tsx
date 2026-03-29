@@ -168,7 +168,7 @@ export default function AccountSwitcher({ comptes, activeCompteId, collapsed }: 
                   </button>
 
                   {/* Actions edit/delete */}
-                  <div className={`flex items-center gap-0.5 flex-shrink-0 ${isConfirming ? "opacity-100" : "opacity-0 group-hover:opacity-100"} transition-opacity`}>
+                  <div className={`flex items-center gap-0.5 flex-shrink-0 ${isConfirming ? "opacity-100" : "opacity-40 hover:opacity-100"} transition-opacity`}>
                     {!isConfirming && (
                       <button
                         onClick={(e) => openEditModal(compte, e)}
