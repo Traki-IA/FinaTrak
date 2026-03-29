@@ -87,7 +87,7 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
   const minVal = Math.min(...values);
   const maxVal = Math.max(...values);
   const range = maxVal - minVal;
-  const padding = Math.max(range * 0.1, 200);
+  const padding = range > 0 ? range * 0.18 : 50;
   const yDomain: [number, number] = [
     Math.floor(minVal - padding),
     Math.ceil(maxVal + padding),
