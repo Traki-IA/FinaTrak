@@ -157,7 +157,7 @@ export default function BalanceLine({ data }: IBalanceLineProps) {
           ))}
 
           <Area
-            type="monotone"
+            type={isDaily ? "monotone" : "linear"}
             dataKey="solde"
             stroke="var(--orange)"
             strokeWidth={1.5}
