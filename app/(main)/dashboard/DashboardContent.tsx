@@ -96,8 +96,8 @@ export default function DashboardContent({
   // % d'évolution du solde sur la période : periodNet / solde_début_période × 100
   const soldeDebutPeriode = soldeCourant - periodNet;
   const evolutionPct =
-    soldeDebutPeriode !== 0
-      ? (periodNet / Math.abs(soldeDebutPeriode)) * 100
+    Math.abs(soldeDebutPeriode) >= 0.01
+      ? Math.max(-9999, Math.min(9999, (periodNet / Math.abs(soldeDebutPeriode)) * 100))
       : null;
 
   return (
@@ -244,8 +244,8 @@ export default function DashboardContent({
                 const net = m.revenus - m.depenses;
                 // Évolution du solde : flux du mois / solde début de mois
                 const soldeDebut = soldeParMois[i + 1]; // solde avant ce mois
-                const evol = soldeDebut !== 0
-                  ? (net / Math.abs(soldeDebut)) * 100
+                const evol = Math.abs(soldeDebut ?? 0) >= 0.01
+                  ? Math.max(-9999, Math.min(9999, (net / Math.abs(soldeDebut)) * 100))
                   : null;
                 const tauxEpargne =
                   m.revenus > 0 ? Math.round(((m.revenus - m.depenses) / m.revenus) * 100) : null;
