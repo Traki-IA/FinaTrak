@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, Calendar, Upload } from "lucide-react";
+import { Search, Plus, Calendar, Upload, Pencil, Trash2, AlertTriangle, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import TransactionModal from "./TransactionModal";
@@ -338,19 +338,21 @@ function MobileTxRow({
             transition={{ duration: 0.18, ease: "easeOut" }}
             className="overflow-hidden"
           >
-            <div className="border-t border-[var(--border)] flex gap-2 px-[14px] py-1.5">
+            <div className="border-t border-[var(--border)] flex gap-2 px-[14px] py-2">
               {isConfirming ? (
                 <>
                   <button
                     onClick={() => onDeleteConfirm(transaction.id)}
-                    className="rounded-[7px] px-3 py-[5px] text-[11px] font-bold text-[var(--red)]"
+                    className="flex items-center gap-1.5 rounded-[9px] px-3.5 py-2 text-[12px] font-semibold text-white bg-[var(--red)] hover:opacity-90 transition-opacity"
                   >
-                    Confirmer la suppression
+                    <AlertTriangle size={12} />
+                    Confirmer
                   </button>
                   <button
                     onClick={onDeleteCancel}
-                    className="rounded-[7px] px-3 py-[5px] text-[11px] font-bold text-[var(--text3)]"
+                    className="flex items-center gap-1.5 rounded-[9px] px-3.5 py-2 text-[12px] font-semibold text-[var(--text2)] bg-white/[0.06] hover:bg-white/[0.1] transition-colors"
                   >
+                    <X size={12} />
                     Annuler
                   </button>
                 </>
@@ -358,15 +360,16 @@ function MobileTxRow({
                 <>
                   <button
                     onClick={() => { onEdit(transaction); onRowTap(); }}
-                    className="rounded-[7px] px-3 py-[5px] text-[11px] font-bold text-[var(--text3)]"
+                    className="flex items-center gap-1.5 rounded-[9px] px-3.5 py-2 text-[12px] font-semibold text-[var(--orange)] bg-[var(--orange)]/10 hover:bg-[var(--orange)]/20 transition-colors"
                   >
+                    <Pencil size={12} />
                     Modifier
                   </button>
                   <button
                     onClick={() => onDeleteRequest(transaction.id)}
-                    className="rounded-[7px] px-3 py-[5px] text-[11px] font-bold"
-                    style={{ color: "rgba(248,113,113,0.6)" }}
+                    className="flex items-center gap-1.5 rounded-[9px] px-3.5 py-2 text-[12px] font-semibold text-[var(--red)] bg-[var(--red)]/10 hover:bg-[var(--red)]/20 transition-colors"
                   >
+                    <Trash2 size={12} />
                     Supprimer
                   </button>
                 </>
