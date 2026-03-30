@@ -166,7 +166,7 @@ export async function upsertCategorie(input: {
   id?: string;
   nom: string;
   couleur: string;
-}): Promise<{ success: true } | { error: string }> {
+}): Promise<{ success: true; id: string } | { error: string }> {
   const parsed = UpsertCategorieSchema.safeParse(input);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
@@ -182,16 +182,20 @@ export async function upsertCategorie(input: {
       .eq("id", parsed.data.id)
       .eq("user_id", userId);
     if (error) return { error: "Erreur lors de la mise à jour" };
+    revalidatePath("/transactions");
+    revalidatePath("/dashboard");
+    return { success: true, id: parsed.data.id };
   } else {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("categories")
-      .insert([{ nom: parsed.data.nom, couleur: parsed.data.couleur, user_id: userId }]);
-    if (error) return { error: "Erreur lors de la création" };
+      .insert([{ nom: parsed.data.nom, couleur: parsed.data.couleur, user_id: userId }])
+      .select("id")
+      .single();
+    if (error || !data) return { error: "Erreur lors de la création" };
+    revalidatePath("/transactions");
+    revalidatePath("/dashboard");
+    return { success: true, id: data.id as string };
   }
-
-  revalidatePath("/transactions");
-  revalidatePath("/dashboard");
-  return { success: true };
 }
 
 export async function deleteCategorie(

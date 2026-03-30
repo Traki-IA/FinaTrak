@@ -146,9 +146,9 @@ export default function TransactionModal({
     if (catForm.id) {
       setLocalCategories((prev) => prev.map((c) => c.id === catForm.id ? { ...c, nom: catForm.nom.trim(), couleur: catForm.couleur } : c));
     } else {
-      const newCat: TCategorie = { id: crypto.randomUUID(), nom: catForm.nom.trim(), couleur: catForm.couleur, icone: "", sort_order: 0, created_at: new Date().toISOString() };
+      const newCat: TCategorie = { id: result.id, nom: catForm.nom.trim(), couleur: catForm.couleur, icone: "", sort_order: 0, created_at: new Date().toISOString() };
       setLocalCategories((prev) => [...prev, newCat]);
-      set("categorie_id", newCat.id);
+      set("categorie_id", result.id);
     }
     setCatForm(null);
   }
