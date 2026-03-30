@@ -17,7 +17,7 @@ import type { TTransactionWithCategorie, TCategorie, TObjectif, TBudgetItem } fr
 const MOIS_COMPLETS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
 
 function fmt(n: number): string {
-  return Math.abs(n).toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  return Math.abs(n).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function formatDate(dateStr: string): string {
