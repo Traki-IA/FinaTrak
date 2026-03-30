@@ -3,22 +3,21 @@ export type TCSVRow = {
   description: string;
   montant: number;
   type: "revenu" | "depense";
-  categorieLabel: string; // catégorie brute issue du CSV
 };
 
 export type TCSVParseResult = {
   rows: TCSVRow[];
-  categories: string[];  // catégories uniques trouvées
   errors: string[];
 };
 
 /**
  * Parse un CSV exporté depuis une banque française.
  * Format attendu (séparateur `;`) :
- *   Date de comptabilisation;Libelle simplifie;Libelle operation;Categorie;Sous categorie;Debit;Credit
+ *   Date;Libellé;Crédit;Débit
  *
  * Les montants utilisent la virgule comme séparateur décimal.
  * Les dates sont au format DD/MM/YYYY.
+ * Les catégories ne sont pas importées (à définir manuellement).
  */
 export function parseCSVBancaire(text: string): TCSVParseResult {
   const lines = text
@@ -30,10 +29,10 @@ export function parseCSVBancaire(text: string): TCSVParseResult {
   const rows: TCSVRow[] = [];
 
   if (lines.length < 2) {
-    return { rows, categories: [], errors: ["Le fichier est vide ou ne contient pas de données."] };
+    return { rows, errors: ["Le fichier est vide ou ne contient pas de données."] };
   }
 
-  // Détection du séparateur (;  ou ,)
+  // Détection du séparateur (; ou ,)
   const header = lines[0];
   const sep = header.includes(";") ? ";" : ",";
 
@@ -41,31 +40,23 @@ export function parseCSVBancaire(text: string): TCSVParseResult {
   const headers = header.split(sep).map((h) => h.trim().toLowerCase());
   const idx = {
     date: headers.findIndex((h) => h.includes("date")),
-    libelle: headers.findIndex((h) => h.includes("libell") && h.includes("simpl")),
-    categorie: headers.findIndex((h) => h.includes("categorie") && !h.includes("sous")),
+    libelle: headers.findIndex((h) => h.includes("libell")),
     debit: headers.findIndex((h) => h.includes("debit") || h.includes("débit")),
     credit: headers.findIndex((h) => h.includes("credit") || h.includes("crédit")),
   };
 
-  // Fallback : si libellé simplifié absent, prend le premier libellé
-  if (idx.libelle === -1) idx.libelle = headers.findIndex((h) => h.includes("libell"));
-
   if (idx.date === -1 || idx.debit === -1 || idx.credit === -1) {
     return {
       rows,
-      categories: [],
-      errors: ["Colonnes obligatoires introuvables (Date, Debit, Credit). Vérifiez le format du fichier."],
+      errors: ["Colonnes obligatoires introuvables (Date, Débit, Crédit). Vérifiez le format du fichier."],
     };
   }
-
-  const categoriesSet = new Set<string>();
 
   for (let i = 1; i < lines.length; i++) {
     const parts = lines[i].split(sep);
 
     const rawDate = parts[idx.date]?.trim() ?? "";
     const libelle = (idx.libelle >= 0 ? parts[idx.libelle]?.trim() : "") ?? "";
-    const categorie = (idx.categorie >= 0 ? parts[idx.categorie]?.trim() : "") ?? "";
     const rawDebit = parts[idx.debit]?.trim() ?? "";
     const rawCredit = parts[idx.credit]?.trim() ?? "";
 
@@ -92,14 +83,8 @@ export function parseCSVBancaire(text: string): TCSVParseResult {
       continue;
     }
 
-    if (categorie) categoriesSet.add(categorie);
-
-    rows.push({ date, description: libelle, montant, type, categorieLabel: categorie });
+    rows.push({ date, description: libelle, montant, type });
   }
 
-  return {
-    rows,
-    categories: Array.from(categoriesSet).sort(),
-    errors,
-  };
+  return { rows, errors };
 }

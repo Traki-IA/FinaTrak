@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, ChevronRight, Loader2, CheckCircle, AlertCircle, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { parseCSVBancaire } from "@/lib/csv-import";
-import { bulkInsertTransactions } from "./actions";
 import type { TCSVRow } from "@/lib/csv-import";
+import { bulkInsertTransactions } from "./actions";
 import type { TCategorie } from "@/types";
 
 interface IImportCSVModalProps {
@@ -22,12 +22,10 @@ function formatMontant(n: number) {
   return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export default function ImportCSVModal({ open, onOpenChange, categories, compteId }: IImportCSVModalProps) {
+export default function ImportCSVModal({ open, onOpenChange, compteId }: IImportCSVModalProps) {
   const [step, setStep] = useState<TStep>("upload");
   const [rows, setRows] = useState<TCSVRow[]>([]);
-  const [csvCategories, setCsvCategories] = useState<string[]>([]);
   const [parseErrors, setParseErrors] = useState<string[]>([]);
-  const [mapping, setMapping] = useState<Record<string, string | null>>({}); // csvCat → categorie_id | null
   const [importing, setImporting] = useState(false);
   const [importCount, setImportCount] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -38,9 +36,7 @@ export default function ImportCSVModal({ open, onOpenChange, categories, compteI
     setTimeout(() => {
       setStep("upload");
       setRows([]);
-      setCsvCategories([]);
       setParseErrors([]);
-      setMapping({});
       setImportCount(0);
     }, 300);
   }
@@ -55,19 +51,7 @@ export default function ImportCSVModal({ open, onOpenChange, categories, compteI
       const text = e.target?.result as string;
       const result = parseCSVBancaire(text);
       setRows(result.rows);
-      setCsvCategories(result.categories);
       setParseErrors(result.errors);
-
-      // Init mapping : null = pas de catégorie
-      const initMapping: Record<string, string | null> = {};
-      for (const cat of result.categories) {
-        // Auto-match par nom similaire
-        const match = categories.find(
-          (c) => c.nom.toLowerCase() === cat.toLowerCase()
-        );
-        initMapping[cat] = match?.id ?? null;
-      }
-      setMapping(initMapping);
       setStep("mapping");
     };
     reader.readAsText(file, "UTF-8");
@@ -80,7 +64,7 @@ export default function ImportCSVModal({ open, onOpenChange, categories, compteI
       description: r.description,
       montant: r.montant,
       type: r.type,
-      categorie_id: mapping[r.categorieLabel] ?? null,
+      categorie_id: null,
       compte_id: compteId,
     }));
 
@@ -132,7 +116,7 @@ export default function ImportCSVModal({ open, onOpenChange, categories, compteI
                 <div className="p-4 flex flex-col gap-4">
                   <p className="text-[13px] text-[var(--text2)] leading-relaxed">
                     Importe tes transactions depuis un export CSV de ta banque.
-                    Format supporté : séparateur <span className="text-[var(--text)] font-medium">;</span>, colonnes Date, Libellé, Débit, Crédit.
+                    Format supporté : séparateur <span className="text-[var(--text)] font-medium">;</span>, colonnes <span className="text-[var(--text)] font-medium">Date, Libellé, Débit, Crédit</span>. Les catégories seront à définir manuellement.
                   </p>
 
                   <button
@@ -188,42 +172,6 @@ export default function ImportCSVModal({ open, onOpenChange, categories, compteI
                         <p className="text-[12px] font-semibold text-[var(--red)] mb-0.5">{parseErrors.length} ligne(s) ignorée(s)</p>
                         {parseErrors.slice(0, 3).map((e, i) => (
                           <p key={i} className="text-[11px] text-[var(--red)]/80">{e}</p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Mapping catégories */}
-                  {csvCategories.length > 0 && (
-                    <div>
-                      <p className="text-[12px] font-semibold text-[var(--text2)] uppercase tracking-widest mb-2">
-                        Associer les catégories
-                      </p>
-                      <div className="rounded-[12px] overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-                        {csvCategories.map((cat, i) => (
-                          <div
-                            key={cat}
-                            className="flex items-center gap-2 px-3 py-2.5"
-                            style={{ borderBottom: i < csvCategories.length - 1 ? "1px solid var(--border)" : "none" }}
-                          >
-                            <span className="flex-1 text-[13px] text-[var(--text)] truncate">{cat}</span>
-                            <select
-                              value={mapping[cat] ?? ""}
-                              onChange={(e) => setMapping((prev) => ({ ...prev, [cat]: e.target.value || null }))}
-                              className="text-[12px] rounded-lg px-2 py-1.5 outline-none border"
-                              style={{
-                                background: "var(--bg3)",
-                                color: "var(--text)",
-                                borderColor: "var(--border)",
-                                maxWidth: 140,
-                              }}
-                            >
-                              <option value="">Sans catégorie</option>
-                              {categories.map((c) => (
-                                <option key={c.id} value={c.id}>{c.nom}</option>
-                              ))}
-                            </select>
-                          </div>
                         ))}
                       </div>
                     </div>
