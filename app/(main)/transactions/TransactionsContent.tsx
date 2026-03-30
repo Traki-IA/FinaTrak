@@ -318,12 +318,19 @@ function MobileTxRow({
           <p className="text-[14px] font-medium text-[var(--text)] truncate leading-snug">
             {transaction.description ?? "—"}
           </p>
-          <p className="text-[12px] text-[var(--text3)] mt-[2px] leading-snug">
-            {formatDate(transaction.date)}
-            {transaction.categories?.nom && (
-              <> · <span style={{ color: catColor ?? "var(--text3)" }}>{transaction.categories.nom}</span></>
-            )}
-          </p>
+          <div className="flex items-center gap-1.5 mt-[3px]">
+            <span className="text-[12px] text-[var(--text3)] tabular-nums">{formatDate(transaction.date)}</span>
+            <span
+              className="text-[10px] font-medium px-[7px] py-[1px] rounded-full truncate max-w-[120px]"
+              style={{
+                background: catColor ? `${catColor}20` : "rgba(255,255,255,0.06)",
+                color: catColor ?? "var(--text3)",
+                border: `1px solid ${catColor ? `${catColor}40` : "rgba(255,255,255,0.1)"}`,
+              }}
+            >
+              {transaction.categories?.nom ?? "Sans catégorie"}
+            </span>
+          </div>
         </div>
 
         {/* Montant */}
