@@ -165,14 +165,14 @@ export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
                     {isActive && <Check size={14} className="text-[var(--orange)] flex-shrink-0" />}
                   </button>
 
-                  <div className={`flex items-center gap-0.5 flex-shrink-0 ${isConfirming ? "opacity-100" : "opacity-40 hover:opacity-100"} transition-opacity`}>
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     {!isConfirming && (
                       <button
                         onClick={(e) => openEditModal(compte, e)}
-                        className="p-1 rounded-md text-[var(--text3)] hover:text-[var(--text)] hover:bg-white/[0.07] transition-colors"
+                        className="p-1.5 rounded-lg text-[var(--orange)] bg-[var(--orange)]/10 hover:bg-[var(--orange)]/20 transition-colors"
                         title="Modifier"
                       >
-                        <Pencil size={11} />
+                        <Pencil size={12} />
                       </button>
                     )}
                     <ConfirmDeleteButton
@@ -180,7 +180,7 @@ export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
                       onDeleteRequest={() => setConfirmingDeleteId(compte.id)}
                       onDeleteConfirm={() => handleDeleteConfirm(compte.id)}
                       onDeleteCancel={() => setConfirmingDeleteId(null)}
-                      size={11}
+                      size={12}
                     />
                   </div>
                 </div>

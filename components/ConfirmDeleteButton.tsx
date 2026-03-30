@@ -41,7 +41,7 @@ export default function ConfirmDeleteButton({
   return (
     <button
       onClick={onDeleteRequest}
-      className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/[0.08] transition-colors"
+      className="p-1.5 rounded-lg text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors"
       title="Supprimer"
     >
       <Trash2 size={size} />
