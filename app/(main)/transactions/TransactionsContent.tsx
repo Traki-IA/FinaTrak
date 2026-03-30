@@ -321,7 +321,7 @@ function MobileTxRow({
           <div className="flex items-center gap-1.5 mt-[3px]">
             <span className="text-[12px] text-[var(--text3)] tabular-nums">{formatDate(transaction.date)}</span>
             <span
-              className="text-[10px] font-medium px-[7px] py-[1px] rounded-full truncate max-w-[120px]"
+              className="text-[10px] font-medium px-[7px] py-[1px] rounded-full truncate w-[100px] text-center"
               style={{
                 background: catColor ? `${catColor}20` : "rgba(255,255,255,0.06)",
                 color: catColor ?? "var(--text3)",
