@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { requireUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import type { TObjectif } from "@/types";
 
 const ObjectifSchema = z.object({
   nom: z.string().min(1, "Le nom est requis"),
@@ -27,10 +28,11 @@ export type TInsertObjectifInput = z.infer<typeof ObjectifSchema>;
 export type TUpdateObjectifInput = z.infer<typeof UpdateObjectifSchema>;
 
 type TActionResult = { success: true } | { error: string };
+type TInsertResult = { success: true; objectif: TObjectif } | { error: string };
 
 export async function insertObjectif(
   input: TInsertObjectifInput
-): Promise<TActionResult> {
+): Promise<TInsertResult> {
   const parsed = ObjectifSchema.safeParse(input);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
@@ -49,14 +51,16 @@ export async function insertObjectif(
 
   if (!compte) return { error: "Compte invalide" };
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("objectifs")
-    .insert([{ ...parsed.data, user_id: userId }]);
+    .insert([{ ...parsed.data, user_id: userId }])
+    .select()
+    .single();
 
-  if (error) { console.error("[objectifs] insertObjectif:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
+  if (error || !data) { console.error("[objectifs] insertObjectif:", error?.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   revalidatePath("/objectifs");
-  return { success: true };
+  return { success: true, objectif: data as TObjectif };
 }
 
 export async function updateObjectif(

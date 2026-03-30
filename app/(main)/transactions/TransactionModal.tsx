@@ -7,6 +7,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2, Pencil, Plus, ArrowLeft, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { insertTransaction, updateTransaction, upsertCategorie, deleteCategorie } from "./actions";
+import { insertObjectif } from "@/app/(main)/objectifs/actions";
 import { useCompte } from "@/lib/compte-context";
 import { CompteIcon } from "@/components/compte-icons";
 import type { TCategorie, TObjectif, TBudgetItem, TTransactionWithCategorie } from "@/types";
@@ -58,6 +59,12 @@ export default function TransactionModal({
   const [catForm, setCatForm] = useState<{ id?: string; nom: string; couleur: string } | null>(null);
   const [catSaving, setCatSaving] = useState(false);
 
+  // Local objectifs state
+  const [localObjectifs, setLocalObjectifs] = useState<TObjectif[]>(objectifs);
+  const [showNewObjForm, setShowNewObjForm] = useState(false);
+  const [newObjForm, setNewObjForm] = useState({ nom: "", montant_cible: "", periode: "ponctuel" as "mensuel" | "annuel" | "ponctuel" });
+  const [objSaving, setObjSaving] = useState(false);
+
   function buildForm(t: TTransactionWithCategorie) {
     // Détecter les virements par le préfixe de description
     const isVirementSortant = t.description?.startsWith("Virement →");
@@ -98,6 +105,8 @@ export default function TransactionModal({
     if (open) {
       setForm(transaction ? buildForm(transaction) : INITIAL_FORM);
       setErrors({});
+      setShowNewObjForm(false);
+      setNewObjForm({ nom: "", montant_cible: "", periode: "ponctuel" });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, transaction?.id]);
@@ -150,6 +159,31 @@ export default function TransactionModal({
     setLocalCategories((prev) => prev.filter((c) => c.id !== id));
     if (form.categorie_id === id) set("categorie_id", "");
     setCatForm(null);
+  }
+
+  async function handleNewObjectifSave() {
+    const nom = newObjForm.nom.trim();
+    const montant_cible = parseFloat(newObjForm.montant_cible);
+    if (!nom) { toast.error("Le nom de l'objectif est requis"); return; }
+    if (!newObjForm.montant_cible || isNaN(montant_cible) || montant_cible <= 0) { toast.error("Le montant cible doit être supérieur à 0"); return; }
+
+    setObjSaving(true);
+    const result = await insertObjectif({
+      nom,
+      montant_cible,
+      montant_actuel: 0,
+      periode: newObjForm.periode,
+      date_fin: null,
+      compte_id: compteId,
+    });
+    setObjSaving(false);
+
+    if ("error" in result) { toast.error(result.error); return; }
+    setLocalObjectifs((prev) => [...prev, result.objectif]);
+    set("objectif_id", result.objectif.id);
+    setShowNewObjForm(false);
+    setNewObjForm({ nom: "", montant_cible: "", periode: "ponctuel" });
+    toast.success(`Objectif « ${result.objectif.nom} » créé`);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -600,42 +634,122 @@ export default function TransactionModal({
             </div>
 
             {/* Objectif lié */}
-            {objectifs.length > 0 && (
-              <div className="space-y-1">
+            <div className="space-y-1">
                 <label className="text-sm text-white/60 font-medium">
                   Lier à un objectif{" "}
                   <span className="text-white/30 font-normal">(optionnel)</span>
                 </label>
-                <select
-                  value={form.objectif_id}
-                  onChange={(e) => {
-                    set("objectif_id", e.target.value);
-                    set("budget_item_id", "");
-                  }}
-                  className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer appearance-none"
-                  style={{ colorScheme: "dark" }}
-                >
-                  <option value="" className="bg-[#0f0f1a]">
-                    Aucun objectif
-                  </option>
-                  {objectifs.map((obj) => {
-                    const pct = Math.min(
-                      Math.round(
-                        (obj.montant_actuel / obj.montant_cible) * 100
-                      ),
-                      100
-                    );
-                    return (
-                      <option
-                        key={obj.id}
-                        value={obj.id}
-                        className="bg-[#0f0f1a]"
-                      >
-                        {obj.nom} ({pct}%)
-                      </option>
-                    );
-                  })}
-                </select>
+
+                {localObjectifs.length > 0 && (
+                  <select
+                    value={form.objectif_id}
+                    onChange={(e) => {
+                      set("objectif_id", e.target.value);
+                      set("budget_item_id", "");
+                    }}
+                    className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer appearance-none"
+                    style={{ colorScheme: "dark" }}
+                  >
+                    <option value="" className="bg-[#0f0f1a]">
+                      Aucun objectif
+                    </option>
+                    {localObjectifs.map((obj) => {
+                      const pct = Math.min(
+                        Math.round(
+                          (obj.montant_actuel / obj.montant_cible) * 100
+                        ),
+                        100
+                      );
+                      return (
+                        <option
+                          key={obj.id}
+                          value={obj.id}
+                          className="bg-[#0f0f1a]"
+                        >
+                          {obj.nom} ({pct}%)
+                        </option>
+                      );
+                    })}
+                  </select>
+                )}
+
+                {/* Bouton + Nouvel objectif */}
+                {!showNewObjForm && (
+                  <button
+                    type="button"
+                    onClick={() => setShowNewObjForm(true)}
+                    className="flex items-center gap-1.5 text-xs text-orange-400/80 hover:text-orange-400 transition-colors mt-1"
+                  >
+                    <Plus size={12} />
+                    Nouvel objectif
+                  </button>
+                )}
+
+                {/* Mini-formulaire inline */}
+                <AnimatePresence>
+                  {showNewObjForm && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.18 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="rounded-xl border border-white/[0.1] bg-white/[0.03] p-3 space-y-2.5 mt-1">
+                        <div className="flex items-center gap-2">
+                          <button type="button" onClick={() => setShowNewObjForm(false)} className="text-white/40 hover:text-white transition-colors">
+                            <ArrowLeft size={14} />
+                          </button>
+                          <span className="text-sm font-medium text-white">Nouvel objectif</span>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Nom de l'objectif"
+                          value={newObjForm.nom}
+                          onChange={(e) => setNewObjForm((f) => ({ ...f, nom: e.target.value }))}
+                          className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-500/60"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Montant cible (€)"
+                          value={newObjForm.montant_cible}
+                          min={0}
+                          step="0.01"
+                          onChange={(e) => setNewObjForm((f) => ({ ...f, montant_cible: e.target.value }))}
+                          className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-500/60"
+                        />
+                        <select
+                          value={newObjForm.periode}
+                          onChange={(e) => setNewObjForm((f) => ({ ...f, periode: e.target.value as "mensuel" | "annuel" | "ponctuel" }))}
+                          className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-500/60 cursor-pointer appearance-none"
+                          style={{ colorScheme: "dark" }}
+                        >
+                          <option value="ponctuel" className="bg-[#0f0f1a]">Ponctuel</option>
+                          <option value="mensuel" className="bg-[#0f0f1a]">Mensuel</option>
+                          <option value="annuel" className="bg-[#0f0f1a]">Annuel</option>
+                        </select>
+                        <div className="flex gap-2 pt-0.5">
+                          <button
+                            type="button"
+                            onClick={() => setShowNewObjForm(false)}
+                            className="flex-1 py-2 rounded-lg text-sm text-white/50 hover:text-white bg-white/[0.05] hover:bg-white/[0.08] transition-colors"
+                          >
+                            Annuler
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleNewObjectifSave}
+                            disabled={objSaving}
+                            className="flex-1 py-2 rounded-lg text-sm text-white font-medium bg-orange-500/80 hover:bg-orange-500 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60"
+                          >
+                            {objSaving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+                            Créer
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Sélecteur de ligne de budget — conditionnel */}
                 {form.objectif_id &&
@@ -681,7 +795,7 @@ export default function TransactionModal({
                 {/* Aperçu de la progression si un objectif est sélectionné */}
                 {form.objectif_id &&
                   (() => {
-                    const obj = objectifs.find((o) => o.id === form.objectif_id);
+                    const obj = localObjectifs.find((o) => o.id === form.objectif_id);
                     const montantSaisi = parseFloat(form.montant) || 0;
                     if (!obj) return null;
                     const apres = Math.min(
@@ -717,8 +831,7 @@ export default function TransactionModal({
                       </div>
                     );
                   })()}
-              </div>
-            )}
+            </div>
 
             {/* Actions */}
             <div className="flex gap-3 pt-2">
