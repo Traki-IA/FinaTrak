@@ -252,7 +252,7 @@ export default function TransactionModal({
         }
 
         if (result.objectifUpdated) {
-          const objectif = objectifs.find((o) => o.id === form.objectif_id);
+          const objectif = localObjectifs.find((o) => o.id === form.objectif_id);
           toast.success(`Transaction modifiée · Progression de « ${objectif?.nom} » mise à jour`);
         } else {
           toast.success("Transaction modifiée !");
@@ -326,7 +326,7 @@ export default function TransactionModal({
       }
 
       if (result.objectifUpdated) {
-        const objectif = objectifs.find((o) => o.id === form.objectif_id);
+        const objectif = localObjectifs.find((o) => o.id === form.objectif_id);
         toast.success(
           `Transaction ajoutée · Progression de « ${objectif?.nom} » mise à jour`
         );

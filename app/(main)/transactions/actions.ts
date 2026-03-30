@@ -77,18 +77,14 @@ export async function insertTransaction(
   if (objectif_id) {
     const { data: objectif } = await supabase
       .from("objectifs")
-      .select("montant_actuel")
+      .select("montant_actuel, montant_cible")
       .eq("id", objectif_id)
       .single();
 
     if (objectif) {
-      const delta =
-        parsed.data.type === "depense"
-          ? -parsed.data.montant
-          : parsed.data.montant;
-      const nouveauMontant = Math.max(
-        0,
-        (objectif.montant_actuel as number) + delta
+      const nouveauMontant = Math.min(
+        (objectif.montant_actuel as number) + parsed.data.montant,
+        objectif.montant_cible as number
       );
       await supabase
         .from("objectifs")
@@ -134,13 +130,15 @@ export async function updateTransaction(
   if (objectif_id) {
     const { data: objectif } = await supabase
       .from("objectifs")
-      .select("montant_actuel")
+      .select("montant_actuel, montant_cible")
       .eq("id", objectif_id)
       .single();
 
     if (objectif) {
-      const delta = parsed.data.type === "depense" ? -parsed.data.montant : parsed.data.montant;
-      const nouveauMontant = Math.max(0, (objectif.montant_actuel as number) + delta);
+      const nouveauMontant = Math.min(
+        (objectif.montant_actuel as number) + parsed.data.montant,
+        objectif.montant_cible as number
+      );
       await supabase
         .from("objectifs")
         .update({ montant_actuel: nouveauMontant })
