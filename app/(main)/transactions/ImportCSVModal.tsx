@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, ChevronRight, Loader2, CheckCircle, AlertCircle, FileText } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { parseCSVBancaire } from "@/lib/csv-import";
 import type { TCSVRow } from "@/lib/csv-import";
 import { bulkInsertTransactions } from "./actions";

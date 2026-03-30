@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Receipt, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import Shell from "@/components/layout/Shell";
 import LogoHeader from "@/components/ui/LogoHeader";
 import BudgetModal from "./BudgetModal";

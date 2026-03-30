@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2 } from "lucide-react";
 import { insertObjectif, updateObjectif } from "./actions";

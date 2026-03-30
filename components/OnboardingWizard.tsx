@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ArrowRight, Check, Sparkles, Plus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { insertCompte } from "@/app/(main)/comptes/actions";
 import { CompteIcon, ICON_MAP } from "@/components/compte-icons";
 

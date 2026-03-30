@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2, AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { deleteUserAccount } from "./actions";
 
 interface IDeleteAccountDialogProps {

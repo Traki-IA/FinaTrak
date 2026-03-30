@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Check, Pencil, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { CompteIcon } from "@/components/compte-icons";
 import CompteModal from "@/components/CompteModal";

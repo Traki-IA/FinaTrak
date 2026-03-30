@@ -6,7 +6,7 @@ import {
   User, Key, ShieldCheck, Trash2, Moon, Bell, Fingerprint,
   ShieldAlert, Download, ChevronRight, Loader2, Eye, EyeOff, LogOut,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import * as Dialog from "@radix-ui/react-dialog";
 import Shell from "@/components/layout/Shell";
 import LogoHeader from "@/components/ui/LogoHeader";

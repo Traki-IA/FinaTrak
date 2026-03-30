@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2, Plus, Link2, Target } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";

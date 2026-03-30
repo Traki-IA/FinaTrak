@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { signIn, signUp } from "./actions";
 

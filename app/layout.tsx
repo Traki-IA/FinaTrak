@@ -50,11 +50,8 @@ export default function RootLayout({
 
         <Toaster
           position="bottom-center"
-          duration={2000}
-          closeButton
           swipeDirections={["bottom", "left", "right"]}
           toastOptions={{
-            duration: 2000,
             style: {
               background: "#1a1a2e",
               border: "1px solid rgba(255,255,255,0.1)",
