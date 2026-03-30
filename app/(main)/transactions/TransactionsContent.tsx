@@ -304,24 +304,31 @@ function MobileTxRow({
     >
       {/* Ligne principale */}
       <div
-        className="grid py-[10px] px-[14px] cursor-pointer select-none items-center gap-2"
-        style={{ gridTemplateColumns: "54px 76px 1fr 68px" }}
+        className="flex items-center gap-3 py-[12px] px-[14px] cursor-pointer select-none"
         onClick={onRowTap}
       >
-        <span className="text-[13px] text-[var(--text2)] tabular-nums whitespace-nowrap">
-          {formatDate(transaction.date)}
-        </span>
+        {/* Dot catégorie */}
+        <div
+          className="w-[10px] h-[10px] rounded-full flex-shrink-0"
+          style={{ background: catColor ?? (isRevenu ? "var(--green)" : "var(--red)") }}
+        />
+
+        {/* Contenu 2 lignes */}
+        <div className="flex-1 min-w-0">
+          <p className="text-[14px] font-medium text-[var(--text)] truncate leading-snug">
+            {transaction.description ?? "—"}
+          </p>
+          <p className="text-[12px] text-[var(--text3)] mt-[2px] leading-snug">
+            {formatDate(transaction.date)}
+            {transaction.categories?.nom && (
+              <> · <span style={{ color: catColor ?? "var(--text3)" }}>{transaction.categories.nom}</span></>
+            )}
+          </p>
+        </div>
+
+        {/* Montant */}
         <span
-          className="text-[11px] font-medium text-center block overflow-hidden truncate"
-          style={{ borderRadius: "20px", background: bgColor, border: `1px solid ${borderCat}`, color: catTextColor, padding: "2px 0" }}
-        >
-          {transaction.categories?.nom ?? "—"}
-        </span>
-        <span className="text-[14px] font-medium text-[var(--text)] truncate">
-          {transaction.description ?? "—"}
-        </span>
-        <span
-          className="text-[14px] font-semibold tabular-nums text-right whitespace-nowrap"
+          className="text-[15px] font-semibold tabular-nums whitespace-nowrap flex-shrink-0"
           style={{ color, letterSpacing: "-0.01em" }}
         >
           {isRevenu ? "+" : "−"}{fmt(transaction.montant)} €
