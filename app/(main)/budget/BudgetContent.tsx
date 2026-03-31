@@ -56,10 +56,12 @@ function Toggle({
 function BudgetRow({
   item,
   index,
+  viewMode,
   onEdit,
 }: {
   item: TBudgetItemWithRelations;
   index: number;
+  viewMode: "mensuel" | "annuel";
   onEdit: (item: TBudgetItemWithRelations) => void;
 }) {
   const router = useRouter();
@@ -74,10 +76,10 @@ function BudgetRow({
   }
 
   const couleur = item.categories?.couleur ?? "#94a3b8";
-  const isAnnual = item.frequence === "annuel";
-  const monthly = mensualise(item.montant, item.frequence);
-  const annual = annualise(item.montant, item.frequence);
-  const catNom = item.categories?.nom ?? null;
+  const value = viewMode === "mensuel"
+    ? mensualise(item.montant, item.frequence)
+    : annualise(item.montant, item.frequence);
+  const suffix = viewMode === "mensuel" ? "/mois" : "/an";
 
   return (
     <motion.div
@@ -85,46 +87,21 @@ function BudgetRow({
       exit={{ opacity: 0, x: -12 }}
       transition={{ duration: 0.15 }}
       onClick={() => onEdit(item)}
-      className={`flex items-start gap-[10px] cursor-pointer px-[14px] py-[8px] ${!item.actif ? "opacity-40" : ""}`}
+      className={`flex items-center gap-[10px] cursor-pointer px-[14px] py-[9px] ${!item.actif ? "opacity-40" : ""}`}
     >
       {/* Barre couleur catégorie */}
       <div className="w-[3px] self-stretch rounded-full flex-shrink-0" style={{ background: couleur }} />
 
-      {/* Contenu — 2 lignes */}
-      <div className="flex-1 min-w-0">
-        {/* Ligne 1 : nom + montant mensuel + toggle */}
-        <div className="flex items-center gap-2">
-          <span className="flex-1 text-[14px] font-[500] text-[var(--text)] truncate">{item.nom}</span>
-          <span className="text-[13px] font-[500] text-[var(--text)] tabular-nums text-right w-[110px] flex-shrink-0">
-            {formatEur(monthly)}<span className="text-[11px] text-[var(--text3)] font-normal">/mois</span>
-          </span>
-          <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
-        </div>
+      {/* Nom */}
+      <span className="flex-1 text-[14px] font-[500] text-[var(--text)] truncate">{item.nom}</span>
 
-        {/* Ligne 2 : badge (gauche) + pill droite alignée sur le bord gauche du toggle */}
-        <div className="flex items-center mt-[3px]">
-          <div className="flex-1 min-w-0">
-            {catNom ? (
-              <span
-                className="text-[10px] font-medium px-[7px] py-[1px] rounded-full truncate w-[100px] text-center inline-block"
-                style={{ background: `${couleur}20`, color: couleur }}
-              >
-                {catNom}
-              </span>
-            ) : (
-              <span className="text-[10px] text-[var(--text3)]">Sans catégorie</span>
-            )}
-          </div>
-          <span
-            className="text-[10px] font-medium px-[6px] py-[1px] rounded-full whitespace-nowrap flex-shrink-0"
-            style={{ background: "rgba(255,255,255,0.07)", color: "var(--text3)" }}
-          >
-            {formatEur(annual)}/an
-          </span>
-          {/* Spacer = largeur du toggle (w-9 = 36px) pour aligner bord droit pill sur bord gauche toggle */}
-          <div className="w-9 flex-shrink-0" />
-        </div>
-      </div>
+      {/* Montant selon mode */}
+      <span className="text-[13px] font-[500] text-[var(--text)] tabular-nums flex-shrink-0">
+        {formatEur(value)}<span className="text-[11px] text-[var(--text3)] font-normal">{suffix}</span>
+      </span>
+
+      {/* Toggle actif */}
+      <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
     </motion.div>
   );
 }
@@ -175,6 +152,7 @@ export default function BudgetContent({
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<TBudgetItemWithRelations | undefined>(undefined);
   const [localItems, setLocalItems] = useState(initialItems);
+  const [viewMode, setViewMode] = useState<"mensuel" | "annuel">("mensuel");
 
   // Sync depuis le serveur
   // Sync depuis le serveur — clé string pour comparer les contenus (pas les références)
@@ -244,25 +222,33 @@ export default function BudgetContent({
           <EmptyState onAdd={openAddModal} />
         ) : (
           <>
-            {/* KPIs — card harmonisée */}
+            {/* KPI + toggle vue */}
             <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
-              {/* Header */}
-              <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}>
-                <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Budget</span>
-              </div>
-              {/* Colonnes */}
-              <div className="flex">
-                <div className="flex-1 text-center py-[8px] px-2 min-w-0" style={{ borderRight: "1px solid var(--border)" }}>
-                  <div className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">/ mois</div>
-                  <div className="text-[17px] font-semibold text-[var(--text)] tracking-tight mt-[2px] tabular-nums truncate">
-                    {formatEur(totalMensuel)}
+              <div className="flex items-center px-4 py-3 gap-3">
+                {/* Montant total */}
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em] mb-[2px]">Budget total</div>
+                  <div className="text-[22px] font-semibold text-[var(--text)] tracking-tight tabular-nums">
+                    {formatEur(viewMode === "mensuel" ? totalMensuel : totalAnnuel)}
+                    <span className="text-[13px] font-normal text-[var(--text3)] ml-1">{viewMode === "mensuel" ? "/mois" : "/an"}</span>
                   </div>
                 </div>
-                <div className="flex-1 text-center py-[8px] px-2 min-w-0">
-                  <div className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">/ an</div>
-                  <div className="text-[17px] font-semibold text-[var(--text)] tracking-tight mt-[2px] tabular-nums truncate">
-                    {formatEur(totalAnnuel)}
-                  </div>
+                {/* Toggle /mois /an */}
+                <div className="flex rounded-xl overflow-hidden border border-[var(--border)] flex-shrink-0">
+                  {(["mensuel", "annuel"] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setViewMode(mode)}
+                      className={`px-3 py-1.5 text-[11px] font-semibold transition-colors ${
+                        viewMode === mode
+                          ? "bg-orange-500 text-white"
+                          : "text-[var(--text3)] hover:text-[var(--text)]"
+                      }`}
+                    >
+                      {mode === "mensuel" ? "/mois" : "/an"}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -291,6 +277,7 @@ export default function BudgetContent({
                           key={item.id}
                           item={item}
                           index={idx}
+                          viewMode={viewMode}
                           onEdit={openEditModal}
                         />
                       );
