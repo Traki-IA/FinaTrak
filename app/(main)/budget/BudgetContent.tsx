@@ -154,7 +154,7 @@ export default function BudgetContent({
 
   // Sync depuis le serveur
   // Sync depuis le serveur — clé string pour comparer les contenus (pas les références)
-  const serverKey = initialItems.map((i) => `${i.id}:${i.actif}:${i.montant}`).join(",");
+  const serverKey = initialItems.map((i) => `${i.id}:${i.actif}:${i.montant}:${i.nom}:${i.frequence}:${i.categorie_id ?? ""}`).join(",");
   useEffect(() => {
     setLocalItems(initialItems);
   // eslint-disable-next-line react-hooks/exhaustive-deps
