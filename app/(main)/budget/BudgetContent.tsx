@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Receipt, Plus } from "lucide-react";
@@ -101,8 +101,8 @@ function BudgetRow({
           <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
         </div>
 
-        {/* Ligne 2 : badge catégorie (gauche) + pill /an (droite) */}
-        <div className="flex items-center justify-between mt-[3px]">
+        {/* Ligne 2 : badge catégorie (gauche) + pill /an (droite, alignée sous le montant) */}
+        <div className="flex items-center justify-between mt-[3px] pr-[44px]">
           {catNom ? (
             <span
               className="text-[10px] font-medium px-[7px] py-[1px] rounded-full truncate w-[100px] text-center"
@@ -185,6 +185,17 @@ export default function BudgetContent({
   const totalMensuel = actifs.reduce((sum, i) => sum + mensualise(i.montant, i.frequence), 0);
   const totalAnnuel = actifs.reduce((sum, i) => sum + annualise(i.montant, i.frequence), 0);
 
+  // ── Groupement par catégorie ──────────────────────────────────────────────
+  const grouped = useMemo(() => {
+    const map = new Map<string, TBudgetItemWithRelations[]>();
+    for (const item of localItems) {
+      const key = item.categories?.nom ?? "Sans catégorie";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(item);
+    }
+    return map;
+  }, [localItems]);
+
   // ── Handlers ──────────────────────────────────────────────────────────────
   function openAddModal() {
     setEditingItem(undefined);
@@ -252,33 +263,38 @@ export default function BudgetContent({
               </div>
             </div>
 
-            {/* Liste — une seule carte */}
-            <motion.div
-              className="mt-[8px] rounded-[14px] overflow-hidden"
-              style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}
-            >
-              <AnimatePresence mode="popLayout">
-                {localItems.map((item) => {
-                  const idx = rowIndex++;
-                  return (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0, x: -12 }}
-                      transition={{ duration: 0.15 }}
-                      className="border-b border-[var(--border)] last:border-0"
-                    >
-                      <BudgetRow
-                        item={item}
-                        index={idx}
-                        onEdit={openEditModal}
-                      />
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-            </motion.div>
+            {/* Cards groupées par catégorie */}
+            <AnimatePresence mode="popLayout">
+              {Array.from(grouped.entries()).map(([cat, items]) => (
+                <motion.div
+                  key={cat}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="mt-[8px] rounded-[14px] overflow-hidden"
+                  style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}
+                >
+                  {/* En-tête catégorie */}
+                  <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}>
+                    <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{cat}</span>
+                  </div>
+                  {/* Rows */}
+                  <div className="divide-y divide-[var(--border)]">
+                    {items.map((item) => {
+                      const idx = rowIndex++;
+                      return (
+                        <BudgetRow
+                          key={item.id}
+                          item={item}
+                          index={idx}
+                          onEdit={openEditModal}
+                        />
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </>
         )}
       </Shell>
