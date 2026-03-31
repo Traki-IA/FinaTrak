@@ -96,12 +96,16 @@ function SortableObjectifRow({
   async function handleUpdate() {
     const montant = parseFloat(inputValue);
     if (isNaN(montant) || montant < 0) { toast.error("Montant invalide"); return; }
+    setShowInput(false); // immédiat
     setIsUpdating(true);
     const result = await updateObjectifMontant(objectif.id, montant);
     setIsUpdating(false);
-    if ("error" in result) { toast.error(result.error); return; }
+    if ("error" in result) {
+      setShowInput(true); // revert
+      toast.error(result.error);
+      return;
+    }
     toast.success("Progression mise à jour !");
-    setShowInput(false);
     router.refresh();
   }
 

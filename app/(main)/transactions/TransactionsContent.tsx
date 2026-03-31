@@ -462,6 +462,8 @@ export default function TransactionsContent({
 }: ITransactionsContentProps) {
   const router = useRouter();
 
+  const [localTransactions, setLocalTransactions] = useState(transactions);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<TTransactionWithCategorie | undefined>(undefined);
@@ -480,7 +482,7 @@ export default function TransactionsContent({
   const [periodSheetOpen, setPeriodSheetOpen] = useState(false);
 
   const filtered = useMemo(() => {
-    let result = filterByPeriod(transactions, periodFilter, customFrom, customTo);
+    let result = filterByPeriod(localTransactions, periodFilter, customFrom, customTo);
     if (typeFilter !== "all") {
       result = result.filter((t) => t.type === typeFilter);
     }
@@ -534,8 +536,10 @@ export default function TransactionsContent({
   async function handleDeleteConfirm(id: string) {
     setConfirmingDeleteId(null);
     setActiveRowId(null);
+    setLocalTransactions((prev) => prev.filter((t) => t.id !== id));
     const result = await deleteTransaction(id);
     if ("error" in result) {
+      setLocalTransactions(transactions); // revert
       toast.error(result.error);
     } else {
       toast.success("Transaction supprimée");
