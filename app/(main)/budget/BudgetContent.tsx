@@ -76,6 +76,7 @@ function BudgetRow({
   const couleur = item.categories?.couleur ?? "#94a3b8";
   const isAnnual = item.frequence === "annuel";
   const monthly = mensualise(item.montant, item.frequence);
+  const annual = annualise(item.montant, item.frequence);
   const catNom = item.categories?.nom ?? null;
 
   return (
@@ -91,18 +92,16 @@ function BudgetRow({
 
       {/* Contenu — 2 lignes */}
       <div className="flex-1 min-w-0">
-        {/* Ligne 1 : nom + montant mensuel + pill annuelle + toggle */}
+        {/* Ligne 1 : nom + montant mensuel + toggle */}
         <div className="flex items-center gap-2">
           <span className="flex-1 text-[14px] font-[500] text-[var(--text)] truncate">{item.nom}</span>
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            {isAnnual && (
-              <span
-                className="text-[10px] font-medium px-[6px] py-[1px] rounded-full whitespace-nowrap"
-                style={{ background: "rgba(255,255,255,0.07)", color: "var(--text3)" }}
-              >
-                ≈ {formatEur(item.montant)}/an
-              </span>
-            )}
+            <span
+              className="text-[10px] font-medium px-[6px] py-[1px] rounded-full whitespace-nowrap"
+              style={{ background: "rgba(255,255,255,0.07)", color: "var(--text3)" }}
+            >
+              {formatEur(annual)}/an
+            </span>
             <span className="text-[13px] font-[500] text-[var(--text)] tabular-nums text-right w-[110px]">
               {formatEur(monthly)}<span className="text-[11px] text-[var(--text3)] font-normal">/mois</span>
             </span>
@@ -114,7 +113,7 @@ function BudgetRow({
         <div className="flex items-center gap-1.5 mt-[3px]">
           {catNom ? (
             <span
-              className="text-[10px] font-medium px-[7px] py-[1px] rounded-full"
+              className="text-[10px] font-medium px-[7px] py-[1px] rounded-full truncate w-[100px] text-center"
               style={{
                 background: `${couleur}20`,
                 color: couleur,
