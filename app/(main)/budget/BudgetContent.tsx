@@ -95,35 +95,30 @@ function BudgetRow({
         {/* Ligne 1 : nom + montant mensuel + toggle */}
         <div className="flex items-center gap-2">
           <span className="flex-1 text-[14px] font-[500] text-[var(--text)] truncate">{item.nom}</span>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <span
-              className="text-[10px] font-medium px-[6px] py-[1px] rounded-full whitespace-nowrap"
-              style={{ background: "rgba(255,255,255,0.07)", color: "var(--text3)" }}
-            >
-              {formatEur(annual)}/an
-            </span>
-            <span className="text-[13px] font-[500] text-[var(--text)] tabular-nums text-right w-[110px]">
-              {formatEur(monthly)}<span className="text-[11px] text-[var(--text3)] font-normal">/mois</span>
-            </span>
-          </div>
+          <span className="text-[13px] font-[500] text-[var(--text)] tabular-nums text-right w-[110px] flex-shrink-0">
+            {formatEur(monthly)}<span className="text-[11px] text-[var(--text3)] font-normal">/mois</span>
+          </span>
           <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
         </div>
 
-        {/* Ligne 2 : badge catégorie */}
-        <div className="flex items-center gap-1.5 mt-[3px]">
+        {/* Ligne 2 : badge catégorie (gauche) + pill /an (droite) */}
+        <div className="flex items-center justify-between mt-[3px]">
           {catNom ? (
             <span
               className="text-[10px] font-medium px-[7px] py-[1px] rounded-full truncate w-[100px] text-center"
-              style={{
-                background: `${couleur}20`,
-                color: couleur,
-              }}
+              style={{ background: `${couleur}20`, color: couleur }}
             >
               {catNom}
             </span>
           ) : (
             <span className="text-[10px] text-[var(--text3)]">Sans catégorie</span>
           )}
+          <span
+            className="text-[10px] font-medium px-[6px] py-[1px] rounded-full whitespace-nowrap"
+            style={{ background: "rgba(255,255,255,0.07)", color: "var(--text3)" }}
+          >
+            {formatEur(annual)}/an
+          </span>
         </div>
       </div>
     </motion.div>
