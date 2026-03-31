@@ -101,24 +101,29 @@ function BudgetRow({
           <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
         </div>
 
-        {/* Ligne 2 : badge catégorie (gauche) + pill /an (droite, alignée sous le montant) */}
-        <div className="flex items-center justify-between mt-[3px] pr-[44px]">
-          {catNom ? (
+        {/* Ligne 2 : badge (gauche) + pill /an alignée sous le toggle (droite) */}
+        <div className="flex items-center gap-2 mt-[3px]">
+          <div className="flex-1 min-w-0">
+            {catNom ? (
+              <span
+                className="text-[10px] font-medium px-[7px] py-[1px] rounded-full truncate w-[100px] text-center inline-block"
+                style={{ background: `${couleur}20`, color: couleur }}
+              >
+                {catNom}
+              </span>
+            ) : (
+              <span className="text-[10px] text-[var(--text3)]">Sans catégorie</span>
+            )}
+          </div>
+          {/* w-9 = même largeur que le toggle → bord droit aligné */}
+          <div className="w-9 flex-shrink-0 flex justify-end overflow-visible">
             <span
-              className="text-[10px] font-medium px-[7px] py-[1px] rounded-full truncate w-[100px] text-center"
-              style={{ background: `${couleur}20`, color: couleur }}
+              className="text-[10px] font-medium px-[6px] py-[1px] rounded-full whitespace-nowrap"
+              style={{ background: "rgba(255,255,255,0.07)", color: "var(--text3)" }}
             >
-              {catNom}
+              {formatEur(annual)}/an
             </span>
-          ) : (
-            <span className="text-[10px] text-[var(--text3)]">Sans catégorie</span>
-          )}
-          <span
-            className="text-[10px] font-medium px-[6px] py-[1px] rounded-full whitespace-nowrap"
-            style={{ background: "rgba(255,255,255,0.07)", color: "var(--text3)" }}
-          >
-            {formatEur(annual)}/an
-          </span>
+          </div>
         </div>
       </div>
     </motion.div>
