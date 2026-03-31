@@ -130,7 +130,7 @@ export default function CategoryList({ categories }: ICategoryListProps) {
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
 
   // Sync quand les données serveur changent
-  const serverKey = categories.map((c) => `${c.id}-${c.sort_order}-${c.nom}-${c.couleur}-${c.icone}`).join("|");
+  const serverKey = JSON.stringify(categories);
   const [prevServerKey, setPrevServerKey] = useState(serverKey);
   if (serverKey !== prevServerKey) {
     setPrevServerKey(serverKey);

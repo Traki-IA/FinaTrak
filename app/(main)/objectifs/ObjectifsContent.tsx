@@ -373,9 +373,7 @@ export default function ObjectifsContent({
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [localObjectifs, setLocalObjectifs] = useState(initialObjectifs);
 
-  const serverKey = initialObjectifs
-    .map((o) => `${o.id}-${o.sort_order}-${o.nom}-${o.montant_cible}-${o.montant_actuel}-${o.date_fin}-${o.periode}`)
-    .join("|");
+  const serverKey = JSON.stringify(initialObjectifs);
   useMemo(() => {
     setLocalObjectifs(initialObjectifs);
   // eslint-disable-next-line react-hooks/exhaustive-deps
