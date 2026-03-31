@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Receipt, Plus } from "lucide-react";
@@ -76,14 +76,7 @@ function BudgetRow({
   const couleur = item.categories?.couleur ?? "#94a3b8";
   const isAnnual = item.frequence === "annuel";
   const monthly = mensualise(item.montant, item.frequence);
-  const annual = annualise(item.montant, item.frequence);
-  const badgeBg = isAnnual ? "var(--green-bg, rgba(74,222,128,0.1))" : "var(--orange-bg, rgba(249,115,22,0.1))";
-  const badgeColor = isAnnual ? "var(--green, #4ADE80)" : "var(--orange, #F97316)";
-  const badgeLabel = isAnnual ? "annuel" : "mensuel";
-  const mainValue = isAnnual ? formatEur(annual) : formatEur(monthly);
-  const mainSuffix = isAnnual ? "/an" : "/mois";
-  const subValue = isAnnual ? formatEur(monthly) : formatEur(annual);
-  const subSuffix = isAnnual ? "/mois" : "/an";
+  const catNom = item.categories?.nom ?? null;
 
   return (
     <motion.div
@@ -91,38 +84,46 @@ function BudgetRow({
       exit={{ opacity: 0, x: -12 }}
       transition={{ duration: 0.15 }}
       onClick={() => onEdit(item)}
-      className="flex items-center cursor-pointer"
-      style={{
-        padding: "8px 14px",
-        gap: "9px",
-        opacity: 1,
-      }}
+      className={`flex items-center gap-[10px] cursor-pointer px-[14px] py-[8px] ${!item.actif ? "opacity-40" : ""}`}
     >
-      {/* Nom */}
-      <div
-        className="flex-1 min-w-0 text-[14px] font-[500] text-[var(--text)] truncate"
-        style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
-      >
-        {item.nom}
-      </div>
+      {/* Barre couleur catégorie */}
+      <div className="w-[3px] self-stretch rounded-full flex-shrink-0" style={{ background: couleur }} />
 
-      {/* Montants */}
-      <div
-        className="text-right flex-shrink-0 whitespace-nowrap"
-      >
-        <div
-          className="text-[var(--text)] flex items-baseline justify-end"
-          style={{ fontSize: 13, fontWeight: 500, letterSpacing: "-0.01em" }}
-        >
-          <span className="tabular-nums">{mainValue}</span>
-          <span className="inline-block w-[34px] text-left text-[11px]">{mainSuffix}</span>
+      {/* Contenu — 2 lignes */}
+      <div className="flex-1 min-w-0">
+        {/* Ligne 1 : nom + montant mensuel + pill annuelle */}
+        <div className="flex items-center gap-2">
+          <span className="flex-1 text-[14px] font-[500] text-[var(--text)] truncate">{item.nom}</span>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <span className="text-[13px] font-[500] text-[var(--text)] tabular-nums">
+              {formatEur(monthly)}<span className="text-[11px] text-[var(--text3)] font-normal">/mois</span>
+            </span>
+            {isAnnual && (
+              <span
+                className="text-[10px] font-medium px-[6px] py-[1px] rounded-full whitespace-nowrap"
+                style={{ background: "rgba(255,255,255,0.07)", color: "var(--text3)" }}
+              >
+                ≈ {formatEur(item.montant)}/an
+              </span>
+            )}
+          </div>
         </div>
-        <div
-          className="text-[var(--text3)] flex items-baseline justify-end"
-          style={{ fontSize: 10 }}
-        >
-          <span className="tabular-nums">{subValue}</span>
-          <span className="inline-block w-[34px] text-left text-[9px]">{subSuffix}</span>
+
+        {/* Ligne 2 : badge catégorie */}
+        <div className="flex items-center gap-1.5 mt-[3px]">
+          {catNom ? (
+            <span
+              className="text-[10px] font-medium px-[7px] py-[1px] rounded-full"
+              style={{
+                background: `${couleur}20`,
+                color: couleur,
+              }}
+            >
+              {catNom}
+            </span>
+          ) : (
+            <span className="text-[10px] text-[var(--text3)]">Sans catégorie</span>
+          )}
         </div>
       </div>
 
@@ -192,17 +193,6 @@ export default function BudgetContent({
   const totalMensuel = actifs.reduce((sum, i) => sum + mensualise(i.montant, i.frequence), 0);
   const totalAnnuel = actifs.reduce((sum, i) => sum + annualise(i.montant, i.frequence), 0);
 
-  // ── Groupement par catégorie ──────────────────────────────────────────────
-  const grouped = useMemo(() => {
-    const map = new Map<string, TBudgetItemWithRelations[]>();
-    for (const item of localItems) {
-      const key = item.categories?.nom ?? "Sans catégorie";
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(item);
-    }
-    return map;
-  }, [localItems]);
-
   // ── Handlers ──────────────────────────────────────────────────────────────
   function openAddModal() {
     setEditingItem(undefined);
@@ -227,7 +217,7 @@ export default function BudgetContent({
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
-  let rowIndex = 0;
+  let rowIndex = 0; // eslint-disable-line prefer-const
 
   return (
     <>
@@ -270,39 +260,33 @@ export default function BudgetContent({
               </div>
             </div>
 
-            {/* Liste groupée par catégorie */}
-            <AnimatePresence mode="popLayout">
-              {Array.from(grouped.entries()).map(([cat, items]) => (
-                <motion.div
-                  key={cat}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="mt-[8px] rounded-[14px] overflow-hidden"
-                  style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}
-                >
-                  {/* En-tête catégorie */}
-                  <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}>
-                    <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{cat}</span>
-                  </div>
-
-                  {/* Rows */}
-                  <div className="divide-y divide-[var(--border)]">
-                    {items.map((item) => {
-                      const idx = rowIndex++;
-                      return (
-                        <BudgetRow
-                          key={item.id}
-                          item={item}
-                          index={idx}
-                          onEdit={openEditModal}
-                        />
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+            {/* Liste — une seule carte */}
+            <motion.div
+              className="mt-[8px] rounded-[14px] overflow-hidden"
+              style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}
+            >
+              <AnimatePresence mode="popLayout">
+                {localItems.map((item) => {
+                  const idx = rowIndex++;
+                  return (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0, x: -12 }}
+                      transition={{ duration: 0.15 }}
+                      className="border-b border-[var(--border)] last:border-0"
+                    >
+                      <BudgetRow
+                        item={item}
+                        index={idx}
+                        onEdit={openEditModal}
+                      />
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </motion.div>
           </>
         )}
       </Shell>
