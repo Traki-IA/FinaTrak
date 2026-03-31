@@ -57,25 +57,20 @@ function BudgetRow({
   item,
   index,
   viewMode,
+  onToggle,
   onEdit,
 }: {
   item: TBudgetItemWithRelations;
   index: number;
   viewMode: "mensuel" | "annuel";
+  onToggle: (id: string, actif: boolean) => Promise<void>;
   onEdit: (item: TBudgetItemWithRelations) => void;
 }) {
-  const router = useRouter();
   const [optimisticActif, setOptimisticActif] = useState(item.actif);
 
   async function handleToggle(actif: boolean) {
-    setOptimisticActif(actif); // visuel immédiat
-    const result = await toggleBudgetItem(item.id, actif);
-    if ("error" in result) {
-      setOptimisticActif(!actif); // revert si erreur
-      toast.error(result.error);
-      return;
-    }
-    router.refresh();
+    setOptimisticActif(actif);
+    await onToggle(item.id, actif);
   }
 
   const couleur = item.categories?.couleur ?? "#94a3b8";
@@ -192,6 +187,17 @@ export default function BudgetContent({
     setModalOpen(true);
   }
 
+  async function handleToggleItem(id: string, actif: boolean) {
+    setLocalItems((prev) => prev.map((i) => i.id === id ? { ...i, actif } : i));
+    const result = await toggleBudgetItem(id, actif);
+    if ("error" in result) {
+      setLocalItems((prev) => prev.map((i) => i.id === id ? { ...i, actif: !actif } : i));
+      toast.error(result.error);
+      return;
+    }
+    router.refresh();
+  }
+
   async function handleDeleteFromModal(id: string) {
     setLocalItems((prev) => prev.filter((i) => i.id !== id));
     const result = await deleteBudgetItem(id);
@@ -281,6 +287,7 @@ export default function BudgetContent({
                           item={item}
                           index={idx}
                           viewMode={viewMode}
+                          onToggle={handleToggleItem}
                           onEdit={openEditModal}
                         />
                       );
