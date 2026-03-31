@@ -87,7 +87,7 @@ function BudgetRow({
       exit={{ opacity: 0, x: -12 }}
       transition={{ duration: 0.15 }}
       onClick={() => onEdit(item)}
-      className={`flex items-center gap-[10px] cursor-pointer px-[14px] py-[10px] ${!item.actif ? "opacity-40" : ""}`}
+      className={`flex items-center gap-[10px] cursor-pointer px-[14px] py-[7px] ${!item.actif ? "opacity-40" : ""}`}
     >
       {/* Barre couleur catégorie */}
       <div className="w-[3px] self-stretch rounded-full flex-shrink-0" style={{ background: couleur }} />
@@ -224,7 +224,7 @@ export default function BudgetContent({
           <>
             {/* KPI + toggle vue */}
             <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
-              <div className="px-4 pt-3 pb-3">
+              <div className="px-4 pt-2 pb-2">
                 {/* Ligne 1 : label + toggle */}
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[11px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em]">Budget total</span>
