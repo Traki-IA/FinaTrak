@@ -95,9 +95,6 @@ function BudgetRow({
         <div className="flex items-center gap-2">
           <span className="flex-1 text-[14px] font-[500] text-[var(--text)] truncate">{item.nom}</span>
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            <span className="text-[13px] font-[500] text-[var(--text)] tabular-nums">
-              {formatEur(monthly)}<span className="text-[11px] text-[var(--text3)] font-normal">/mois</span>
-            </span>
             {isAnnual && (
               <span
                 className="text-[10px] font-medium px-[6px] py-[1px] rounded-full whitespace-nowrap"
@@ -106,6 +103,9 @@ function BudgetRow({
                 ≈ {formatEur(item.montant)}/an
               </span>
             )}
+            <span className="text-[13px] font-[500] text-[var(--text)] tabular-nums text-right w-[110px]">
+              {formatEur(monthly)}<span className="text-[11px] text-[var(--text3)] font-normal">/mois</span>
+            </span>
           </div>
           <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
         </div>
