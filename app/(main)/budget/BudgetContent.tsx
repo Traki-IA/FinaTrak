@@ -101,8 +101,8 @@ function BudgetRow({
           <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
         </div>
 
-        {/* Ligne 2 : badge (gauche) + pill /an alignée sous le toggle (droite) */}
-        <div className="flex items-center gap-2 mt-[3px]">
+        {/* Ligne 2 : badge (gauche) + pill droite alignée sur le bord gauche du toggle */}
+        <div className="flex items-center mt-[3px]">
           <div className="flex-1 min-w-0">
             {catNom ? (
               <span
@@ -115,15 +115,14 @@ function BudgetRow({
               <span className="text-[10px] text-[var(--text3)]">Sans catégorie</span>
             )}
           </div>
-          {/* w-9 = même largeur que le toggle → bord gauche aligné */}
-          <div className="w-9 flex-shrink-0 flex justify-start overflow-visible">
-            <span
-              className="text-[10px] font-medium px-[6px] py-[1px] rounded-full whitespace-nowrap"
-              style={{ background: "rgba(255,255,255,0.07)", color: "var(--text3)" }}
-            >
-              {formatEur(annual)}/an
-            </span>
-          </div>
+          <span
+            className="text-[10px] font-medium px-[6px] py-[1px] rounded-full whitespace-nowrap flex-shrink-0"
+            style={{ background: "rgba(255,255,255,0.07)", color: "var(--text3)" }}
+          >
+            {formatEur(annual)}/an
+          </span>
+          {/* Spacer = largeur du toggle (w-9 = 36px) pour aligner bord droit pill sur bord gauche toggle */}
+          <div className="w-9 flex-shrink-0" />
         </div>
       </div>
     </motion.div>
