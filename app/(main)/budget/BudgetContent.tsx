@@ -115,8 +115,8 @@ function BudgetRow({
               <span className="text-[10px] text-[var(--text3)]">Sans catégorie</span>
             )}
           </div>
-          {/* w-9 = même largeur que le toggle → bord droit aligné */}
-          <div className="w-9 flex-shrink-0 flex justify-end overflow-visible">
+          {/* w-9 = même largeur que le toggle → bord gauche aligné */}
+          <div className="w-9 flex-shrink-0 flex justify-start overflow-visible">
             <span
               className="text-[10px] font-medium px-[6px] py-[1px] rounded-full whitespace-nowrap"
               style={{ background: "rgba(255,255,255,0.07)", color: "var(--text3)" }}
