@@ -38,13 +38,13 @@ function Toggle({
       type="button"
       disabled={disabled}
       onClick={(e) => { e.stopPropagation(); onChange(!checked); }}
-      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${
+      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors flex-shrink-0 ${
         checked ? "bg-orange-500" : "bg-white/20"
       } disabled:opacity-50 disabled:cursor-not-allowed`}
     >
       <span
-        className={`inline-block h-3.5 w-3.5 rounded-full shadow transition-transform ${
-          checked ? "translate-x-[18px] bg-white" : "translate-x-[2px] bg-[var(--text2)]"
+        className={`inline-block h-5 w-5 rounded-full shadow transition-transform ${
+          checked ? "translate-x-[26px] bg-white" : "translate-x-[2px] bg-[var(--text2)]"
         }`}
       />
     </button>
@@ -87,20 +87,20 @@ function BudgetRow({
       exit={{ opacity: 0, x: -12 }}
       transition={{ duration: 0.15 }}
       onClick={() => onEdit(item)}
-      className={`flex items-center gap-[10px] cursor-pointer px-[14px] py-[9px] ${!item.actif ? "opacity-40" : ""}`}
+      className={`flex items-center gap-[10px] cursor-pointer px-[14px] py-[10px] ${!item.actif ? "opacity-40" : ""}`}
     >
       {/* Barre couleur catégorie */}
       <div className="w-[3px] self-stretch rounded-full flex-shrink-0" style={{ background: couleur }} />
 
-      {/* Nom */}
-      <span className="flex-1 text-[14px] font-[500] text-[var(--text)] truncate">{item.nom}</span>
+      {/* Contenu 2 lignes */}
+      <div className="flex-1 min-w-0">
+        <div className="text-[15px] font-[500] text-[var(--text)] truncate">{item.nom}</div>
+        <div className="text-[15px] font-[500] text-[var(--text)] tabular-nums mt-[2px]">
+          {formatEur(value)}<span className="text-[12px] text-[var(--text3)] font-normal">{suffix}</span>
+        </div>
+      </div>
 
-      {/* Montant selon mode */}
-      <span className="text-[13px] font-[500] text-[var(--text)] tabular-nums flex-shrink-0">
-        {formatEur(value)}<span className="text-[11px] text-[var(--text3)] font-normal">{suffix}</span>
-      </span>
-
-      {/* Toggle actif */}
+      {/* Toggle centré verticalement sur les 2 lignes */}
       <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
     </motion.div>
   );
@@ -224,31 +224,31 @@ export default function BudgetContent({
           <>
             {/* KPI + toggle vue */}
             <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
-              <div className="flex items-center px-4 py-3 gap-3">
-                {/* Montant total */}
-                <div className="flex-1 min-w-0">
-                  <div className="text-[10px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em] mb-[2px]">Budget total</div>
-                  <div className="text-[22px] font-semibold text-[var(--text)] tracking-tight tabular-nums">
-                    {formatEur(viewMode === "mensuel" ? totalMensuel : totalAnnuel)}
-                    <span className="text-[13px] font-normal text-[var(--text3)] ml-1">{viewMode === "mensuel" ? "/mois" : "/an"}</span>
+              <div className="px-4 pt-3 pb-3">
+                {/* Ligne 1 : label + toggle */}
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em]">Budget total</span>
+                  <div className="flex rounded-lg overflow-hidden border border-[var(--border)]">
+                    {(["mensuel", "annuel"] as const).map((mode) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setViewMode(mode)}
+                        className={`px-2.5 py-[3px] text-[11px] font-semibold transition-colors ${
+                          viewMode === mode
+                            ? "bg-orange-500 text-white"
+                            : "text-[var(--text3)] hover:text-[var(--text)]"
+                        }`}
+                      >
+                        {mode === "mensuel" ? "/mois" : "/an"}
+                      </button>
+                    ))}
                   </div>
                 </div>
-                {/* Toggle /mois /an */}
-                <div className="flex rounded-xl overflow-hidden border border-[var(--border)] flex-shrink-0">
-                  {(["mensuel", "annuel"] as const).map((mode) => (
-                    <button
-                      key={mode}
-                      type="button"
-                      onClick={() => setViewMode(mode)}
-                      className={`px-3 py-1.5 text-[11px] font-semibold transition-colors ${
-                        viewMode === mode
-                          ? "bg-orange-500 text-white"
-                          : "text-[var(--text3)] hover:text-[var(--text)]"
-                      }`}
-                    >
-                      {mode === "mensuel" ? "/mois" : "/an"}
-                    </button>
-                  ))}
+                {/* Ligne 2 : montant */}
+                <div className="text-[32px] font-bold text-[var(--text)] tracking-tight tabular-nums leading-none">
+                  {formatEur(viewMode === "mensuel" ? totalMensuel : totalAnnuel)}
+                  <span className="text-[16px] font-normal text-[var(--text3)] ml-1.5">{viewMode === "mensuel" ? "/mois" : "/an"}</span>
                 </div>
               </div>
             </div>
@@ -265,8 +265,8 @@ export default function BudgetContent({
                   style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}
                 >
                   {/* En-tête catégorie */}
-                  <div className="py-[2px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}>
-                    <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{cat}</span>
+                  <div className="py-[4px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}>
+                    <span className="text-[11px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{cat}</span>
                   </div>
                   {/* Rows */}
                   <div className="divide-y divide-[var(--border)]">
