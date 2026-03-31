@@ -84,14 +84,14 @@ function BudgetRow({
       exit={{ opacity: 0, x: -12 }}
       transition={{ duration: 0.15 }}
       onClick={() => onEdit(item)}
-      className={`flex items-center gap-[10px] cursor-pointer px-[14px] py-[8px] ${!item.actif ? "opacity-40" : ""}`}
+      className={`flex items-start gap-[10px] cursor-pointer px-[14px] py-[8px] ${!item.actif ? "opacity-40" : ""}`}
     >
       {/* Barre couleur catégorie */}
       <div className="w-[3px] self-stretch rounded-full flex-shrink-0" style={{ background: couleur }} />
 
       {/* Contenu — 2 lignes */}
       <div className="flex-1 min-w-0">
-        {/* Ligne 1 : nom + montant mensuel + pill annuelle */}
+        {/* Ligne 1 : nom + montant mensuel + pill annuelle + toggle */}
         <div className="flex items-center gap-2">
           <span className="flex-1 text-[14px] font-[500] text-[var(--text)] truncate">{item.nom}</span>
           <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -107,6 +107,7 @@ function BudgetRow({
               </span>
             )}
           </div>
+          <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
         </div>
 
         {/* Ligne 2 : badge catégorie */}
@@ -126,9 +127,6 @@ function BudgetRow({
           )}
         </div>
       </div>
-
-      {/* Toggle */}
-      <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
     </motion.div>
   );
 }
