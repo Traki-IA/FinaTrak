@@ -65,13 +65,16 @@ function BudgetRow({
   onEdit: (item: TBudgetItemWithRelations) => void;
 }) {
   const router = useRouter();
-  const [toggling, setToggling] = useState(false);
+  const [optimisticActif, setOptimisticActif] = useState(item.actif);
 
   async function handleToggle(actif: boolean) {
-    setToggling(true);
+    setOptimisticActif(actif); // visuel immédiat
     const result = await toggleBudgetItem(item.id, actif);
-    setToggling(false);
-    if ("error" in result) { toast.error(result.error); return; }
+    if ("error" in result) {
+      setOptimisticActif(!actif); // revert si erreur
+      toast.error(result.error);
+      return;
+    }
     router.refresh();
   }
 
@@ -87,7 +90,7 @@ function BudgetRow({
       exit={{ opacity: 0, x: -12 }}
       transition={{ duration: 0.15 }}
       onClick={() => onEdit(item)}
-      className={`flex items-center gap-[10px] cursor-pointer px-[14px] py-[7px] ${!item.actif ? "opacity-40" : ""}`}
+      className={`flex items-center gap-[10px] cursor-pointer px-[14px] py-[7px] ${!optimisticActif ? "opacity-40" : ""}`}
     >
       {/* Barre couleur catégorie */}
       <div className="w-[3px] self-stretch rounded-full flex-shrink-0" style={{ background: couleur }} />
@@ -101,7 +104,7 @@ function BudgetRow({
       </div>
 
       {/* Toggle centré verticalement sur les 2 lignes */}
-      <Toggle checked={item.actif} onChange={handleToggle} disabled={toggling} />
+      <Toggle checked={optimisticActif} onChange={handleToggle} />
     </motion.div>
   );
 }
