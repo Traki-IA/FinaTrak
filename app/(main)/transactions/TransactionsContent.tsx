@@ -418,19 +418,30 @@ function CategoriesChart({ transactions }: { transactions: TTransactionWithCateg
       <div className="flex justify-center py-[2px]" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}>
         <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Catégories</span>
       </div>
-      <div className="flex flex-col gap-[10px] px-[14px] py-[10px]">
+      <div className="divide-y divide-[var(--border)]">
         {sorted.map((cat) => {
           const pct = Math.round((cat.total / total) * 100);
           if (pct === 0) return null;
           return (
-            <div key={cat.nom} className="flex items-center gap-[8px]">
-              <span className="w-[7px] h-[7px] rounded-full flex-shrink-0" style={{ background: cat.couleur }} />
-              <span className="text-[13px] text-[var(--text)] w-[70px] flex-shrink-0 truncate">{cat.nom}</span>
-              <div className="flex-1 h-[5px] bg-[var(--bg3)] rounded-full overflow-hidden">
-                <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: cat.couleur }} />
+            <div key={cat.nom} className="flex items-center gap-[10px] px-[14px] py-[9px]">
+              {/* Barre couleur */}
+              <div className="w-[3px] self-stretch rounded-full flex-shrink-0" style={{ background: cat.couleur }} />
+
+              {/* 2 lignes */}
+              <div className="flex-1 min-w-0">
+                {/* Ligne 1 : nom + montant */}
+                <div className="flex items-center gap-2">
+                  <span className="flex-1 text-[15px] font-[500] text-[var(--text)] truncate uppercase">{cat.nom}</span>
+                  <span className="text-[15px] font-[500] text-[var(--text)] tabular-nums flex-shrink-0 whitespace-nowrap">{fmt(cat.total)} €</span>
+                </div>
+                {/* Ligne 2 : barre de progression + % */}
+                <div className="flex items-center gap-2 mt-[5px]">
+                  <div className="flex-1 h-[4px] bg-[var(--bg3)] rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: cat.couleur }} />
+                  </div>
+                  <span className="text-[11px] font-semibold tabular-nums flex-shrink-0 w-[28px] text-right" style={{ color: cat.couleur }}>{pct}%</span>
+                </div>
               </div>
-              <span className="text-[11px] text-[var(--text2)] tabular-nums w-[78px] text-right flex-shrink-0 whitespace-nowrap">{fmt(cat.total)} €</span>
-              <span className="text-[12px] font-semibold w-[28px] text-right tabular-nums flex-shrink-0" style={{ color: cat.couleur }}>{pct}%</span>
             </div>
           );
         })}
