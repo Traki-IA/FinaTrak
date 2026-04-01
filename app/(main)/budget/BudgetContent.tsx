@@ -233,31 +233,34 @@ export default function BudgetContent({
           <>
             {/* KPI + toggle vue */}
             <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
-              <div className="px-4 pt-2 pb-2">
-                {/* Ligne 1 : label + toggle */}
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] font-semibold text-[var(--text3)] uppercase tracking-[0.1em]">Budget total</span>
-                  <div className="flex rounded-lg overflow-hidden border border-[var(--border)]">
-                    {(["mensuel", "annuel"] as const).map((mode) => (
-                      <button
-                        key={mode}
-                        type="button"
-                        onClick={() => setViewMode(mode)}
-                        className={`px-2.5 py-[3px] text-[11px] font-semibold transition-colors ${
-                          viewMode === mode
-                            ? "bg-orange-500 text-white"
-                            : "text-[var(--text3)] hover:text-[var(--text)]"
-                        }`}
-                      >
-                        {mode === "mensuel" ? "/mois" : "/an"}
-                      </button>
-                    ))}
+              {/* Header — identique aux cards catégorie */}
+              <div className="py-[4px] flex items-center justify-center" style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}>
+                <span className="text-[11px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Budget total</span>
+              </div>
+              {/* Body : montant à gauche, toggle grand à droite */}
+              <div className="flex items-center gap-3 px-4 py-3">
+                <div className="flex-1 min-w-0">
+                  <div className="text-[30px] font-bold text-[var(--text)] tracking-tight tabular-nums leading-none">
+                    {formatEur(viewMode === "mensuel" ? totalMensuel : totalAnnuel)}
                   </div>
+                  <div className="text-[13px] text-[var(--text3)] mt-1">{viewMode === "mensuel" ? "/mois" : "/an"}</div>
                 </div>
-                {/* Ligne 2 : montant */}
-                <div className="text-[32px] font-bold text-[var(--text)] tracking-tight tabular-nums leading-none">
-                  {formatEur(viewMode === "mensuel" ? totalMensuel : totalAnnuel)}
-                  <span className="text-[16px] font-normal text-[var(--text3)] ml-1.5">{viewMode === "mensuel" ? "/mois" : "/an"}</span>
+                {/* Toggle large */}
+                <div className="flex rounded-xl overflow-hidden border border-[var(--border)] flex-shrink-0">
+                  {(["mensuel", "annuel"] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setViewMode(mode)}
+                      className={`px-5 py-3 text-[13px] font-semibold transition-colors ${
+                        viewMode === mode
+                          ? "bg-orange-500 text-white"
+                          : "text-[var(--text3)] hover:text-[var(--text)]"
+                      }`}
+                    >
+                      {mode === "mensuel" ? "/mois" : "/an"}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
