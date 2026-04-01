@@ -243,7 +243,6 @@ export default function BudgetContent({
                   <div className="text-[30px] font-bold text-[var(--text)] tracking-tight tabular-nums leading-none">
                     {formatEur(viewMode === "mensuel" ? totalMensuel : totalAnnuel)}
                   </div>
-                  <div className="text-[13px] text-[var(--text3)] mt-1">{viewMode === "mensuel" ? "/mois" : "/an"}</div>
                 </div>
                 {/* Toggle large */}
                 <div className="flex rounded-xl overflow-hidden border border-[var(--border)] flex-shrink-0">
