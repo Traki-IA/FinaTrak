@@ -456,7 +456,7 @@ function CategoriesChart({ transactions }: { transactions: TTransactionWithCateg
                       >
                         {cat.nom}
                       </span>
-                      <span className="text-[15px] font-[500] text-[var(--text)] tabular-nums flex-shrink-0 whitespace-nowrap">{fmt(cat.total)} €</span>
+                      <span className="text-[15px] font-[500] text-[var(--text)] tabular-nums flex-shrink-0 whitespace-nowrap ml-auto">{fmt(cat.total)} €</span>
                     </div>
                     {/* Ligne 2 : barre de progression + % */}
                     <div className="flex items-center gap-2 mt-[4px]">
