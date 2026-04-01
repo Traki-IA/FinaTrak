@@ -723,7 +723,7 @@ export default function TransactionsContent({
           {/* Période button */}
           <button
             onClick={() => setPeriodSheetOpen(true)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-[5px] text-[12px] font-medium rounded-lg border transition-all whitespace-nowrap ${
+            className={`flex items-center justify-center gap-1.5 px-[10px] py-[5px] text-[12px] font-medium rounded-lg border transition-all whitespace-nowrap ${
               isPeriodActive
                 ? "border-[var(--orange)] text-[var(--orange)] bg-[rgba(249,115,22,0.10)]"
                 : "border-[var(--border)] text-[var(--text2)] bg-transparent"
@@ -738,7 +738,7 @@ export default function TransactionsContent({
             <button
               key={tab.key}
               onClick={() => setTypeFilter(tab.key)}
-              className={`flex-1 py-[5px] text-[12px] font-medium cursor-pointer rounded-lg border transition-all bg-transparent ${
+              className={`flex-1 px-[10px] py-[5px] text-[12px] font-medium cursor-pointer rounded-lg border transition-all bg-transparent ${
                 typeFilter === tab.key
                   ? "border-[var(--orange)] text-[var(--orange)] bg-[rgba(249,115,22,0.10)]"
                   : "border-[var(--border)] text-[var(--text2)] hover:border-[var(--border2)] hover:text-[var(--text)]"
