@@ -398,7 +398,11 @@ function MobileTxRow({
 
 // ── Categories Chart ─────────────────────────────────────────────────────────
 
+const TOP_N = 3;
+
 function CategoriesChart({ transactions }: { transactions: TTransactionWithCategorie[] }) {
+  const [showAll, setShowAll] = useState(false);
+
   const depenses = transactions.filter((t) => t.type === "depense");
   const total = depenses.reduce((s, t) => s + t.montant, 0) || 1;
 
@@ -410,8 +414,11 @@ function CategoriesChart({ transactions }: { transactions: TTransactionWithCateg
     return acc;
   }, {});
 
-  const sorted = Object.values(byCategory).sort((a, b) => b.total - a.total);
+  const sorted = Object.values(byCategory).sort((a, b) => b.total - a.total).filter((cat) => Math.round((cat.total / total) * 100) > 0);
   if (sorted.length === 0) return null;
+
+  const visible = showAll ? sorted : sorted.slice(0, TOP_N);
+  const hiddenCount = sorted.length - TOP_N;
 
   return (
     <div className="mt-[8px] rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
@@ -419,33 +426,53 @@ function CategoriesChart({ transactions }: { transactions: TTransactionWithCateg
         <span className="text-[10px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">Catégories</span>
       </div>
       <div className="divide-y divide-[var(--border)]">
-        {sorted.map((cat) => {
-          const pct = Math.round((cat.total / total) * 100);
-          if (pct === 0) return null;
-          return (
-            <div key={cat.nom} className="flex items-center gap-[10px] px-[14px] py-[9px]">
-              {/* Barre couleur */}
-              <div className="w-[3px] self-stretch rounded-full flex-shrink-0" style={{ background: cat.couleur }} />
+        <AnimatePresence initial={false}>
+          {visible.map((cat) => {
+            const pct = Math.round((cat.total / total) * 100);
+            return (
+              <motion.div
+                key={cat.nom}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.18 }}
+                className="overflow-hidden"
+              >
+                <div className="flex items-center gap-[10px] px-[14px] py-[9px]">
+                  {/* Barre couleur */}
+                  <div className="w-[3px] self-stretch rounded-full flex-shrink-0" style={{ background: cat.couleur }} />
 
-              {/* 2 lignes */}
-              <div className="flex-1 min-w-0">
-                {/* Ligne 1 : nom + montant */}
-                <div className="flex items-center gap-2">
-                  <span className="flex-1 text-[15px] font-[500] text-[var(--text)] truncate uppercase">{cat.nom}</span>
-                  <span className="text-[15px] font-[500] text-[var(--text)] tabular-nums flex-shrink-0 whitespace-nowrap">{fmt(cat.total)} €</span>
-                </div>
-                {/* Ligne 2 : barre de progression + % */}
-                <div className="flex items-center gap-2 mt-[5px]">
-                  <div className="flex-1 h-[4px] bg-[var(--bg3)] rounded-full overflow-hidden">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: cat.couleur }} />
+                  {/* 2 lignes */}
+                  <div className="flex-1 min-w-0">
+                    {/* Ligne 1 : nom + montant */}
+                    <div className="flex items-center gap-2">
+                      <span className="flex-1 text-[15px] font-[500] text-[var(--text)] truncate uppercase">{cat.nom}</span>
+                      <span className="text-[15px] font-[500] text-[var(--text)] tabular-nums flex-shrink-0 whitespace-nowrap">{fmt(cat.total)} €</span>
+                    </div>
+                    {/* Ligne 2 : barre de progression + % */}
+                    <div className="flex items-center gap-2 mt-[5px]">
+                      <div className="flex-1 h-[4px] bg-[var(--bg3)] rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: cat.couleur }} />
+                      </div>
+                      <span className="text-[11px] font-semibold tabular-nums flex-shrink-0 w-[28px] text-right" style={{ color: cat.couleur }}>{pct}%</span>
+                    </div>
                   </div>
-                  <span className="text-[11px] font-semibold tabular-nums flex-shrink-0 w-[28px] text-right" style={{ color: cat.couleur }}>{pct}%</span>
                 </div>
-              </div>
-            </div>
-          );
-        })}
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </div>
+      {sorted.length > TOP_N && (
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          className="w-full py-[10px] text-[12px] font-semibold text-[var(--text3)] hover:text-[var(--text)] transition-colors"
+          style={{ borderTop: "1px solid var(--border)" }}
+        >
+          {showAll ? "Voir moins" : `Voir plus (${hiddenCount})`}
+        </button>
+      )}
     </div>
   );
 }
