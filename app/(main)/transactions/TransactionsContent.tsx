@@ -307,9 +307,9 @@ function MobileTxRow({
         className="flex items-center gap-3 py-[12px] px-[14px] cursor-pointer select-none"
         onClick={onRowTap}
       >
-        {/* Dot catégorie */}
+        {/* Barre couleur catégorie */}
         <div
-          className="w-[10px] h-[10px] rounded-full flex-shrink-0"
+          className="w-[3px] self-stretch rounded-full flex-shrink-0"
           style={{ background: catColor ?? (isRevenu ? "var(--green)" : "var(--red)") }}
         />
 
