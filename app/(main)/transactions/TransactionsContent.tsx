@@ -447,7 +447,7 @@ function CategoriesChart({ transactions }: { transactions: TTransactionWithCateg
                     {/* Ligne 1 : badge catégorie + montant */}
                     <div className="flex items-center gap-2">
                       <span
-                        className="text-[10px] font-medium px-[7px] py-[1px] rounded-full truncate flex-1 min-w-0 text-center"
+                        className="text-[10px] font-medium px-[7px] py-[1px] rounded-full truncate w-[100px] text-center flex-shrink-0"
                         style={{
                           background: `${cat.couleur}20`,
                           color: cat.couleur,
@@ -476,7 +476,7 @@ function CategoriesChart({ transactions }: { transactions: TTransactionWithCateg
         <button
           type="button"
           onClick={() => setShowAll((v) => !v)}
-          className="w-full py-[10px] text-[12px] font-semibold text-[var(--text3)] hover:text-[var(--text)] transition-colors"
+          className="w-full py-[6px] text-[12px] font-semibold text-[var(--text3)] hover:text-[var(--text)] transition-colors"
           style={{ borderTop: "1px solid var(--border)" }}
         >
           {showAll ? "Voir moins" : `Voir plus (${hiddenCount})`}
