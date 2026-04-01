@@ -396,9 +396,88 @@ function MobileTxRow({
   );
 }
 
+// ── Month Card ────────────────────────────────────────────────────────────────
+
+function MonthCard({
+  monthKey,
+  monthTxs,
+  activeRowId,
+  confirmingDeleteId,
+  onEdit,
+  onDeleteRequest,
+  onDeleteConfirm,
+  onDeleteCancel,
+  onRowTap,
+}: {
+  monthKey: string;
+  monthTxs: TTransactionWithCategorie[];
+  activeRowId: string | null;
+  confirmingDeleteId: string | null;
+  onEdit: (t: TTransactionWithCategorie) => void;
+  onDeleteRequest: (id: string) => void;
+  onDeleteConfirm: (id: string) => void;
+  onDeleteCancel: () => void;
+  onRowTap: (id: string) => void;
+}) {
+  const [showAll, setShowAll] = useState(false);
+
+  const [, mo] = monthKey.split("-");
+  const moisNom = MOIS_COMPLETS[Number(mo) - 1];
+  const net = monthTxs.reduce((s, t) => s + (t.type === "revenu" ? t.montant : -t.montant), 0);
+  const netColor = net >= 0 ? "var(--green)" : "var(--red)";
+
+  const visible = showAll ? monthTxs : monthTxs.slice(0, MONTH_TOP_N);
+  const hiddenCount = monthTxs.length - MONTH_TOP_N;
+
+  return (
+    <div className="rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
+      {/* Month header */}
+      <div
+        className="flex items-center justify-center relative py-[4px]"
+        style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}
+      >
+        <span className="text-[11px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{moisNom}</span>
+        <span className="absolute right-[14px] text-[11px] font-semibold tabular-nums" style={{ color: netColor }}>
+          {net >= 0 ? "+" : "−"}{fmt(Math.abs(net))} €
+        </span>
+      </div>
+      {/* Rows */}
+      <AnimatePresence mode="popLayout">
+        <div className="divide-y divide-[var(--border)]">
+          {visible.map((t, idx) => (
+            <MobileTxRow
+              key={t.id}
+              transaction={t}
+              index={idx}
+              isActive={activeRowId === t.id}
+              confirmingDeleteId={confirmingDeleteId}
+              onEdit={onEdit}
+              onDeleteRequest={onDeleteRequest}
+              onDeleteConfirm={onDeleteConfirm}
+              onDeleteCancel={onDeleteCancel}
+              onRowTap={() => onRowTap(t.id)}
+            />
+          ))}
+        </div>
+      </AnimatePresence>
+      {monthTxs.length > MONTH_TOP_N && (
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          className="w-full py-[6px] text-[12px] font-semibold text-[var(--text3)] hover:text-[var(--text)] transition-colors"
+          style={{ borderTop: "1px solid var(--border)" }}
+        >
+          {showAll ? "Voir moins" : `Voir plus (${hiddenCount})`}
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ── Categories Chart ─────────────────────────────────────────────────────────
 
 const TOP_N = 3;
+const MONTH_TOP_N = 5;
 
 function CategoriesChart({ transactions }: { transactions: TTransactionWithCategorie[] }) {
   const [showAll, setShowAll] = useState(false);
@@ -710,47 +789,20 @@ export default function TransactionsContent({
                     >▼</span>
                   </div>
 
-                  {!isYearCollapsed && months.map((monthKey) => {
-                    const monthTxs = byYearMonth[year][monthKey];
-                    const [, mo] = monthKey.split("-");
-                    const moisNom = MOIS_COMPLETS[Number(mo) - 1];
-                    const net = monthTxs.reduce((s, t) => s + (t.type === "revenu" ? t.montant : -t.montant), 0);
-                    const netColor = net >= 0 ? "var(--green)" : "var(--red)";
-
-                    return (
-                      <div key={monthKey} className="rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
-                        {/* Month header */}
-                        <div
-                          className="flex items-center justify-center relative py-[4px]"
-                          style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}
-                        >
-                          <span className="text-[11px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{moisNom}</span>
-                          <span className="absolute right-[14px] text-[11px] font-semibold tabular-nums" style={{ color: netColor }}>
-                            {net >= 0 ? "+" : "−"}{fmt(Math.abs(net))} €
-                          </span>
-                        </div>
-                        {/* Rows */}
-                        <AnimatePresence mode="popLayout">
-                          <div className="divide-y divide-[var(--border)]">
-                            {monthTxs.map((t, idx) => (
-                              <MobileTxRow
-                                key={t.id}
-                                transaction={t}
-                                index={idx}
-                                isActive={activeRowId === t.id}
-                                confirmingDeleteId={confirmingDeleteId}
-                                onEdit={openEditModal}
-                                onDeleteRequest={setConfirmingDeleteId}
-                                onDeleteConfirm={handleDeleteConfirm}
-                                onDeleteCancel={() => { setConfirmingDeleteId(null); setActiveRowId(null); }}
-                                onRowTap={() => handleRowTap(t.id)}
-                              />
-                            ))}
-                          </div>
-                        </AnimatePresence>
-                      </div>
-                    );
-                  })}
+                  {!isYearCollapsed && months.map((monthKey) => (
+                    <MonthCard
+                      key={monthKey}
+                      monthKey={monthKey}
+                      monthTxs={byYearMonth[year][monthKey]}
+                      activeRowId={activeRowId}
+                      confirmingDeleteId={confirmingDeleteId}
+                      onEdit={openEditModal}
+                      onDeleteRequest={setConfirmingDeleteId}
+                      onDeleteConfirm={handleDeleteConfirm}
+                      onDeleteCancel={() => { setConfirmingDeleteId(null); setActiveRowId(null); }}
+                      onRowTap={handleRowTap}
+                    />
+                  ))}
                 </div>
               );
             })}
