@@ -92,7 +92,7 @@ function BudgetRow({
 
       {/* Contenu 2 lignes */}
       <div className="flex-1 min-w-0">
-        <div className="text-[15px] font-[500] text-[var(--text)] truncate">{item.nom}</div>
+        <div className="text-[15px] font-[500] text-[var(--text)] truncate uppercase">{item.nom}</div>
         <div className="text-[15px] font-[500] text-[var(--text)] tabular-nums mt-[2px]">
           {formatEur(value)}<span className="text-[12px] text-[var(--text3)] font-normal">{suffix}</span>
         </div>
