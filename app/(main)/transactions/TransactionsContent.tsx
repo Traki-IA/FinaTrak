@@ -674,11 +674,11 @@ export default function TransactionsContent({
                       <div key={monthKey} className="rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
                         {/* Month header */}
                         <div
-                          className="flex items-center justify-between px-[14px] py-[6px]"
+                          className="flex items-center justify-center relative py-[4px]"
                           style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}
                         >
-                          <span className="text-[11px] font-semibold text-[var(--text2)] tracking-[0.06em]">{moisNom}</span>
-                          <span className="text-[12px] font-semibold tabular-nums" style={{ color: netColor }}>
+                          <span className="text-[11px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{moisNom}</span>
+                          <span className="absolute right-[14px] text-[11px] font-semibold tabular-nums" style={{ color: netColor }}>
                             {net >= 0 ? "+" : "−"}{fmt(Math.abs(net))} €
                           </span>
                         </div>
