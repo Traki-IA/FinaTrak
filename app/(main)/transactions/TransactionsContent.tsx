@@ -319,7 +319,6 @@ function MobileTxRow({
             {transaction.description ?? "—"}
           </p>
           <div className="flex items-center gap-1.5 mt-[3px]">
-            <span className="text-[12px] text-[var(--text3)] tabular-nums">{formatDate(transaction.date)}</span>
             <span
               className="text-[10px] font-medium px-[7px] py-[1px] rounded-full truncate w-[100px] text-center"
               style={{
@@ -330,6 +329,7 @@ function MobileTxRow({
             >
               {transaction.categories?.nom ?? "Sans catégorie"}
             </span>
+            <span className="text-[12px] text-[var(--text3)] tabular-nums">{formatDate(transaction.date)}</span>
           </div>
         </div>
 
