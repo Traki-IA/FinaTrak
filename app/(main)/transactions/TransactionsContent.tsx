@@ -315,7 +315,7 @@ function MobileTxRow({
 
         {/* Contenu 2 lignes */}
         <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-medium text-[var(--text)] truncate leading-snug">
+          <p className="text-[15px] font-medium text-[var(--text)] truncate leading-snug">
             {transaction.description ?? "—"}
           </p>
           <div className="flex items-center gap-1.5 mt-[3px]">
