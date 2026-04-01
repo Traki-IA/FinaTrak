@@ -438,19 +438,28 @@ function CategoriesChart({ transactions }: { transactions: TTransactionWithCateg
                 transition={{ duration: 0.18 }}
                 className="overflow-hidden"
               >
-                <div className="flex items-center gap-[10px] px-[14px] py-[9px]">
+                <div className="flex items-center gap-[10px] px-[14px] py-[6px]">
                   {/* Barre couleur */}
                   <div className="w-[3px] self-stretch rounded-full flex-shrink-0" style={{ background: cat.couleur }} />
 
                   {/* 2 lignes */}
                   <div className="flex-1 min-w-0">
-                    {/* Ligne 1 : nom + montant */}
+                    {/* Ligne 1 : badge catégorie + montant */}
                     <div className="flex items-center gap-2">
-                      <span className="flex-1 text-[15px] font-[500] text-[var(--text)] truncate uppercase">{cat.nom}</span>
+                      <span
+                        className="text-[10px] font-medium px-[7px] py-[1px] rounded-full truncate flex-1 min-w-0 text-center"
+                        style={{
+                          background: `${cat.couleur}20`,
+                          color: cat.couleur,
+                          border: `1px solid ${cat.couleur}40`,
+                        }}
+                      >
+                        {cat.nom}
+                      </span>
                       <span className="text-[15px] font-[500] text-[var(--text)] tabular-nums flex-shrink-0 whitespace-nowrap">{fmt(cat.total)} €</span>
                     </div>
                     {/* Ligne 2 : barre de progression + % */}
-                    <div className="flex items-center gap-2 mt-[5px]">
+                    <div className="flex items-center gap-2 mt-[4px]">
                       <div className="flex-1 h-[4px] bg-[var(--bg3)] rounded-full overflow-hidden">
                         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: cat.couleur }} />
                       </div>
