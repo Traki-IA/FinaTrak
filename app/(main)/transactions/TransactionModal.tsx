@@ -6,7 +6,7 @@ import { toast } from "@/lib/toast";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2, Pencil, Plus, ArrowLeft, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { insertTransaction, updateTransaction, upsertCategorie, deleteCategorie } from "./actions";
+import { insertTransaction, updateTransaction, upsertCategorie, deleteCategorie, updateCategoryByDescription } from "./actions";
 import { insertObjectif } from "@/app/(main)/objectifs/actions";
 import { useCompte } from "@/lib/compte-context";
 import { CompteIcon } from "@/components/compte-icons";
@@ -99,12 +99,14 @@ export default function TransactionModal({
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [applyToAll, setApplyToAll] = useState(false);
 
   // Sync form à chaque ouverture du modal
   useEffect(() => {
     if (open) {
       setForm(transaction ? buildForm(transaction) : INITIAL_FORM);
       setErrors({});
+      setApplyToAll(false);
       setShowNewObjForm(false);
       setNewObjForm({ nom: "", montant_cible: "", periode: "ponctuel" });
     }
@@ -256,6 +258,15 @@ export default function TransactionModal({
           toast.success(`Transaction modifiée · Progression de « ${objectif?.nom} » mise à jour`);
         } else {
           toast.success("Transaction modifiée !");
+        }
+
+        if (applyToAll && form.description.trim()) {
+          const bulkResult = await updateCategoryByDescription(form.description.trim(), form.categorie_id || null);
+          if ("error" in bulkResult) {
+            toast.error(bulkResult.error);
+          } else {
+            toast.success(`Catégorie appliquée à toutes les transactions « ${form.description.trim()} »`);
+          }
         }
       }
 
@@ -601,6 +612,27 @@ export default function TransactionModal({
                 )}
               </AnimatePresence>
             </div>
+
+            {/* Appliquer à tous — edit mode uniquement */}
+            {isEditMode && form.description.trim() && form.categorie_id && (
+              <label className="flex items-center gap-2.5 cursor-pointer group py-0.5">
+                <div
+                  role="checkbox"
+                  aria-checked={applyToAll}
+                  onClick={() => setApplyToAll((v) => !v)}
+                  className={`w-4 h-4 rounded flex items-center justify-center border transition-all flex-shrink-0 ${
+                    applyToAll
+                      ? "bg-orange-500 border-orange-500"
+                      : "bg-white/[0.05] border-white/[0.15] group-hover:border-white/30"
+                  }`}
+                >
+                  {applyToAll && <Check size={10} className="text-white" />}
+                </div>
+                <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors select-none">
+                  Appliquer à toutes les transactions avec ce libellé
+                </span>
+              </label>
+            )}
 
             {/* Description */}
             <div className="space-y-1">

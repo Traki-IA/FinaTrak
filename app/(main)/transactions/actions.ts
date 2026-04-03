@@ -238,6 +238,32 @@ export async function deleteTransaction(
   return { success: true };
 }
 
+export async function updateCategoryByDescription(
+  description: string,
+  categorieId: string | null
+): Promise<{ success: true } | { error: string }> {
+  if (!description.trim()) return { error: "Description invalide" };
+
+  const userId = await requireUserId();
+  const supabase = await createServerSupabaseClient();
+
+  const { error } = await supabase
+    .from("transactions")
+    .update({ categorie_id: categorieId })
+    .eq("user_id", userId)
+    .eq("description", description);
+
+  if (error) {
+    console.error("[transactions] updateCategoryByDescription:", error.message);
+    return { error: "Une erreur est survenue." };
+  }
+
+  revalidatePath("/transactions");
+  revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
+  return { success: true };
+}
+
 // ── Import CSV en masse ───────────────────────────────────────────────────────
 
 const BulkRowSchema = z.object({
