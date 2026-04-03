@@ -420,6 +420,7 @@ function MonthCard({
   onRowTap: (id: string) => void;
 }) {
   const [showAll, setShowAll] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   const [, mo] = monthKey.split("-");
   const moisNom = MOIS_COMPLETS[Number(mo) - 1];
@@ -432,43 +433,53 @@ function MonthCard({
   return (
     <div className="rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)", background: "var(--bg2)" }}>
       {/* Month header */}
-      <div
-        className="flex items-center justify-center relative py-[4px]"
-        style={{ borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}
+      <button
+        type="button"
+        onClick={() => setCollapsed((v) => !v)}
+        className="w-full flex items-center justify-center relative py-[4px] cursor-pointer"
+        style={{ borderBottom: collapsed ? undefined : "1px solid var(--border)", background: "rgba(255,255,255,0.06)" }}
       >
         <span className="text-[11px] font-semibold text-[var(--text2)] uppercase tracking-[0.1em]">{moisNom}</span>
         <span className="absolute right-[14px] text-[11px] font-semibold tabular-nums" style={{ color: netColor }}>
           {net >= 0 ? "+" : "−"}{fmt(Math.abs(net))} €
         </span>
-      </div>
+        <span
+          className="absolute left-[14px] text-[var(--text3)] text-[10px] transition-transform duration-200"
+          style={{ transform: collapsed ? "rotate(-90deg)" : "rotate(0deg)" }}
+        >▼</span>
+      </button>
       {/* Rows */}
-      <AnimatePresence mode="popLayout">
-        <div className="divide-y divide-[var(--border)]">
-          {visible.map((t, idx) => (
-            <MobileTxRow
-              key={t.id}
-              transaction={t}
-              index={idx}
-              isActive={activeRowId === t.id}
-              confirmingDeleteId={confirmingDeleteId}
-              onEdit={onEdit}
-              onDeleteRequest={onDeleteRequest}
-              onDeleteConfirm={onDeleteConfirm}
-              onDeleteCancel={onDeleteCancel}
-              onRowTap={() => onRowTap(t.id)}
-            />
-          ))}
-        </div>
-      </AnimatePresence>
-      {monthTxs.length > MONTH_TOP_N && (
-        <button
-          type="button"
-          onClick={() => setShowAll((v) => !v)}
-          className="w-full py-[6px] text-[12px] font-semibold text-[var(--text3)] hover:text-[var(--text)] transition-colors"
-          style={{ borderTop: "1px solid var(--border)" }}
-        >
-          {showAll ? "Voir moins" : `Voir plus (${hiddenCount})`}
-        </button>
+      {!collapsed && (
+        <>
+          <AnimatePresence mode="popLayout">
+            <div className="divide-y divide-[var(--border)]">
+              {visible.map((t, idx) => (
+                <MobileTxRow
+                  key={t.id}
+                  transaction={t}
+                  index={idx}
+                  isActive={activeRowId === t.id}
+                  confirmingDeleteId={confirmingDeleteId}
+                  onEdit={onEdit}
+                  onDeleteRequest={onDeleteRequest}
+                  onDeleteConfirm={onDeleteConfirm}
+                  onDeleteCancel={onDeleteCancel}
+                  onRowTap={() => onRowTap(t.id)}
+                />
+              ))}
+            </div>
+          </AnimatePresence>
+          {monthTxs.length > MONTH_TOP_N && (
+            <button
+              type="button"
+              onClick={() => setShowAll((v) => !v)}
+              className="w-full py-[6px] text-[12px] font-semibold text-[var(--text3)] hover:text-[var(--text)] transition-colors"
+              style={{ borderTop: "1px solid var(--border)" }}
+            >
+              {showAll ? "Voir moins" : `Voir plus (${hiddenCount})`}
+            </button>
+          )}
+        </>
       )}
     </div>
   );
