@@ -182,10 +182,10 @@ function PeriodSheet({
                 <button
                   key={preset.key}
                   onClick={() => setPending(preset.key)}
-                  className={`px-4 py-2 rounded-full border text-[14px] font-medium transition-all ${
+                  className={`px-4 py-2 rounded-[10px] text-[14px] font-medium transition-all ${
                     pending === preset.key
-                      ? "border-[var(--orange)] text-[var(--orange)] bg-[rgba(249,115,22,0.10)]"
-                      : "border-[var(--border)] text-[var(--text2)] bg-transparent"
+                      ? "bg-[var(--orange)] text-white"
+                      : "bg-[var(--bg3)] text-[var(--text2)] hover:text-[var(--text)]"
                   }`}
                 >
                   {preset.label}
@@ -614,6 +614,7 @@ export default function TransactionsContent({
   const [collapsedYears, setCollapsedYears] = useState<Set<string>>(new Set());
   const [typeFilter, setTypeFilter] = useState<TTypeFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Period filter state — initialisé depuis les URL params si fournis
   const [periodFilter, setPeriodFilter] = useState<TPeriodFilter>(
@@ -720,49 +721,84 @@ export default function TransactionsContent({
           }
         />
 
-        {/* Search */}
+        {/* Unified action bar */}
         <div className="py-2">
-          <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text3)]" />
-            <input
-              type="text"
-              placeholder="Rechercher..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-2 pl-8 pr-3 bg-[var(--bg2)] rounded-[10px] border border-[var(--border)] text-[var(--text)] text-[13px] font-[inherit] outline-none transition-colors focus:border-[var(--orange)] placeholder:text-[var(--text2)]"
-            />
-          </div>
-        </div>
+          <AnimatePresence mode="wait" initial={false}>
+            {searchOpen ? (
+              <motion.div
+                key="search"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="flex items-center gap-2"
+              >
+                <div className="relative flex-1">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text3)]" />
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="Rechercher..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full py-2 pl-8 pr-3 bg-[var(--bg2)] rounded-[10px] border border-[var(--border)] text-[var(--text)] text-[13px] font-[inherit] outline-none transition-colors focus:border-[var(--orange)] placeholder:text-[var(--text2)]"
+                  />
+                </div>
+                <button
+                  onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
+                  className="w-[36px] h-[36px] flex items-center justify-center rounded-[10px] bg-[var(--bg2)] border border-[var(--border)] text-[var(--text3)] flex-shrink-0"
+                >
+                  <X size={14} />
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="bar"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="flex items-center gap-2"
+              >
+                {/* Search icon */}
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  className="w-[36px] h-[36px] flex-shrink-0 flex items-center justify-center rounded-[10px] bg-[var(--bg2)] border border-[var(--border)] text-[var(--text3)] transition-colors hover:text-[var(--text)]"
+                >
+                  <Search size={14} />
+                </button>
 
-        {/* Filter bar: période + type */}
-        <div className="pb-2 flex gap-2">
-          {/* Période button */}
-          <button
-            onClick={() => setPeriodSheetOpen(true)}
-            className={`flex items-center justify-center gap-1.5 px-[10px] py-[5px] text-[12px] font-medium rounded-lg border transition-all whitespace-nowrap ${
-              isPeriodActive
-                ? "border-[var(--orange)] text-[var(--orange)] bg-[rgba(249,115,22,0.10)]"
-                : "border-[var(--border)] text-[var(--text2)] bg-transparent"
-            }`}
-          >
-            <Calendar size={11} />
-            <span>{isPeriodActive ? getPeriodLabel(periodFilter) : "Péri."}</span>
-          </button>
+                {/* Segmented control */}
+                <div className="flex-1 flex items-center bg-[var(--bg2)] rounded-[10px] border border-[var(--border)] p-[3px]">
+                  {TYPE_TABS.map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setTypeFilter(tab.key)}
+                      className={`flex-1 py-[5px] text-[12px] font-medium rounded-[8px] transition-all ${
+                        typeFilter === tab.key
+                          ? "bg-[var(--orange)] text-white"
+                          : "text-[var(--text2)] hover:text-[var(--text)]"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
 
-          {/* Type tabs */}
-          {TYPE_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setTypeFilter(tab.key)}
-              className={`flex-1 px-[10px] py-[5px] text-[12px] font-medium cursor-pointer rounded-lg border transition-all bg-transparent ${
-                typeFilter === tab.key
-                  ? "border-[var(--orange)] text-[var(--orange)] bg-[rgba(249,115,22,0.10)]"
-                  : "border-[var(--border)] text-[var(--text2)] hover:border-[var(--border2)] hover:text-[var(--text)]"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+                {/* Period icon */}
+                <button
+                  onClick={() => setPeriodSheetOpen(true)}
+                  className={`w-[36px] h-[36px] flex-shrink-0 flex items-center justify-center rounded-[10px] border transition-all ${
+                    isPeriodActive
+                      ? "border-[var(--orange)] text-[var(--orange)] bg-[rgba(249,115,22,0.10)]"
+                      : "bg-[var(--bg2)] border-[var(--border)] text-[var(--text3)] hover:text-[var(--text)]"
+                  }`}
+                >
+                  <Calendar size={14} />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Divider */}
