@@ -694,16 +694,16 @@ export default function TransactionsContent({
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setImportModalOpen(true)}
-                className="w-[28px] h-[28px] rounded-lg bg-[var(--bg3)] border-none cursor-pointer flex items-center justify-center text-[var(--text2)]"
+                className="w-[32px] h-[32px] rounded-lg bg-[var(--bg3)] border-none cursor-pointer flex items-center justify-center text-[var(--text2)]"
                 title="Importer CSV"
               >
-                <Upload size={13} />
+                <Upload size={14} />
               </button>
               <button
                 onClick={openAddModal}
-                className="w-[28px] h-[28px] rounded-lg bg-[var(--bg3)] border-none cursor-pointer flex items-center justify-center text-[var(--text2)]"
+                className="w-[32px] h-[32px] rounded-lg bg-[var(--bg3)] border-none cursor-pointer flex items-center justify-center text-[var(--text2)]"
               >
-                <Plus size={14} />
+                <Plus size={15} />
               </button>
             </div>
           }

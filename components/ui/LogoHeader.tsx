@@ -105,22 +105,22 @@ export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
 
   return (
     <div ref={ref} className="relative">
-      <div className="flex items-center py-1 border-b border-[var(--bg2)] relative">
+      <div className="flex items-center py-2.5 border-b border-[var(--bg2)] relative">
         <button
           onClick={() => setOpen((prev) => !prev)}
           className="flex items-center gap-[8px] px-1 py-0.5 rounded-lg hover:bg-white/[0.04] transition-colors mx-auto"
         >
           <span
-            className="flex items-center justify-center w-[26px] h-[26px] rounded-[7px] flex-shrink-0"
+            className="flex items-center justify-center w-[30px] h-[30px] rounded-[8px] flex-shrink-0"
             style={{ backgroundColor: `${activeCompte.couleur}20`, color: activeCompte.couleur }}
           >
-            <CompteIcon icone={activeCompte.icone} size={14} strokeWidth={2} />
+            <CompteIcon icone={activeCompte.icone} size={16} strokeWidth={2} />
           </span>
-          <span className="text-[15px] font-medium tracking-[-0.02em] text-[var(--text)] truncate max-w-[180px]">
+          <span className="text-[17px] font-semibold tracking-[-0.02em] text-[var(--text)] truncate max-w-[180px]">
             {activeCompte.nom}
           </span>
           <ChevronDown
-            size={13}
+            size={14}
             className={`text-[var(--text3)] transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`}
           />
         </button>
