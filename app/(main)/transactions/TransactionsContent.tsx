@@ -102,8 +102,8 @@ type TTypeFilter = "all" | "revenu" | "depense";
 
 const TYPE_TABS: { key: TTypeFilter; label: string }[] = [
   { key: "all",     label: "Tout" },
-  { key: "revenu",  label: "Rev." },
-  { key: "depense", label: "Dép." },
+  { key: "revenu",  label: "Revenus" },
+  { key: "depense", label: "Dépenses" },
 ];
 
 // ── Period bottom sheet ───────────────────────────────────────────────────────
@@ -590,6 +590,11 @@ export default function TransactionsContent({
 
   const [localTransactions, setLocalTransactions] = useState(transactions);
 
+  // Resync quand le serveur renvoie de nouvelles données (après router.refresh())
+  useEffect(() => {
+    setLocalTransactions(transactions);
+  }, [transactions]);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<TTransactionWithCategorie | undefined>(undefined);
@@ -621,7 +626,7 @@ export default function TransactionsContent({
       );
     }
     return result;
-  }, [transactions, typeFilter, searchQuery, periodFilter, customFrom, customTo]);
+  }, [localTransactions, typeFilter, searchQuery, periodFilter, customFrom, customTo]);
 
   // Group filtered transactions by year → month (desc)
   const byYearMonth = useMemo(() => {
