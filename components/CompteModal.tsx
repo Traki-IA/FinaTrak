@@ -120,25 +120,25 @@ export default function CompteModal({ open, onOpenChange, compte }: ICompteModal
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#12121f] border border-white/10 rounded-2xl p-6 z-50 max-h-[90vh] overflow-y-auto">
-          <Dialog.Title className="text-lg font-bold text-white mb-6">
+        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[var(--bg2)] border border-[var(--border)] rounded-2xl p-6 z-50 max-h-[90vh] overflow-y-auto">
+          <Dialog.Title className="text-lg font-bold text-[var(--text)] mb-6">
             {isEditMode ? "Modifier le compte" : "Nouveau compte"}
           </Dialog.Title>
-          <Dialog.Close className="absolute top-4 right-4 text-white/40 hover:text-white">
+          <Dialog.Close className="absolute top-4 right-4 text-[var(--text3)] hover:text-[var(--text)]">
             <X size={18} />
           </Dialog.Close>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Nom */}
             <div>
-              <label className="block text-xs text-white/40 uppercase tracking-widest mb-2">
+              <label className="block text-xs text-[var(--text3)] uppercase tracking-widest mb-2">
                 Nom du compte
               </label>
               <input
                 type="text"
                 value={form.nom}
                 onChange={(e) => set("nom", e.target.value)}
-                className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500/50 transition-colors"
+                className="w-full bg-[var(--bg3)] border border-[var(--border)] rounded-[10px] px-4 py-3 text-[var(--text)] outline-none focus:border-[var(--orange)] transition-colors"
                 placeholder="Ex: Compte courant"
               />
               {errors.nom && <p className="text-red-400 text-xs mt-1">{errors.nom}</p>}
@@ -146,7 +146,7 @@ export default function CompteModal({ open, onOpenChange, compte }: ICompteModal
 
             {/* Solde initial */}
             <div>
-              <label className="block text-xs text-white/40 uppercase tracking-widest mb-2">
+              <label className="block text-xs text-[var(--text3)] uppercase tracking-widest mb-2">
                 Solde initial (€)
               </label>
               <input
@@ -154,7 +154,7 @@ export default function CompteModal({ open, onOpenChange, compte }: ICompteModal
                 step="0.01"
                 value={form.solde_initial}
                 onChange={(e) => set("solde_initial", e.target.value)}
-                className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500/50 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-full bg-[var(--bg3)] border border-[var(--border)] rounded-[10px] px-4 py-3 text-[var(--text)] outline-none focus:border-[var(--orange)] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 placeholder="0.00"
               />
               {errors.solde_initial && (
@@ -164,7 +164,7 @@ export default function CompteModal({ open, onOpenChange, compte }: ICompteModal
 
             {/* Couleur */}
             <div>
-              <label className="block text-xs text-white/40 uppercase tracking-widest mb-2">
+              <label className="block text-xs text-[var(--text3)] uppercase tracking-widest mb-2">
                 Couleur
               </label>
               <div className="flex gap-2 flex-wrap">
@@ -173,9 +173,9 @@ export default function CompteModal({ open, onOpenChange, compte }: ICompteModal
                     key={c}
                     type="button"
                     onClick={() => set("couleur", c)}
-                    className={`w-8 h-8 rounded-lg transition-all ${
+                    className={`w-8 h-8 rounded-[8px] transition-all ${
                       form.couleur === c
-                        ? "ring-2 ring-white ring-offset-2 ring-offset-[#12121f] scale-110"
+                        ? "ring-2 ring-white ring-offset-2 ring-offset-[var(--bg2)] scale-110"
                         : "hover:scale-105"
                     }`}
                     style={{ backgroundColor: c }}
@@ -186,7 +186,7 @@ export default function CompteModal({ open, onOpenChange, compte }: ICompteModal
 
             {/* Icône */}
             <div>
-              <label className="block text-xs text-white/40 uppercase tracking-widest mb-2">
+              <label className="block text-xs text-[var(--text3)] uppercase tracking-widest mb-2">
                 Icône
               </label>
               <div className="flex gap-2 flex-wrap">
@@ -195,10 +195,10 @@ export default function CompteModal({ open, onOpenChange, compte }: ICompteModal
                     key={iconKey}
                     type="button"
                     onClick={() => set("icone", iconKey)}
-                    className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all ${
+                    className={`flex items-center justify-center w-10 h-10 rounded-[10px] transition-all ${
                       form.icone === iconKey
-                        ? "bg-white/15 text-white ring-1 ring-white/30"
-                        : "bg-white/[0.04] text-white/40 hover:text-white/70 hover:bg-white/[0.08]"
+                        ? "bg-[var(--orange)] text-white"
+                        : "bg-[var(--bg3)] text-[var(--text3)] hover:text-[var(--text)]"
                     }`}
                   >
                     <CompteIcon icone={iconKey} size={18} />
@@ -211,7 +211,7 @@ export default function CompteModal({ open, onOpenChange, compte }: ICompteModal
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-orange-500 hover:bg-orange-400 text-white font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-[10px] bg-[var(--orange)] hover:bg-orange-400 text-white font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <Loader2 size={16} className="animate-spin" />

@@ -169,7 +169,7 @@ export default function LogoHeader({ rightSlot }: ILogoHeaderProps) {
                     {!isConfirming && (
                       <button
                         onClick={(e) => openEditModal(compte, e)}
-                        className="p-1.5 rounded-lg text-[var(--orange)] bg-[var(--orange)]/10 hover:bg-[var(--orange)]/20 transition-colors"
+                        className="p-1.5 rounded-[8px] bg-[var(--bg3)] text-[var(--text3)] hover:text-[var(--text)] transition-colors"
                         title="Modifier"
                       >
                         <Pencil size={12} />
