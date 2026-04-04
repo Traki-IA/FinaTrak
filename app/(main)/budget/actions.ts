@@ -25,7 +25,7 @@ const UpdateBudgetItemSchema = z.object({
   nom: z.string().min(1, "Le nom est requis"),
   montant: z.number().positive("Le montant doit être positif"),
   frequence: z.enum(["mensuel", "annuel"]),
-  categorie_id: z.string().nullable(),
+  categorie_id: z.string().uuid("Catégorie invalide").nullable(),
   objectif_id: z.string().uuid().nullable(),
 });
 
