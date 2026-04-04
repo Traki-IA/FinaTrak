@@ -13,6 +13,20 @@ _(aucune)_
 
 ## Complétées
 
+### 2026-04-04 (session 2)
+- [x] Corriger `precommit-check.sh` (strict mode, regex .env, JSON escaping)
+- [x] Créer `lib/categories.ts` — source unique de vérité pour CRUD catégories
+- [x] Sécuriser `switchCompte` — ownership check avant écriture du cookie (CRITIQUE)
+- [x] Valider date avec regex `YYYY-MM-DD` dans tous les schémas Zod
+- [x] Extraire helper `applyObjectifProgress` (déduplication + bug silencieux corrigé)
+- [x] Valider `categorie_id` UUID + ownership dans tous les schémas concernés
+- [x] Normaliser `updateSoldeInitial` vers `TActionResult` standard
+- [x] Plafonner `updateObjectifMontant` à `montant_cible` via `Math.min()`
+- [x] Ownership check sur `objectif_id` et `categorie_id` dans `insertBudgetItem`
+- [x] Valider `categorie_id` dans `bulkInsertTransactions` (ownership)
+- [x] `.single()` → `.maybeSingle()` dans `applyObjectifProgress`
+- [x] `UpdateBudgetItemSchema.categorie_id` — ajout `.uuid()` manquant
+
 ### 2026-04-04
 - [x] Augmenter la taille du header (LogoHeader) pour renforcer la hiérarchie visuelle
 - [x] Augmenter la taille des boutons du rightSlot (Upload, Plus)

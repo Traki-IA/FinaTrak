@@ -1,5 +1,30 @@
 # CHANGELOG — FinaTrak
 
+## 2026-04-04 — Audit qualité itératif (passes 1–8) — Server Actions production-ready
+
+### Sécurité
+- `switchCompte` : ownership check avant écriture du cookie actif (CRITIQUE)
+- `insertBudgetItem` : ownership check sur `objectif_id` et `categorie_id` existants
+- `bulkInsertTransactions` : validation ownership des `categorie_id`
+- `applyObjectifProgress` : `.single()` → `.maybeSingle()` (crash si objectif introuvable)
+
+### Validation Zod
+- Regex `YYYY-MM-DD` sur tous les champs `date` et `date_fin`
+- `categorie_id: z.string().uuid()` dans tous les schémas (transactions, budget insert + update)
+- `updateObjectifMontant` : plafonnement à `montant_cible` via `Math.min()`
+- `updateSoldeInitial` : type de retour normalisé vers `{ success: true } | { error: string }`
+- `updateCategoryByDescription` : retourne `{ affected: number }` + commentaire bulk
+
+### Consolidation
+- Création `lib/categories.ts` — source unique de vérité (supprime duplication parametres ↔ transactions)
+- Extraction helper `applyObjectifProgress` dans transactions/actions.ts (−30 lignes dupliquées, corrige `.update()` non vérifié)
+- Suppression re-export mort `{ upsertCategorie, deleteCategorie }` de transactions/actions.ts
+
+### Robustesse
+- `revalidatePath("/", "layout")` harmonisé dans tous les fichiers actions
+- `insertCompte` : `if (error || !data)` au lieu de `if (error)` seul
+- `middleware.ts` : `catch {}` → `catch (err) { console.warn(...) }`
+
 ## 2026-04-04 — Audit qualité + corrections senior
 
 ### Corrigé
