@@ -11,7 +11,7 @@ const ObjectifSchema = z.object({
   montant_cible: z.number().positive("Le montant cible doit être positif"),
   montant_actuel: z.number().min(0, "Le montant actuel ne peut pas être négatif"),
   periode: z.enum(["mensuel", "annuel", "ponctuel"]),
-  date_fin: z.string().nullable(),
+  date_fin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format: YYYY-MM-DD").nullable(),
   compte_id: z.string().uuid("Compte invalide"),
 });
 
@@ -21,7 +21,7 @@ const UpdateObjectifSchema = z.object({
   montant_cible: z.number().positive("Le montant cible doit être positif"),
   montant_actuel: z.number().min(0, "Le montant actuel ne peut pas être négatif"),
   periode: z.enum(["mensuel", "annuel", "ponctuel"]),
-  date_fin: z.string().nullable(),
+  date_fin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format: YYYY-MM-DD").nullable(),
 });
 
 export type TInsertObjectifInput = z.infer<typeof ObjectifSchema>;
@@ -59,7 +59,7 @@ export async function insertObjectif(
 
   if (error || !data) { console.error("[objectifs] insertObjectif:", error?.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/objectifs");
+  revalidatePath("/", "layout");
   return { success: true, objectif: data as TObjectif };
 }
 
@@ -83,7 +83,7 @@ export async function updateObjectif(
 
   if (error) { console.error("[objectifs] updateObjectif:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/objectifs");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -99,15 +99,27 @@ export async function updateObjectifMontant(
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
+  // Récupérer montant_cible pour plafonner la valeur (cohérence avec applyObjectifProgress)
+  const { data: objectif, error: fetchError } = await supabase
+    .from("objectifs")
+    .select("montant_cible")
+    .eq("id", id)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (fetchError || !objectif) { return { error: "Objectif invalide" }; }
+
+  const capped = Math.min(montant_actuel, objectif.montant_cible as number);
+
   const { error } = await supabase
     .from("objectifs")
-    .update({ montant_actuel })
+    .update({ montant_actuel: capped })
     .eq("id", id)
     .eq("user_id", userId);
 
   if (error) { console.error("[objectifs] updateObjectifMontant:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/objectifs");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -125,7 +137,7 @@ export async function deleteObjectif(id: string): Promise<TActionResult> {
     .eq("user_id", userId);
   if (error) { console.error("[objectifs] deleteObjectif:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/objectifs");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -148,6 +160,6 @@ export async function reorderObjectifs(
     if (error) { console.error("[objectifs] reorderObjectifs:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
   }
 
-  revalidatePath("/objectifs");
+  revalidatePath("/", "layout");
   return { success: true };
 }

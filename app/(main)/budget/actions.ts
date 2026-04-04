@@ -11,7 +11,7 @@ const BudgetItemSchema = z.object({
   nom: z.string().min(1, "Le nom est requis"),
   montant: z.number().positive("Le montant doit être positif"),
   frequence: z.enum(["mensuel", "annuel"]),
-  categorie_id: z.string().nullable(),
+  categorie_id: z.string().uuid("Catégorie invalide").nullable(),
   objectif_id: z.string().uuid().nullable(),
   compte_id: z.string().uuid("Compte invalide"),
   creer_objectif: z.boolean(),
@@ -67,6 +67,30 @@ export async function insertBudgetItem(
 
   let objectif_id = itemData.objectif_id;
 
+  // Vérifier que la catégorie appartient à l'utilisateur
+  if (itemData.categorie_id) {
+    const { data: cat } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("id", itemData.categorie_id)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!cat) return { error: "Catégorie invalide" };
+  }
+
+  // Vérifier que l'objectif existant appartient à l'utilisateur
+  if (objectif_id && !creer_objectif) {
+    const { data: existing } = await supabase
+      .from("objectifs")
+      .select("id")
+      .eq("id", objectif_id)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!existing) return { error: "Objectif invalide" };
+  }
+
   // Créer l'objectif à la volée si demandé
   if (creer_objectif && objectif_nom && objectif_cible) {
     const { data: newObjectif, error: objError } = await supabase
@@ -84,9 +108,8 @@ export async function insertBudgetItem(
       .select("id")
       .single();
 
-    if (objError) { console.error("[budget] insertBudgetItem (objectif):", objError.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
+    if (objError || !newObjectif) { console.error("[budget] insertBudgetItem (objectif):", objError?.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
     objectif_id = newObjectif.id as string;
-    revalidatePath("/objectifs");
   }
 
   const { error } = await supabase
@@ -95,8 +118,6 @@ export async function insertBudgetItem(
 
   if (error) { console.error("[budget] insertBudgetItem:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/budget");
-  revalidatePath("/dashboard");
   revalidatePath("/", "layout");
   return { success: true };
 }
@@ -121,8 +142,6 @@ export async function toggleBudgetItem(
 
   if (error) { console.error("[budget] toggleBudgetItem:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/budget");
-  revalidatePath("/dashboard");
   revalidatePath("/", "layout");
   return { success: true };
 }
@@ -144,8 +163,6 @@ export async function deleteBudgetItem(id: string): Promise<TActionResult> {
 
   if (error) { console.error("[budget] deleteBudgetItem:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/budget");
-  revalidatePath("/dashboard");
   revalidatePath("/", "layout");
   return { success: true };
 }
@@ -172,8 +189,6 @@ export async function updateBudgetItem(
 
   if (error) { console.error("[budget] updateBudgetItem:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/budget");
-  revalidatePath("/dashboard");
   revalidatePath("/", "layout");
   return { success: true };
 }
@@ -199,8 +214,6 @@ export async function reorderBudgetItems(
     if (error) { console.error("[budget] reorderBudgetItems:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
   }
 
-  revalidatePath("/budget");
-  revalidatePath("/dashboard");
   revalidatePath("/", "layout");
   return { success: true };
 }

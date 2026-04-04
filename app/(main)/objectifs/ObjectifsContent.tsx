@@ -47,7 +47,6 @@ function formatDate(dateStr: string): string {
 
 function SortableObjectifRow({
   objectif,
-  index,
   confirmingDeleteId,
   onEdit,
   onDeleteRequest,
@@ -55,7 +54,6 @@ function SortableObjectifRow({
   onDeleteCancel,
 }: {
   objectif: TObjectifWithBudgetLines;
-  index: number;
   confirmingDeleteId: string | null;
   onEdit: (o: TObjectifWithBudgetLines) => void;
   onDeleteRequest: (id: string) => void;
@@ -228,7 +226,7 @@ function SortableObjectifRow({
 
 // ── Empty state ───────────────────────────────────────────────────────────────
 
-function EmptyState({ onAdd }: { onAdd: () => void }) {
+function EmptyState() {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -325,7 +323,7 @@ function Objectifs({
       )}
 
       {localObjectifs.length === 0 ? (
-        <EmptyState onAdd={() => {}} />
+        <EmptyState />
       ) : (
         <div
           className="mt-[8px] rounded-[14px] overflow-hidden"
@@ -334,11 +332,10 @@ function Objectifs({
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
             <SortableContext items={localObjectifs.map((o) => o.id)} strategy={verticalListSortingStrategy}>
               <AnimatePresence>
-                {localObjectifs.map((o, i) => (
+                {localObjectifs.map((o) => (
                   <SortableObjectifRow
                     key={o.id}
                     objectif={o}
-                    index={i}
                     confirmingDeleteId={confirmingDeleteId}
                     onEdit={onEdit}
                     onDeleteRequest={onDeleteRequest}

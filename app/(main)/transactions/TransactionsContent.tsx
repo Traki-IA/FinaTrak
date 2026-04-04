@@ -42,10 +42,6 @@ const PERIOD_PRESETS: { key: TPeriodFilter; label: string }[] = [
   { key: "custom", label: "Personnalisé" },
 ];
 
-function getPeriodLabel(period: TPeriodFilter): string {
-  return PERIOD_PRESETS.find((p) => p.key === period)?.label ?? "Péri.";
-}
-
 function filterByPeriod(
   transactions: TTransactionWithCategorie[],
   period: TPeriodFilter,
@@ -129,6 +125,7 @@ function PeriodSheet({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync intentionnel : réinitialise l'état interne de la modale à son ouverture (React 18 batch ces appels)
       setPending(activePeriod);
       setFrom(activeFrom);
       setTo(activeTo);
@@ -268,7 +265,6 @@ function PeriodSheet({
 
 function MobileTxRow({
   transaction,
-  index,
   isActive,
   confirmingDeleteId,
   onEdit,
@@ -278,7 +274,6 @@ function MobileTxRow({
   onRowTap,
 }: {
   transaction: TTransactionWithCategorie;
-  index: number;
   isActive: boolean;
   confirmingDeleteId: string | null;
   onEdit: (t: TTransactionWithCategorie) => void;
@@ -291,9 +286,6 @@ function MobileTxRow({
   const isConfirming = confirmingDeleteId === transaction.id;
   const color = isRevenu ? "var(--green)" : "var(--red)";
   const catColor = transaction.categories?.couleur;
-  const bgColor = catColor ? `${catColor}20` : (isRevenu ? "var(--revenue-bg)" : "var(--expense-bg)");
-  const borderCat = catColor ? `${catColor}50` : (isRevenu ? "#1A4428" : "#4A1A1A");
-  const catTextColor = catColor ?? color;
 
   return (
     <motion.div
@@ -453,11 +445,10 @@ function MonthCard({
         <>
           <AnimatePresence mode="popLayout">
             <div className="divide-y divide-[var(--border)]">
-              {visible.map((t, idx) => (
+              {visible.map((t) => (
                 <MobileTxRow
                   key={t.id}
                   transaction={t}
-                  index={idx}
                   isActive={activeRowId === t.id}
                   confirmingDeleteId={confirmingDeleteId}
                   onEdit={onEdit}

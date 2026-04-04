@@ -55,13 +55,11 @@ function Toggle({
 
 function BudgetRow({
   item,
-  index,
   viewMode,
   onToggle,
   onEdit,
 }: {
   item: TBudgetItemWithRelations;
-  index: number;
   viewMode: "mensuel" | "annuel";
   onToggle: (id: string, actif: boolean) => Promise<void>;
   onEdit: (item: TBudgetItemWithRelations) => void;
@@ -211,7 +209,6 @@ export default function BudgetContent({
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
-  let rowIndex = 0; // eslint-disable-line prefer-const
 
   return (
     <>
@@ -282,12 +279,10 @@ export default function BudgetContent({
                   {/* Rows */}
                   <div className="divide-y divide-[var(--border)]">
                     {items.map((item) => {
-                      const idx = rowIndex++;
                       return (
                         <BudgetRow
                           key={item.id}
                           item={item}
-                          index={idx}
                           viewMode={viewMode}
                           onToggle={handleToggleItem}
                           onEdit={openEditModal}

@@ -7,7 +7,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X, Loader2, Plus, Link2, Target, ArrowLeft, Check, Pencil } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { insertBudgetItem, updateBudgetItem } from "./actions";
-import { upsertCategorie, deleteCategorie } from "@/app/(main)/transactions/actions";
+import { upsertCategorie, deleteCategorie } from "@/lib/categories";
 import type { TCategorie, TObjectif, TBudgetItemWithRelations } from "@/types";
 
 const COLOR_PALETTE = [

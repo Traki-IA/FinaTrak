@@ -31,7 +31,7 @@ import {
   CircleEllipsis,
   HeartPulse,
 } from "lucide-react";
-import { insertCategorie, updateCategorie } from "./actions";
+import { upsertCategorie } from "@/lib/categories";
 import type { TCategorie } from "@/types";
 
 // ── Icônes disponibles ──────────────────────────────────────────────────────
@@ -137,9 +137,7 @@ export default function CategorieModal({
 
     setIsSubmitting(true);
 
-    const result = isEditMode && categorie
-      ? await updateCategorie({ id: categorie.id, ...form })
-      : await insertCategorie(form);
+    const result = await upsertCategorie({ id: categorie?.id, ...form });
 
     setIsSubmitting(false);
 

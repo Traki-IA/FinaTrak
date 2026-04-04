@@ -68,6 +68,11 @@ Ce fichier définit les conventions et règles de développement pour le projet 
 - **Recharts** — tous les graphiques
 - **Lucide React** — icônes
 
+### Design system
+- Toujours utiliser les variables CSS (`var(--bg2)`, `var(--text)`, `var(--border)`, etc.) — jamais de couleurs hardcodées (`#12121f`, `white/10`, `rgba(...)`)
+- État actif : `bg-[var(--orange)] text-white rounded-[10px]`
+- État inactif : `bg-[var(--bg3)] text-[var(--text2)] rounded-[10px]`
+
 ### Principes UX
 - Animations fluides sur les interactions (hover, click, chargement)
 - Skeleton loaders pendant les chargements (jamais de page blanche)
@@ -80,6 +85,23 @@ Ce fichier définit les conventions et règles de développement pour le projet 
 - Utiliser les Server Components Next.js au maximum
 - Lazy loading sur les composants lourds
 - Optimisation des images avec `next/image`
+
+## Sécurité spécifique au projet
+
+### Supabase
+- RLS (Row Level Security) obligatoire sur toutes les tables — filtre `user_id = auth.uid()`
+- Ne jamais bypasser le RLS avec la `service_role` key côté client
+- Toutes les requêtes Supabase se font côté serveur (Server Components ou actions serveur)
+- Ne jamais exposer `SUPABASE_SERVICE_ROLE_KEY` dans le code ou les logs
+
+### Next.js
+- Variables d'environnement publiques uniquement avec préfixe `NEXT_PUBLIC_`
+- Ne jamais passer de données sensibles dans les query params ou l'URL
+- Middleware d'auth vérifié sur chaque requête — ne pas contourner
+
+### Validation
+- Toutes les données entrantes validées avec Zod avant traitement
+- Pas de SQL dynamique construit depuis des inputs utilisateur
 
 ## Règles importantes
 

@@ -23,6 +23,7 @@ export function useBreakpoint(): TBreakpoint {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Initialisation SSR-safe : window.innerWidth n'est disponible qu'au montage côté client
     update();
 
     const mqTablet = window.matchMedia(

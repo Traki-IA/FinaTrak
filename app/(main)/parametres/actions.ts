@@ -14,27 +14,24 @@ const SoldeInitialSchema = z.object({
 export async function updateSoldeInitial(
   compteId: string,
   montant: number
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: true } | { error: string }> {
   const parsed = SoldeInitialSchema.safeParse({ montant });
 
   if (!parsed.success) {
-    return { success: false, error: "Montant invalide" };
+    return { error: "Montant invalide" };
   }
 
   if (!z.string().uuid().safeParse(compteId).success) {
-    return { success: false, error: "Compte invalide" };
+    return { error: "Compte invalide" };
   }
 
   try {
     await upsertSoldeInitial(compteId, parsed.data.montant);
-    revalidatePath("/parametres");
-    revalidatePath("/dashboard");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Erreur inconnue",
-    };
+    console.error("[parametres] updateSoldeInitial:", err);
+    return { error: err instanceof Error ? err.message : "Erreur inconnue" };
   }
 }
 
@@ -63,93 +60,11 @@ export async function reorderCategories(
     if (error) { console.error("[parametres] reorderCategories:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
   }
 
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
-// ── CRUD catégories ──────────────────────────────────────────────────────────
-
-const CategorieSchema = z.object({
-  nom: z.string().min(1, "Le nom est requis").max(50),
-  couleur: z.string().min(1, "La couleur est requise"),
-  icone: z.string().min(1, "L'icône est requise"),
-});
-
-export async function insertCategorie(
-  input: { nom: string; couleur: string; icone: string }
-): Promise<TActionResult> {
-  const parsed = CategorieSchema.safeParse(input);
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
-  }
-
-  const userId = await requireUserId();
-  const supabase = await createServerSupabaseClient();
-
-  // Calculer le prochain sort_order
-  const { data: last } = await supabase
-    .from("categories")
-    .select("sort_order")
-    .eq("user_id", userId)
-    .order("sort_order", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  const nextOrder = ((last?.sort_order as number) ?? -1) + 1;
-
-  const { error } = await supabase
-    .from("categories")
-    .insert([{ ...parsed.data, sort_order: nextOrder, user_id: userId }]);
-
-  if (error) { console.error("[parametres] insertCategorie:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
-
-  revalidatePath("/");
-  return { success: true };
-}
-
-export async function updateCategorie(
-  input: { id: string; nom: string; couleur: string; icone: string }
-): Promise<TActionResult> {
-  const schema = CategorieSchema.extend({ id: z.string().uuid() });
-  const parsed = schema.safeParse(input);
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
-  }
-
-  const userId = await requireUserId();
-  const supabase = await createServerSupabaseClient();
-  const { id, ...updateData } = parsed.data;
-
-  const { error } = await supabase
-    .from("categories")
-    .update(updateData)
-    .eq("id", id)
-    .eq("user_id", userId);
-
-  if (error) { console.error("[parametres] updateCategorie:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
-
-  revalidatePath("/");
-  return { success: true };
-}
-
-export async function deleteCategorie(id: string): Promise<TActionResult> {
-  if (!z.string().uuid().safeParse(id).success) {
-    return { error: "Identifiant invalide" };
-  }
-
-  const userId = await requireUserId();
-  const supabase = await createServerSupabaseClient();
-  const { error } = await supabase
-    .from("categories")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", userId);
-
-  if (error) { console.error("[parametres] deleteCategorie:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
-
-  revalidatePath("/");
-  return { success: true };
-}
+export { deleteCategorie } from "@/lib/categories";
 
 // ── Mise à jour de l'ordre de navigation ─────────────────────────────────────
 
@@ -168,7 +83,7 @@ export async function updateNavOrder(
 
   if (error) { console.error("[parametres] updateNavOrder:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -189,7 +104,7 @@ export async function updateUserDisplayName(
 
   if (error) { console.error("[parametres] updateUserDisplayName:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/parametres");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -260,7 +175,8 @@ export async function deleteUserAccount(
   let admin;
   try {
     admin = createAdminSupabaseClient();
-  } catch {
+  } catch (err) {
+    console.error("[deleteAccount] Impossible de créer le client admin Supabase :", err);
     return { error: "Erreur de configuration serveur" };
   }
 

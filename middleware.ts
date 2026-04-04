@@ -60,8 +60,9 @@ export async function middleware(request: NextRequest) {
         url.pathname = "/onboarding";
         return NextResponse.redirect(url);
       }
-    } catch {
-      // En cas d'erreur Supabase, laisser passer sans redirection
+    } catch (err) {
+      // Dégradation gracieuse : si Supabase est indisponible, on laisse passer plutôt que de bloquer l'utilisateur
+      console.warn("[middleware] Impossible de vérifier les comptes utilisateur :", err);
     }
   }
 

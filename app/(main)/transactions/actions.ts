@@ -4,13 +4,55 @@ import { z } from "zod";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { requireUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+// ── Helper privé ──────────────────────────────────────────────────────────────
+
+// Incrémente montant_actuel d'un objectif en le plafonnant à montant_cible.
+// Retourne true si la mise à jour a réussi, false sinon (erreur loggée).
+async function applyObjectifProgress(
+  supabase: SupabaseClient,
+  objectifId: string,
+  montant: number,
+  userId: string
+): Promise<boolean> {
+  const { data: objectif, error: fetchError } = await supabase
+    .from("objectifs")
+    .select("montant_actuel, montant_cible")
+    .eq("id", objectifId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (fetchError || !objectif) {
+    console.error("[transactions] applyObjectifProgress fetch:", fetchError?.message);
+    return false;
+  }
+
+  const nouveauMontant = Math.min(
+    (objectif.montant_actuel as number) + montant,
+    objectif.montant_cible as number
+  );
+
+  const { error: updateError } = await supabase
+    .from("objectifs")
+    .update({ montant_actuel: nouveauMontant })
+    .eq("id", objectifId)
+    .eq("user_id", userId);
+
+  if (updateError) {
+    console.error("[transactions] applyObjectifProgress update:", updateError.message);
+    return false;
+  }
+
+  return true;
+}
 
 const TransactionSchema = z.object({
   montant: z.number().positive("Le montant doit être positif"),
   type: z.enum(["revenu", "depense"]),
-  categorie_id: z.string().nullable(),
+  categorie_id: z.string().uuid("Catégorie invalide").nullable(),
   description: z.string().nullable(),
-  date: z.string().min(1, "La date est requise"),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format: YYYY-MM-DD"),
   compte_id: z.string().uuid("Compte invalide"),
   // objectif_id n'est pas stocké en base, il sert uniquement à mettre à jour la progression
   objectif_id: z.string().uuid().nullable().optional(),
@@ -21,9 +63,9 @@ const UpdateTransactionSchema = z.object({
   id: z.string().uuid("Identifiant invalide"),
   montant: z.number().positive("Le montant doit être positif"),
   type: z.enum(["revenu", "depense"]),
-  categorie_id: z.string().nullable(),
+  categorie_id: z.string().uuid("Catégorie invalide").nullable(),
   description: z.string().nullable(),
-  date: z.string().min(1, "La date est requise"),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format: YYYY-MM-DD"),
   objectif_id: z.string().uuid().nullable().optional(),
 });
 
@@ -73,32 +115,10 @@ export async function insertTransaction(
   if (error) { console.error("[transactions] insertTransaction:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   // Mise à jour automatique de la progression de l'objectif lié
-  let objectifUpdated = false;
-  if (objectif_id) {
-    const { data: objectif } = await supabase
-      .from("objectifs")
-      .select("montant_actuel, montant_cible")
-      .eq("id", objectif_id)
-      .single();
+  const objectifUpdated = objectif_id
+    ? await applyObjectifProgress(supabase, objectif_id, parsed.data.montant, userId)
+    : false;
 
-    if (objectif) {
-      const nouveauMontant = Math.min(
-        (objectif.montant_actuel as number) + parsed.data.montant,
-        objectif.montant_cible as number
-      );
-      await supabase
-        .from("objectifs")
-        .update({ montant_actuel: nouveauMontant })
-        .eq("id", objectif_id)
-        .eq("user_id", userId);
-      objectifUpdated = true;
-    }
-
-    revalidatePath("/objectifs");
-  }
-
-  revalidatePath("/transactions");
-  revalidatePath("/dashboard");
   revalidatePath("/", "layout");
   return { success: true, objectifUpdated };
 }
@@ -126,92 +146,12 @@ export async function updateTransaction(
   if (error) { console.error("[transactions] updateTransaction:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
   // Mise à jour de la progression de l'objectif lié
-  let objectifUpdated = false;
-  if (objectif_id) {
-    const { data: objectif } = await supabase
-      .from("objectifs")
-      .select("montant_actuel, montant_cible")
-      .eq("id", objectif_id)
-      .single();
+  const objectifUpdated = objectif_id
+    ? await applyObjectifProgress(supabase, objectif_id, parsed.data.montant, userId)
+    : false;
 
-    if (objectif) {
-      const nouveauMontant = Math.min(
-        (objectif.montant_actuel as number) + parsed.data.montant,
-        objectif.montant_cible as number
-      );
-      await supabase
-        .from("objectifs")
-        .update({ montant_actuel: nouveauMontant })
-        .eq("id", objectif_id)
-        .eq("user_id", userId);
-      objectifUpdated = true;
-    }
-
-    revalidatePath("/objectifs");
-  }
-
-  revalidatePath("/transactions");
-  revalidatePath("/dashboard");
   revalidatePath("/", "layout");
   return { success: true, objectifUpdated };
-}
-
-const UpsertCategorieSchema = z.object({
-  id: z.string().uuid().optional(),
-  nom: z.string().min(1, "Le nom est requis").max(50),
-  couleur: z.string().min(1, "La couleur est requise"),
-});
-
-export async function upsertCategorie(input: {
-  id?: string;
-  nom: string;
-  couleur: string;
-}): Promise<{ success: true; id: string } | { error: string }> {
-  const parsed = UpsertCategorieSchema.safeParse(input);
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Données invalides" };
-  }
-
-  const userId = await requireUserId();
-  const supabase = await createServerSupabaseClient();
-
-  if (parsed.data.id) {
-    const { error } = await supabase
-      .from("categories")
-      .update({ nom: parsed.data.nom, couleur: parsed.data.couleur })
-      .eq("id", parsed.data.id)
-      .eq("user_id", userId);
-    if (error) return { error: "Erreur lors de la mise à jour" };
-    revalidatePath("/transactions");
-    revalidatePath("/dashboard");
-    return { success: true, id: parsed.data.id };
-  } else {
-    const { data, error } = await supabase
-      .from("categories")
-      .insert([{ nom: parsed.data.nom, couleur: parsed.data.couleur, user_id: userId }])
-      .select("id")
-      .single();
-    if (error || !data) return { error: "Erreur lors de la création" };
-    revalidatePath("/transactions");
-    revalidatePath("/dashboard");
-    return { success: true, id: data.id as string };
-  }
-}
-
-export async function deleteCategorie(
-  id: string
-): Promise<{ success: true } | { error: string }> {
-  const userId = await requireUserId();
-  const supabase = await createServerSupabaseClient();
-  const { error } = await supabase
-    .from("categories")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", userId);
-  if (error) { console.error("[transactions] deleteCategorie:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
-  revalidatePath("/transactions");
-  revalidatePath("/dashboard");
-  return { success: true };
 }
 
 export async function deleteTransaction(
@@ -232,24 +172,24 @@ export async function deleteTransaction(
 
   if (error) { console.error("[transactions] deleteTransaction:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/transactions");
-  revalidatePath("/dashboard");
   revalidatePath("/", "layout");
   return { success: true };
 }
 
+// Met à jour la catégorie de TOUTES les transactions partageant la même description.
+// Retourne le nombre de lignes affectées (peut être 0 si aucune correspondance).
 export async function updateCategoryByDescription(
   description: string,
   categorieId: string | null
-): Promise<{ success: true } | { error: string }> {
+): Promise<{ success: true; affected: number } | { error: string }> {
   if (!description.trim()) return { error: "Description invalide" };
 
   const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
 
-  const { error } = await supabase
+  const { error, count } = await supabase
     .from("transactions")
-    .update({ categorie_id: categorieId })
+    .update({ categorie_id: categorieId }, { count: "exact" })
     .eq("user_id", userId)
     .eq("description", description);
 
@@ -258,16 +198,14 @@ export async function updateCategoryByDescription(
     return { error: "Une erreur est survenue." };
   }
 
-  revalidatePath("/transactions");
-  revalidatePath("/dashboard");
   revalidatePath("/", "layout");
-  return { success: true };
+  return { success: true, affected: count ?? 0 };
 }
 
 // ── Import CSV en masse ───────────────────────────────────────────────────────
 
 const BulkRowSchema = z.object({
-  date: z.string().min(1),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format: YYYY-MM-DD"),
   description: z.string().nullable(),
   montant: z.number().positive(),
   type: z.enum(["revenu", "depense"]),
@@ -300,6 +238,23 @@ export async function bulkInsertTransactions(
     return { error: "Compte invalide." };
   }
 
+  // Vérifier que toutes les categorie_id appartiennent à l'utilisateur
+  const categorieIds = [
+    ...new Set(parsed.data.map((r) => r.categorie_id).filter((id): id is string => id !== null)),
+  ];
+  if (categorieIds.length > 0) {
+    const { data: categories } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("user_id", userId)
+      .in("id", categorieIds);
+
+    const validCategorieIds = new Set((categories ?? []).map((c) => c.id));
+    if (categorieIds.some((id) => !validCategorieIds.has(id))) {
+      return { error: "Catégorie invalide." };
+    }
+  }
+
   const toInsert = parsed.data.map((r) => ({
     date: r.date,
     description: r.description,
@@ -316,8 +271,6 @@ export async function bulkInsertTransactions(
     return { error: "Une erreur est survenue lors de l'import." };
   }
 
-  revalidatePath("/transactions");
-  revalidatePath("/dashboard");
   revalidatePath("/", "layout");
   return { success: true, count: toInsert.length };
 }

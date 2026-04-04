@@ -55,9 +55,9 @@ export async function insertCompte(
     .select("id")
     .single();
 
-  if (error) { console.error("[comptes] insertCompte:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
+  if (error || !data) { console.error("[comptes] insertCompte:", error?.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { success: true, id: data.id };
 }
 
@@ -83,7 +83,7 @@ export async function updateCompte(
 
   if (error) { console.error("[comptes] updateCompte:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -114,7 +114,7 @@ export async function deleteCompte(id: string): Promise<TActionResult> {
     .eq("user_id", userId);
   if (error) { console.error("[comptes] deleteCompte:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
 
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -139,7 +139,7 @@ export async function reorderComptes(
     if (error) { console.error("[comptes] reorderComptes:", error.message); return { error: "Une erreur est survenue. Veuillez réessayer." }; }
   }
 
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -150,11 +150,18 @@ export async function switchCompte(compteId: string): Promise<TActionResult> {
     return { error: "Identifiant invalide" };
   }
 
-  // getSession() lit le JWT depuis le cookie sans appel réseau (contrairement à getUser())
-  // Le RLS Supabase protège toutes les requêtes de données suivantes par user_id
+  const userId = await requireUserId();
   const supabase = await createServerSupabaseClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return { error: "Non authentifié" };
+
+  // Vérifier que le compte appartient bien à l'utilisateur avant d'écrire dans le cookie
+  const { data: compte } = await supabase
+    .from("comptes")
+    .select("id")
+    .eq("id", compteId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!compte) return { error: "Compte invalide" };
 
   await setActiveCompteId(compteId);
   return { success: true };

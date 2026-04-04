@@ -53,13 +53,6 @@ function resolveBounds(
   return getPeriodBounds(period as Exclude<TPeriod, "custom">);
 }
 
-function labelMois(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("fr-FR", {
-    month: "short",
-    year: "2-digit",
-  });
-}
-
 function labelJour(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("fr-FR", {
     day: "numeric",

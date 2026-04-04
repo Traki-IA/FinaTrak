@@ -64,9 +64,7 @@ const PERIOD_MAP: Record<TPeriodTab, TPeriod> = {
 
 export default function DashboardContent({
   stats,
-  categories,
   history,
-  parMois,
   allParMois,
   period,
 }: IDashboardContentProps) {
@@ -251,7 +249,6 @@ export default function DashboardContent({
                   m.revenus > 0 ? Math.round(((m.revenus - m.depenses) / m.revenus) * 100) : null;
 
                 const isOpen = openMonth === m.moisKey;
-                const dotColor = net >= 0 ? "var(--green)" : "var(--red)";
                 const netColor = net >= 0 ? "var(--green)" : "var(--red)";
                 const evolColor = evol === null ? "var(--text3)" : evol >= 0 ? "var(--green)" : "var(--red)";
                 const evolBg = evol === null

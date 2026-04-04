@@ -53,9 +53,9 @@ export default function RootLayout({
           swipeDirections={["bottom", "left", "right"]}
           toastOptions={{
             style: {
-              background: "#1a1a2e",
-              border: "1px solid rgba(255,255,255,0.1)",
-              color: "#fff",
+              background: "var(--bg-toast)",
+              border: "1px solid var(--border-subtle)",
+              color: "var(--text)",
             },
           }}
         />
