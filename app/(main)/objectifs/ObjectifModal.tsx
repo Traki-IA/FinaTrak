@@ -144,13 +144,13 @@ export default function ObjectifModal({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
 
-        <Dialog.Content className="fixed z-50 bg-[#0f0f1a] border-white/[0.1] shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out inset-x-0 bottom-0 border-t rounded-t-2xl px-5 pt-4 pb-8 max-h-[92dvh] overflow-y-auto data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md sm:border sm:rounded-2xl sm:pb-5 sm:max-h-[90dvh] sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95">
+        <Dialog.Content className="fixed z-50 bg-[var(--bg2)] border-[var(--border)] shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out inset-x-0 bottom-0 border-t rounded-t-2xl px-5 pt-4 pb-8 max-h-[92dvh] overflow-y-auto data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md sm:border sm:rounded-2xl sm:pb-5 sm:max-h-[90dvh] sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <Dialog.Title className="text-base font-semibold text-white">
+            <Dialog.Title className="text-base font-semibold text-[var(--text)]">
               {isEditMode ? "Modifier l'objectif" : "Nouvel objectif"}
             </Dialog.Title>
-            <Dialog.Close className="text-white/40 hover:text-white transition-colors rounded-lg p-1 hover:bg-white/[0.06]">
+            <Dialog.Close className="text-[var(--text3)] hover:text-[var(--text)] transition-colors rounded-lg p-1 hover:bg-[var(--bg3)]">
               <X size={18} />
             </Dialog.Close>
           </div>
@@ -158,7 +158,7 @@ export default function ObjectifModal({
           <form onSubmit={handleSubmit} className="space-y-3">
             {/* Nom */}
             <div className="space-y-1">
-              <label className="text-sm text-white/60 font-medium">
+              <label className="text-sm text-[var(--text2)] font-medium">
                 Nom de l&apos;objectif
               </label>
               <input
@@ -166,7 +166,7 @@ export default function ObjectifModal({
                 placeholder="Ex : Vacances au Japon"
                 value={form.nom}
                 onChange={(e) => set("nom", e.target.value)}
-                className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors"
+                className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text3)] rounded-[10px] px-3 py-2 text-sm outline-none focus:border-[var(--orange)] transition-colors"
               />
               {errors.nom && (
                 <p className="text-red-400 text-xs">{errors.nom}</p>
@@ -175,7 +175,7 @@ export default function ObjectifModal({
 
             {/* Période */}
             <div className="space-y-1">
-              <label className="text-sm text-white/60 font-medium">
+              <label className="text-sm text-[var(--text2)] font-medium">
                 Période
               </label>
               <div className="flex gap-2">
@@ -184,10 +184,10 @@ export default function ObjectifModal({
                     key={p}
                     type="button"
                     onClick={() => set("periode", p)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                    className={`flex-1 py-2.5 rounded-[10px] text-sm font-medium transition-all border ${
                       form.periode === p
-                        ? "bg-orange-500/15 border-orange-500/40 text-orange-400"
-                        : "bg-white/[0.04] border-white/[0.08] text-white/40 hover:text-white/70"
+                        ? "bg-[var(--orange)]/15 border-[var(--orange)]/40 text-[var(--orange)]"
+                        : "bg-[var(--bg3)] border-[var(--border)] text-[var(--text3)] hover:text-[var(--text)]/70"
                     }`}
                   >
                     {PERIODE_LABELS[p]}
@@ -199,7 +199,7 @@ export default function ObjectifModal({
             {/* Montants */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-sm text-white/60 font-medium">
+                <label className="text-sm text-[var(--text2)] font-medium">
                   Montant cible (€)
                 </label>
                 <input
@@ -209,7 +209,7 @@ export default function ObjectifModal({
                   placeholder="1 000,00"
                   value={form.montant_cible}
                   onChange={(e) => set("montant_cible", e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors"
+                  className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text3)] rounded-[10px] px-3 py-2 text-sm outline-none focus:border-[var(--orange)] transition-colors"
                 />
                 {errors.montant_cible && (
                   <p className="text-red-400 text-xs">{errors.montant_cible}</p>
@@ -217,7 +217,7 @@ export default function ObjectifModal({
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm text-white/60 font-medium">
+                <label className="text-sm text-[var(--text2)] font-medium">
                   Déjà épargné (€)
                 </label>
                 <input
@@ -227,7 +227,7 @@ export default function ObjectifModal({
                   placeholder="0,00"
                   value={form.montant_actuel}
                   onChange={(e) => set("montant_actuel", e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors"
+                  className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text3)] rounded-[10px] px-3 py-2 text-sm outline-none focus:border-[var(--orange)] transition-colors"
                 />
                 {errors.montant_actuel && (
                   <p className="text-red-400 text-xs">
@@ -239,15 +239,15 @@ export default function ObjectifModal({
 
             {/* Date fin */}
             <div className="space-y-1">
-              <label className="text-sm text-white/60 font-medium">
+              <label className="text-sm text-[var(--text2)] font-medium">
                 Date limite{" "}
-                <span className="text-white/30 font-normal">(optionnel)</span>
+                <span className="text-[var(--text3)] font-normal">(optionnel)</span>
               </label>
               <input
                 type="date"
                 value={form.date_fin}
                 onChange={(e) => set("date_fin", e.target.value)}
-                className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer"
+                className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] rounded-[10px] px-3 py-2 text-sm outline-none focus:border-[var(--orange)] transition-colors cursor-pointer"
                 style={{ colorScheme: "dark" }}
               />
             </div>
@@ -257,7 +257,7 @@ export default function ObjectifModal({
               <Dialog.Close asChild>
                 <button
                   type="button"
-                  className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white/50 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] transition-all"
+                  className="flex-1 py-2.5 rounded-[10px] text-sm font-medium text-[var(--text3)] hover:text-[var(--text)] bg-[var(--bg3)] hover:bg-[var(--bg3)] border border-[var(--border)] transition-all"
                 >
                   Annuler
                 </button>
@@ -265,7 +265,7 @@ export default function ObjectifModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white transition-all"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-sm font-medium bg-[var(--orange)] hover:bg-orange-400 disabled:opacity-60 disabled:cursor-not-allowed text-white transition-all"
               >
                 {isSubmitting && (
                   <Loader2 size={14} className="animate-spin" />

@@ -4,7 +4,7 @@
 _(aucune)_
 
 ## Identifiées / Backlog
-- [ ] Harmoniser les modales des autres pages (Transaction, Budget, Objectifs) avec le design system
+- [x] Harmoniser les modales des autres pages (Transaction, Budget, Objectifs) avec le design system
 - [ ] Valider l'harmonisation du CompteModal sur mobile (screenshot)
 - [ ] Ajouter migration `sort_order` sur table `categories` (colonne existe en DB mais non versionnée)
 - [ ] Activer `npm run gen:types` après `supabase link --project-ref <ID>`

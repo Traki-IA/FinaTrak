@@ -358,13 +358,13 @@ export default function TransactionModal({
         <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
 
         {/* Content */}
-        <Dialog.Content className="fixed z-50 bg-[#0f0f1a] border-white/[0.1] shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out inset-x-0 bottom-0 border-t rounded-t-2xl px-5 pt-4 pb-8 max-h-[92dvh] overflow-y-auto data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md sm:border sm:rounded-2xl sm:pb-5 sm:max-h-[90dvh] sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95">
+        <Dialog.Content className="fixed z-50 bg-[var(--bg2)] border-[var(--border)] shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out inset-x-0 bottom-0 border-t rounded-t-2xl px-5 pt-4 pb-8 max-h-[92dvh] overflow-y-auto data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md sm:border sm:rounded-2xl sm:pb-5 sm:max-h-[90dvh] sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <Dialog.Title className="text-base font-semibold text-white">
+            <Dialog.Title className="text-base font-semibold text-[var(--text)]">
               {isEditMode ? "Modifier la transaction" : "Nouvelle transaction"}
             </Dialog.Title>
-            <Dialog.Close className="text-white/40 hover:text-white transition-colors rounded-lg p-1 hover:bg-white/[0.06]">
+            <Dialog.Close className="text-[var(--text3)] hover:text-[var(--text)] transition-colors rounded-lg p-1 hover:bg-[var(--bg3)]">
               <X size={18} />
             </Dialog.Close>
           </div>
@@ -372,7 +372,7 @@ export default function TransactionModal({
           <form onSubmit={handleSubmit} className="space-y-3">
             {/* Montant */}
             <div className="space-y-1">
-              <label className="text-sm text-white/60 font-medium">
+              <label className="text-sm text-[var(--text2)] font-medium">
                 Montant (€)
               </label>
               <input
@@ -382,7 +382,7 @@ export default function TransactionModal({
                 placeholder="0,00"
                 value={form.montant}
                 onChange={(e) => set("montant", e.target.value)}
-                className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors"
+                className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text3)] rounded-[10px] px-3 py-2 text-sm outline-none focus:border-[var(--orange)] transition-colors"
               />
               {errors.montant && (
                 <p className="text-red-400 text-xs">{errors.montant}</p>
@@ -391,7 +391,7 @@ export default function TransactionModal({
 
             {/* Type */}
             <div className="space-y-1">
-              <label className="text-sm text-white/60 font-medium">Type</label>
+              <label className="text-sm text-[var(--text2)] font-medium">Type</label>
               <div className="flex gap-2">
                 {(["depense", "revenu", "virement"] as const).map((t) => (
                   <button
@@ -406,14 +406,14 @@ export default function TransactionModal({
                         set("destination_compte_id", otherComptes[0].id);
                       }
                     }}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                    className={`flex-1 py-2.5 rounded-[10px] text-sm font-medium transition-all border ${
                       form.type === t
                         ? t === "revenu"
                           ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-400"
                           : t === "virement"
                           ? "bg-blue-500/15 border-blue-500/40 text-blue-400"
                           : "bg-red-500/15 border-red-500/40 text-red-400"
-                        : "bg-white/[0.04] border-white/[0.08] text-white/40 hover:text-white/70"
+                        : "bg-[var(--bg3)] border-[var(--border)] text-[var(--text3)] hover:text-[var(--text)]/70"
                     }`}
                   >
                     {t === "revenu" ? "Revenu" : t === "virement" ? "Virement" : "Dépense"}
@@ -425,11 +425,11 @@ export default function TransactionModal({
             {/* Compte destination — virement uniquement */}
             {form.type === "virement" && (
               <div className="space-y-1">
-                <label className="text-sm text-white/60 font-medium">
+                <label className="text-sm text-[var(--text2)] font-medium">
                   Vers quel compte ?
                 </label>
                 {otherComptes.length === 0 ? (
-                  <p className="text-sm text-white/30 italic">Aucun autre compte disponible</p>
+                  <p className="text-sm text-[var(--text3)] italic">Aucun autre compte disponible</p>
                 ) : (
                   <div className="space-y-1">
                     {otherComptes.map((compte) => (
@@ -437,10 +437,10 @@ export default function TransactionModal({
                         key={compte.id}
                         type="button"
                         onClick={() => set("destination_compte_id", compte.id)}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all border ${
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] text-sm transition-all border ${
                           form.destination_compte_id === compte.id
                             ? "bg-blue-500/15 border-blue-500/40 text-blue-400"
-                            : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:text-white hover:border-white/20"
+                            : "bg-[var(--bg3)] border-[var(--border)] text-[var(--text2)] hover:text-[var(--text)] hover:border-[var(--border2)]"
                         }`}
                       >
                         <span
@@ -465,13 +465,13 @@ export default function TransactionModal({
 
             {/* Catégorie */}
             <div className="space-y-1">
-              <label className="text-sm text-white/60 font-medium">Catégorie</label>
+              <label className="text-sm text-[var(--text2)] font-medium">Catégorie</label>
 
               {/* Bouton sélection */}
               <button
                 type="button"
                 onClick={() => { setCatPickerOpen((v) => !v); setCatForm(null); }}
-                className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-3 py-2 text-sm flex items-center gap-2 text-left transition-colors hover:border-white/20"
+                className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] rounded-[10px] px-3 py-2 text-sm flex items-center gap-2 text-left transition-colors hover:border-[var(--border2)]"
               >
                 {form.categorie_id ? (
                   <>
@@ -479,9 +479,9 @@ export default function TransactionModal({
                     <span>{localCategories.find((c) => c.id === form.categorie_id)?.nom ?? "—"}</span>
                   </>
                 ) : (
-                  <span className="text-white/40">Aucune catégorie</span>
+                  <span className="text-[var(--text3)]">Aucune catégorie</span>
                 )}
-                <span className="ml-auto text-white/30 text-xs">{catPickerOpen ? "▲" : "▼"}</span>
+                <span className="ml-auto text-[var(--text3)] text-xs">{catPickerOpen ? "▲" : "▼"}</span>
               </button>
 
               {/* Picker inline */}
@@ -494,17 +494,17 @@ export default function TransactionModal({
                     transition={{ duration: 0.18 }}
                     className="overflow-hidden"
                   >
-                    <div className="rounded-xl border border-white/[0.1] overflow-hidden bg-white/[0.03]">
+                    <div className="rounded-[10px] border border-[var(--border)] overflow-hidden bg-[var(--bg)]">
                       <AnimatePresence mode="wait">
                         {catForm ? (
                           /* ── Formulaire catégorie ── */
                           <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.15 }} className="p-3 space-y-3">
                             {/* Header form */}
                             <div className="flex items-center gap-2">
-                              <button type="button" onClick={() => setCatForm(null)} className="text-white/40 hover:text-white transition-colors">
+                              <button type="button" onClick={() => setCatForm(null)} className="text-[var(--text3)] hover:text-[var(--text)] transition-colors">
                                 <ArrowLeft size={14} />
                               </button>
-                              <span className="text-sm font-medium text-white">{catForm.id ? "Modifier" : "Nouvelle catégorie"}</span>
+                              <span className="text-sm font-medium text-[var(--text)]">{catForm.id ? "Modifier" : "Nouvelle catégorie"}</span>
                             </div>
                             {/* Nom */}
                             <input
@@ -512,11 +512,11 @@ export default function TransactionModal({
                               placeholder="Nom de la catégorie"
                               value={catForm.nom}
                               onChange={(e) => setCatForm((f) => f ? { ...f, nom: e.target.value } : f)}
-                              className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-500/60"
+                              className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text3)] rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--orange)]"
                             />
                             {/* Palette couleurs */}
                             <div>
-                              <p className="text-[11px] text-white/40 uppercase tracking-[0.08em] mb-2">Couleur</p>
+                              <p className="text-[11px] text-[var(--text3)] uppercase tracking-[0.08em] mb-2">Couleur</p>
                               <div className="grid grid-cols-7 gap-2">
                                 {COLOR_PALETTE.map((col) => (
                                   <button
@@ -530,11 +530,11 @@ export default function TransactionModal({
                                   </button>
                                 ))}
                                 {/* Custom color picker */}
-                                <label className="relative w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-transform hover:scale-110 border-2 border-dashed border-white/30 hover:border-white/60"
+                                <label className="relative w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-transform hover:scale-110 border-2 border-dashed border-[var(--border2)] hover:border-[var(--text)]"
                                   style={!COLOR_PALETTE.includes(catForm.couleur) ? { background: catForm.couleur, border: "2px solid white" } : {}}>
                                   {!COLOR_PALETTE.includes(catForm.couleur)
                                     ? <Check size={12} className="text-white" />
-                                    : <Plus size={12} className="text-white/50" />}
+                                    : <Plus size={12} className="text-[var(--text3)]" />}
                                   <input
                                     type="color"
                                     value={catForm.couleur}
@@ -555,7 +555,7 @@ export default function TransactionModal({
                                 type="button"
                                 onClick={handleCatSave}
                                 disabled={catSaving || !catForm.nom.trim()}
-                                className="flex-1 py-2 rounded-lg text-[13px] font-semibold bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white transition-colors flex items-center justify-center gap-1"
+                                className="flex-1 py-2 rounded-lg text-[13px] font-semibold bg-[var(--orange)] hover:bg-orange-400 disabled:opacity-50 text-white transition-colors flex items-center justify-center gap-1"
                               >
                                 {catSaving && <Loader2 size={11} className="animate-spin" />}
                                 Enregistrer
@@ -569,28 +569,28 @@ export default function TransactionModal({
                             <button
                               type="button"
                               onClick={() => { set("categorie_id", ""); setCatPickerOpen(false); }}
-                              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-white/40 hover:bg-white/[0.05] transition-colors border-b border-white/[0.06]"
+                              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[var(--text3)] hover:bg-[var(--bg3)] transition-colors border-b border-[var(--border)]"
                             >
                               <span className="w-3 h-3 rounded-full bg-white/10 shrink-0" />
                               <span>Aucune catégorie</span>
-                              {!form.categorie_id && <Check size={12} className="ml-auto text-orange-500" />}
+                              {!form.categorie_id && <Check size={12} className="ml-auto text-[var(--orange)]" />}
                             </button>
                             {/* Liste */}
                             {localCategories.map((cat) => (
-                              <div key={cat.id} className="flex items-center gap-2 px-3 py-2.5 border-b border-white/[0.06] last:border-0 hover:bg-white/[0.04] transition-colors">
+                              <div key={cat.id} className="flex items-center gap-2 px-3 py-2.5 border-b border-[var(--border)] last:border-0 hover:bg-[var(--bg3)] transition-colors">
                                 <button
                                   type="button"
                                   onClick={() => { set("categorie_id", cat.id); setCatPickerOpen(false); }}
-                                  className="flex items-center gap-2 flex-1 text-sm text-white text-left"
+                                  className="flex items-center gap-2 flex-1 text-sm text-[var(--text)] text-left"
                                 >
                                   <span className="w-3 h-3 rounded-full shrink-0" style={{ background: cat.couleur }} />
                                   <span>{cat.nom}</span>
-                                  {form.categorie_id === cat.id && <Check size={12} className="text-orange-500" />}
+                                  {form.categorie_id === cat.id && <Check size={12} className="text-[var(--orange)]" />}
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => setCatForm({ id: cat.id, nom: cat.nom, couleur: cat.couleur })}
-                                  className="text-white/25 hover:text-white/60 transition-colors p-1"
+                                  className="text-[var(--text3)] hover:text-[var(--text2)] transition-colors p-1"
                                 >
                                   <Pencil size={11} />
                                 </button>
@@ -600,7 +600,7 @@ export default function TransactionModal({
                             <button
                               type="button"
                               onClick={() => setCatForm({ nom: "", couleur: COLOR_PALETTE[0] })}
-                              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-orange-400 hover:bg-white/[0.05] transition-colors"
+                              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[var(--orange)] hover:bg-[var(--bg3)] transition-colors"
                             >
                               <Plus size={13} />
                               <span>Nouvelle catégorie</span>
@@ -623,13 +623,13 @@ export default function TransactionModal({
                   onClick={() => setApplyToAll((v) => !v)}
                   className={`w-4 h-4 rounded flex items-center justify-center border transition-all flex-shrink-0 ${
                     applyToAll
-                      ? "bg-orange-500 border-orange-500"
-                      : "bg-white/[0.05] border-white/[0.15] group-hover:border-white/30"
+                      ? "bg-[var(--orange)] border-[var(--orange)]"
+                      : "bg-[var(--bg3)] border-[var(--border)] group-hover:border-[var(--border2)]"
                   }`}
                 >
                   {applyToAll && <Check size={10} className="text-white" />}
                 </div>
-                <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors select-none">
+                <span className="text-sm text-[var(--text2)] group-hover:text-[var(--text)]/80 transition-colors select-none">
                   Appliquer à toutes les transactions avec ce libellé
                 </span>
               </label>
@@ -637,9 +637,9 @@ export default function TransactionModal({
 
             {/* Description */}
             <div className="space-y-1">
-              <label className="text-sm text-white/60 font-medium">
+              <label className="text-sm text-[var(--text2)] font-medium">
                 Description{" "}
-                <span className="text-white/30 font-normal">(optionnel)</span>
+                <span className="text-[var(--text3)] font-normal">(optionnel)</span>
               </label>
               <input
                 type="text"
@@ -647,18 +647,18 @@ export default function TransactionModal({
                 value={form.description}
                 onChange={(e) => set("description", e.target.value)}
                 maxLength={255}
-                className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors"
+                className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text3)] rounded-[10px] px-3 py-2 text-sm outline-none focus:border-[var(--orange)] transition-colors"
               />
             </div>
 
             {/* Date */}
             <div className="space-y-1">
-              <label className="text-sm text-white/60 font-medium">Date</label>
+              <label className="text-sm text-[var(--text2)] font-medium">Date</label>
               <input
                 type="date"
                 value={form.date}
                 onChange={(e) => set("date", e.target.value)}
-                className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer"
+                className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] rounded-[10px] px-3 py-2 text-sm outline-none focus:border-[var(--orange)] transition-colors cursor-pointer"
                 style={{ colorScheme: "dark" }}
               />
               {errors.date && (
@@ -668,9 +668,9 @@ export default function TransactionModal({
 
             {/* Objectif lié */}
             <div className="space-y-1">
-                <label className="text-sm text-white/60 font-medium">
+                <label className="text-sm text-[var(--text2)] font-medium">
                   Lier à un objectif{" "}
-                  <span className="text-white/30 font-normal">(optionnel)</span>
+                  <span className="text-[var(--text3)] font-normal">(optionnel)</span>
                 </label>
 
                 {localObjectifs.length > 0 && (
@@ -680,10 +680,10 @@ export default function TransactionModal({
                       set("objectif_id", e.target.value);
                       set("budget_item_id", "");
                     }}
-                    className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer appearance-none"
+                    className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] rounded-[10px] px-3 py-2 text-sm outline-none focus:border-[var(--orange)] transition-colors cursor-pointer appearance-none"
                     style={{ colorScheme: "dark" }}
                   >
-                    <option value="" className="bg-[#0f0f1a]">
+                    <option value="" className="bg-[var(--bg2)]">
                       Aucun objectif
                     </option>
                     {localObjectifs.map((obj) => {
@@ -697,7 +697,7 @@ export default function TransactionModal({
                         <option
                           key={obj.id}
                           value={obj.id}
-                          className="bg-[#0f0f1a]"
+                          className="bg-[var(--bg2)]"
                         >
                           {obj.nom} ({pct}%)
                         </option>
@@ -711,7 +711,7 @@ export default function TransactionModal({
                   <button
                     type="button"
                     onClick={() => setShowNewObjForm(true)}
-                    className="flex items-center gap-1.5 text-xs text-orange-400/80 hover:text-orange-400 transition-colors mt-1"
+                    className="flex items-center gap-1.5 text-xs text-[var(--orange)]/80 hover:text-[var(--orange)] transition-colors mt-1"
                   >
                     <Plus size={12} />
                     Nouvel objectif
@@ -728,19 +728,19 @@ export default function TransactionModal({
                       transition={{ duration: 0.18 }}
                       className="overflow-hidden"
                     >
-                      <div className="rounded-xl border border-white/[0.1] bg-white/[0.03] p-3 space-y-2.5 mt-1">
+                      <div className="rounded-[10px] border border-[var(--border)] bg-[var(--bg)] p-3 space-y-2.5 mt-1">
                         <div className="flex items-center gap-2">
-                          <button type="button" onClick={() => setShowNewObjForm(false)} className="text-white/40 hover:text-white transition-colors">
+                          <button type="button" onClick={() => setShowNewObjForm(false)} className="text-[var(--text3)] hover:text-[var(--text)] transition-colors">
                             <ArrowLeft size={14} />
                           </button>
-                          <span className="text-sm font-medium text-white">Nouvel objectif</span>
+                          <span className="text-sm font-medium text-[var(--text)]">Nouvel objectif</span>
                         </div>
                         <input
                           type="text"
                           placeholder="Nom de l'objectif"
                           value={newObjForm.nom}
                           onChange={(e) => setNewObjForm((f) => ({ ...f, nom: e.target.value }))}
-                          className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-500/60"
+                          className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text3)] rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--orange)]"
                         />
                         <input
                           type="number"
@@ -749,23 +749,23 @@ export default function TransactionModal({
                           min={0}
                           step="0.01"
                           onChange={(e) => setNewObjForm((f) => ({ ...f, montant_cible: e.target.value }))}
-                          className="w-full bg-white/[0.05] border border-white/[0.1] text-white placeholder:text-white/25 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-500/60"
+                          className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text3)] rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--orange)]"
                         />
                         <select
                           value={newObjForm.periode}
                           onChange={(e) => setNewObjForm((f) => ({ ...f, periode: e.target.value as "mensuel" | "annuel" | "ponctuel" }))}
-                          className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-500/60 cursor-pointer appearance-none"
+                          className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--orange)] cursor-pointer appearance-none"
                           style={{ colorScheme: "dark" }}
                         >
-                          <option value="ponctuel" className="bg-[#0f0f1a]">Ponctuel</option>
-                          <option value="mensuel" className="bg-[#0f0f1a]">Mensuel</option>
-                          <option value="annuel" className="bg-[#0f0f1a]">Annuel</option>
+                          <option value="ponctuel" className="bg-[var(--bg2)]">Ponctuel</option>
+                          <option value="mensuel" className="bg-[var(--bg2)]">Mensuel</option>
+                          <option value="annuel" className="bg-[var(--bg2)]">Annuel</option>
                         </select>
                         <div className="flex gap-2 pt-0.5">
                           <button
                             type="button"
                             onClick={() => setShowNewObjForm(false)}
-                            className="flex-1 py-2 rounded-lg text-sm text-white/50 hover:text-white bg-white/[0.05] hover:bg-white/[0.08] transition-colors"
+                            className="flex-1 py-2 rounded-lg text-sm text-[var(--text3)] hover:text-[var(--text)] bg-[var(--bg3)] hover:bg-[var(--bg3)] transition-colors"
                           >
                             Annuler
                           </button>
@@ -773,7 +773,7 @@ export default function TransactionModal({
                             type="button"
                             onClick={handleNewObjectifSave}
                             disabled={objSaving}
-                            className="flex-1 py-2 rounded-lg text-sm text-white font-medium bg-orange-500/80 hover:bg-orange-500 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60"
+                            className="flex-1 py-2 rounded-lg text-sm text-white font-medium bg-[var(--orange)]/80 hover:bg-[var(--orange)] transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60"
                           >
                             {objSaving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
                             Créer
@@ -793,26 +793,26 @@ export default function TransactionModal({
                     if (linkedBudgetItems.length === 0) return null;
                     return (
                       <div className="space-y-1">
-                        <label className="text-sm text-white/60 font-medium">
+                        <label className="text-sm text-[var(--text2)] font-medium">
                           Ligne de budget{" "}
-                          <span className="text-white/30 font-normal">
+                          <span className="text-[var(--text3)] font-normal">
                             (optionnel)
                           </span>
                         </label>
                         <select
                           value={form.budget_item_id}
                           onChange={(e) => set("budget_item_id", e.target.value)}
-                          className="w-full bg-white/[0.05] border border-white/[0.1] text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500/60 transition-colors cursor-pointer appearance-none"
+                          className="w-full bg-[var(--bg3)] border border-[var(--border)] text-[var(--text)] rounded-[10px] px-3 py-2 text-sm outline-none focus:border-[var(--orange)] transition-colors cursor-pointer appearance-none"
                           style={{ colorScheme: "dark" }}
                         >
-                          <option value="" className="bg-[#0f0f1a]">
+                          <option value="" className="bg-[var(--bg2)]">
                             Aucune ligne
                           </option>
                           {linkedBudgetItems.map((bi) => (
                             <option
                               key={bi.id}
                               value={bi.id}
-                              className="bg-[#0f0f1a]"
+                              className="bg-[var(--bg2)]"
                             >
                               {bi.nom} ({new Intl.NumberFormat("fr-FR", {
                                 style: "currency",
@@ -839,8 +839,8 @@ export default function TransactionModal({
                       (apres / obj.montant_cible) * 100
                     );
                     return (
-                      <div className="bg-white/[0.03] border border-white/[0.07] rounded-xl px-3 py-2.5 text-xs space-y-1">
-                        <p className="text-white/50">
+                      <div className="bg-[var(--bg)] border border-[var(--border)] rounded-[10px] px-3 py-2.5 text-xs space-y-1">
+                        <p className="text-[var(--text3)]">
                           Progression après ajout :
                         </p>
                         <div className="h-1.5 bg-white/[0.07] rounded-full overflow-hidden">
@@ -849,7 +849,7 @@ export default function TransactionModal({
                             style={{ width: `${pctApres}%` }}
                           />
                         </div>
-                        <p className="text-white/70 font-medium">
+                        <p className="text-[var(--text2)] font-medium">
                           {new Intl.NumberFormat("fr-FR", {
                             style: "currency",
                             currency: "EUR",
@@ -859,7 +859,7 @@ export default function TransactionModal({
                             style: "currency",
                             currency: "EUR",
                           }).format(obj.montant_cible)}{" "}
-                          <span className="text-orange-400">({pctApres}%)</span>
+                          <span className="text-[var(--orange)]">({pctApres}%)</span>
                         </p>
                       </div>
                     );
@@ -871,7 +871,7 @@ export default function TransactionModal({
               <Dialog.Close asChild>
                 <button
                   type="button"
-                  className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white/50 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] transition-all"
+                  className="flex-1 py-2.5 rounded-[10px] text-sm font-medium text-[var(--text3)] hover:text-[var(--text)] bg-[var(--bg3)] hover:bg-[var(--bg3)] border border-[var(--border)] transition-all"
                 >
                   Annuler
                 </button>
@@ -879,7 +879,7 @@ export default function TransactionModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white transition-all"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-sm font-medium bg-[var(--orange)] hover:bg-orange-400 disabled:opacity-60 disabled:cursor-not-allowed text-white transition-all"
               >
                 {isSubmitting && <Loader2 size={14} className="animate-spin" />}
                 {isSubmitting
