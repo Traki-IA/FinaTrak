@@ -1,5 +1,16 @@
 # CHANGELOG — FinaTrak
 
+## 2026-04-05 — Harmonisation design system modales + migration sort_order
+
+### Modifié
+- `TransactionModal`, `BudgetModal`, `ObjectifModal` : toutes les couleurs hardcodées remplacées par les variables CSS du design system (`var(--bg2)`, `var(--text)`, `var(--border)`, `var(--orange)`, etc.)
+- Boutons inline Modifier/Supprimer : bordure + fond ajustés pour s'aligner sur le style des boutons de modales (`rounded-[10px]`)
+
+### Ajouté
+- Migration `supabase/migrations/010_sort_order.sql` : colonne `sort_order` (avec `IF NOT EXISTS`) sur `categories`, `objectifs`, `budget_items`
+
+---
+
 ## 2026-04-05 — Fix build Vercel
 
 ### Corrigé
