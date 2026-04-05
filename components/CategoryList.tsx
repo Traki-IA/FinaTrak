@@ -20,7 +20,8 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { reorderCategories, deleteCategorie } from "@/app/(main)/parametres/actions";
+import { reorderCategories } from "@/app/(main)/parametres/actions";
+import { deleteCategorie } from "@/lib/categories";
 import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 import CategorieModal, { ICONE_MAP } from "@/app/(main)/parametres/CategorieModal";
 import type { TCategorie } from "@/types";

@@ -64,8 +64,6 @@ export async function reorderCategories(
   return { success: true };
 }
 
-export { deleteCategorie } from "@/lib/categories";
-
 // ── Mise à jour de l'ordre de navigation ─────────────────────────────────────
 
 export async function updateNavOrder(
