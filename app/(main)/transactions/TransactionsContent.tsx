@@ -366,14 +366,14 @@ function MobileTxRow({
                 <>
                   <button
                     onClick={() => { onEdit(transaction); onRowTap(); }}
-                    className="flex items-center gap-1.5 rounded-[9px] px-3.5 py-2 text-[12px] font-semibold text-[var(--orange)] bg-[var(--orange)]/10 hover:bg-[var(--orange)]/20 transition-colors"
+                    className="flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[12px] font-semibold text-[var(--orange)] bg-[var(--orange)]/15 border border-[var(--orange)]/40 hover:bg-[var(--orange)]/25 transition-colors"
                   >
                     <Pencil size={12} />
                     Modifier
                   </button>
                   <button
                     onClick={() => onDeleteRequest(transaction.id)}
-                    className="flex items-center gap-1.5 rounded-[9px] px-3.5 py-2 text-[12px] font-semibold text-[var(--red)] bg-[var(--red)]/10 hover:bg-[var(--red)]/20 transition-colors"
+                    className="flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[12px] font-semibold text-[var(--red)] bg-[var(--red)]/10 border border-[var(--red)]/30 hover:bg-[var(--red)]/20 transition-colors"
                   >
                     <Trash2 size={12} />
                     Supprimer
