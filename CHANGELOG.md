@@ -1,5 +1,13 @@
 # CHANGELOG — FinaTrak
 
+## 2026-04-05 — Fix build Vercel
+
+### Corrigé
+- `parametres/actions.ts` : suppression du re-export `export { deleteCategorie }` — interdit dans `"use server"`
+- `CategoryList.tsx` : importe désormais `deleteCategorie` directement depuis `@/lib/categories`
+
+---
+
 ## 2026-04-04 — Audit qualité itératif (passes 1–8) — Server Actions production-ready
 
 ### Sécurité

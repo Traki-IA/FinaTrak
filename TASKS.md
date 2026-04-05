@@ -13,6 +13,9 @@ _(aucune)_
 
 ## Complétées
 
+### 2026-04-05
+- [x] Fix build Vercel — re-export interdit dans `"use server"` (`parametres/actions.ts`)
+
 ### 2026-04-04 (session 2)
 - [x] Corriger `precommit-check.sh` (strict mode, regex .env, JSON escaping)
 - [x] Créer `lib/categories.ts` — source unique de vérité pour CRUD catégories

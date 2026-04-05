@@ -98,6 +98,8 @@ Ce fichier définit les conventions et règles de développement pour le projet 
 - Variables d'environnement publiques uniquement avec préfixe `NEXT_PUBLIC_`
 - Ne jamais passer de données sensibles dans les query params ou l'URL
 - Middleware d'auth vérifié sur chaque requête — ne pas contourner
+- Dans les fichiers `"use server"` : uniquement des fonctions `async` exportées — les re-exports (`export { x } from "..."`) causent une erreur de build silencieuse en dev mais bloquante en production
+- Avant tout push : lancer `npm run build` pour détecter les erreurs Next.js que `tsc` ne voit pas
 
 ### Validation
 - Toutes les données entrantes validées avec Zod avant traitement
