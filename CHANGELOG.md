@@ -1,5 +1,20 @@
 # CHANGELOG — FinaTrak
 
+## 2026-04-08 — Maintenance + migration 010 restaurée
+
+### Corrigé
+- Migrations 001-009 restaurées (supprimées par manipulation locale hors session)
+- `types/database.types.ts` restauré (vidé par tentative `gen:types` échouée)
+- `supabase.tar.gz` supprimé (résidu de téléchargement échoué)
+
+### Ajouté
+- Migration `010_sort_order.sql` recréée et commitée (fichier perdu, jamais commité)
+
+### Validé
+- CompteModal mobile : harmonisation design system confirmée par screenshot
+
+---
+
 ## 2026-04-05 — Harmonisation design system modales + migration sort_order
 
 ### Modifié

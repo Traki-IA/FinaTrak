@@ -6,8 +6,9 @@ _(aucune)_
 ## Identifiées / Backlog
 - [x] Harmoniser les modales des autres pages (Transaction, Budget, Objectifs) avec le design system
 - [x] Aligner les boutons inline Modifier/Supprimer sur le style des modales
-- [ ] Valider l'harmonisation du CompteModal sur mobile (screenshot)
+- [x] Valider l'harmonisation du CompteModal sur mobile (screenshot)
 - [x] Ajouter migration `sort_order` sur table `categories` (colonne existe en DB mais non versionnée)
+- [x] Recréer migration 010 sort_order (fichier perdu suite à manipulation locale hors session)
 - [ ] Activer `npm run gen:types` — nécessite CLI Supabase (`supabase`) installée sur la machine. Installer hors session : `brew install supabase/tap/supabase` ou binaire GitHub Releases. Puis : `supabase link --project-ref ymnppzsywiqsiubsibht`
 - [ ] Ajouter tests automatisés sur les Server Actions critiques — **Option B retenue** (intégration, vraie DB). Prérequis : créer projet Supabase `FinaTrak-test` + fournir URL/clés anon/service_role
 - [ ] Ajouter monitoring d'erreurs (Sentry ou équivalent)
